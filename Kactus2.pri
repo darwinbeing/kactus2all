@@ -492,7 +492,7 @@ HEADERS += ./designwidget/BusInterfaceDialog.h \
     ./LibraryManager/HierarchyView/hierarchyview.h \
     ./LibraryManager/HierarchyView/hierarchywidget.h \
     ./PluginSystem/IGeneratorPlugin.h \
-    ./PluginSystem/IPluginInformation.h \
+    ./PluginSystem/IPlugin.h \
     ./PluginSystem/IPluginUtility.h \
     ./PluginSystem/PluginListDialog.h \
     ./PluginSystem/PluginManager.h \

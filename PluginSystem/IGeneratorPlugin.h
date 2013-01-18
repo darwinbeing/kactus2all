@@ -13,6 +13,8 @@
 #ifndef IGENERATORPLUGIN_H
 #define IGENERATORPLUGIN_H
 
+#include "IPlugin.h"
+
 #include <QSharedPointer>
 #include <QWidget>
 
@@ -24,7 +26,7 @@ class IPluginUtility;
 //! Interface for plugins that are used to generate content for different
 //! IP-XACT documents.
 //-----------------------------------------------------------------------------
-class IGeneratorPlugin
+class IGeneratorPlugin : public IPlugin
 {
 public:
     /*!

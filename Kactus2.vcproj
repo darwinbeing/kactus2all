@@ -13417,6 +13417,10 @@
 								</FileConfiguration>
 							</File>
 						</Filter>
+						<Filter
+							Name="dependencyAnalysis"
+							>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="memoryMaps"
@@ -23868,11 +23872,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\PluginSystem\IPluginInformation.h"
+					RelativePath=".\PluginSystem\IPlugin.h"
 					>
 				</File>
 				<File
 					RelativePath=".\PluginSystem\IPluginUtility.h"
+					>
+				</File>
+				<File
+					RelativePath=".\PluginSystem\ISourceAnalyzerPlugin.h"
 					>
 				</File>
 				<File

@@ -12,7 +12,7 @@
 #ifndef MCAPICODEGENERATOR_H
 #define MCAPICODEGENERATOR_H
 
-#include <PluginSystem/IPluginInformation.h>
+#include <PluginSystem/IPlugin.h>
 #include <PluginSystem/IGeneratorPlugin.h>
 
 #include <QObject>
@@ -24,10 +24,10 @@ class IPluginUtility;
 //-----------------------------------------------------------------------------
 //! MCAPI code generator.
 //-----------------------------------------------------------------------------
-class MCAPICodeGenerator : public QObject, public IPluginInformation, public IGeneratorPlugin
+class MCAPICodeGenerator : public QObject, public IGeneratorPlugin
 {
     Q_OBJECT
-    Q_INTERFACES(IPluginInformation)
+    Q_INTERFACES(IPlugin)
     Q_INTERFACES(IGeneratorPlugin)
 
 public:
