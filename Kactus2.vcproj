@@ -1459,6 +1459,10 @@
 								>
 							</File>
 						</Filter>
+						<Filter
+							Name="dependencyAnalysis"
+							>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="general"
@@ -13420,6 +13424,26 @@
 						<Filter
 							Name="dependencyAnalysis"
 							>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyEditor.h"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyGraphWidget.h"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyInfoWidget.h"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyModel.h"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencySourceDialog.h"
+								>
+							</File>
 						</Filter>
 					</Filter>
 					<Filter
@@ -18246,6 +18270,10 @@
 							Outputs=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\models\FileDependency.h"
+					>
 				</File>
 				<File
 					RelativePath="models\fileset.h"
