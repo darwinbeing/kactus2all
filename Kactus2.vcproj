@@ -2470,6 +2470,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\models\FileDependency.cpp"
+					>
+				</File>
+				<File
 					RelativePath="models\fileset.cpp"
 					>
 				</File>

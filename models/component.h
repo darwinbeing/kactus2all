@@ -47,6 +47,7 @@ class Channel;
 class Choice;
 class File;
 class ComProperty;
+class FileDependency;
 
 /*! \brief Equals to spirit:component element in IP-Xact specification
  *
@@ -897,6 +898,18 @@ public:
 	*/
 	QList<QSharedPointer<FileSet> >& getFileSets();
 
+    /*! \brief Get this component's file dependencies
+	*
+	* \return QList containing component's file dependencies
+	*/
+	const QList<QSharedPointer<FileDependency> >& getFileDependencies() const;
+
+	/*! \brief Get the file dependencies of this component.
+	 *
+	 * \return QList containing pointers to the file dependencies.
+	*/
+	QList<QSharedPointer<FileDependency> >& getFileDependencies();
+
 	/*! \brief Get names of the file sets stored in the component.
 	*
 	* \return QStringList containing the names of the file sets of the component.
@@ -908,6 +921,12 @@ public:
 	* \param fileSets QList containing the file sets to be set
 	*/
 	void setFileSets(const QList<QSharedPointer<FileSet> > &fileSets);
+
+    /*! \brief Set this component's file dependencies
+	*
+	* \param fileDependencies QList containing the file dependencies to be set
+	*/
+	void setFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies);
 
 	/*! \brief Get the specified file set if one exists
 	*
@@ -1495,7 +1514,8 @@ private:
      *      @param [in] node The source XML node.
      */
     void parseSystemViews(QDomNode& node);
-    
+    void parseFileDependencies(QDomNode& node);
+
 	/*! \brief Specifies all the interfaces for this component.
 	 * OPTIONAL spirit:busInterfaces
 	 *
@@ -1559,6 +1579,10 @@ private:
 	 * other sections of this component description.
 	 */
 	QList<QSharedPointer<FileSet> > fileSets_;
+
+    //! The list of file dependencies.
+    //! OPTIONAL kactus2:fileDependencies
+    QList< QSharedPointer<FileDependency> > fileDependencies_;
 
 	/*! \brief Contains the cpus.
 	 * OPTIONAL spirit:cpus

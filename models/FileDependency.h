@@ -12,8 +12,11 @@
 #ifndef FILEDEPENDENCY_H
 #define FILEDEPENDENCY_H
 
+#include <common/Global.h>
+
 #include <QString>
 #include <QDomNode>
+#include <QXmlStreamWriter>
 #include <QObject>
 
 //-----------------------------------------------------------------------------
@@ -43,6 +46,13 @@ public:
      *  Destructor.
      */
     ~FileDependency();
+
+    /*!
+     *  Writes the contents of the file dependency to an XML stream.
+     *
+     *      @param [in] write The XML stream writer.
+     */
+    void write(QXmlStreamWriter& writer);
 
     /*!
      *  Sets the 'from' file.
@@ -118,10 +128,33 @@ public:
      */
     bool isManual() const;
 
+    /*!
+     *  Assignment operator.
+     */
+    FileDependency& operator=(FileDependency const& rhs);
+
 private:
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    //! The name of the first (from) file.
+    QString file1_;
+
+    //! The name of the second (to) file.
+    QString file2_;
+
+    //! The dependency description.
+    QString desc_;
+
+    //! If true, the dependency is locked and cannot be modified.
+    bool locked_;
+
+    //! If true, the dependency is bidirectional.
+    bool bidirectional_;
+
+    //! If true, the dependency is a manually created one.
+    bool manual_;
 };
 
 #endif // FILEDEPENDENCY_H

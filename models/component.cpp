@@ -26,6 +26,7 @@
 #include "ComProperty.h"
 #include "SWView.h"
 #include "SystemView.h"
+#include "FileDependency.h"
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -58,6 +59,7 @@ model_(),
 compGenerators_(), 
 choices_(), 
 fileSets_(),
+fileDependencies_(),
 cpus_(),
 otherClockDrivers_(),
 parameters_(), 
@@ -315,6 +317,10 @@ systemViews_() {
                         {
                             parseApiInterfaces(childNode);
                         }
+                        else if (childNode.nodeName() == "kactus2:fileDependencies")
+                        {
+                            parseFileDependencies(childNode);
+                        }
 					}
 				}
 			}
@@ -344,6 +350,7 @@ model_(),
 compGenerators_(),
 choices_(),
 fileSets_(),
+fileDependencies_(),
 cpus_(),
 otherClockDrivers_(),
 parameters_(), 
@@ -370,6 +377,7 @@ model_(),
 compGenerators_(), 
 choices_(),
 fileSets_(), 
+fileDependencies_(),
 cpus_(), 
 otherClockDrivers_(), 
 parameters_(),
@@ -394,6 +402,7 @@ model_(),
 compGenerators_(),
 choices_(),
 fileSets_(),
+fileDependencies_(),
 cpus_(),
 otherClockDrivers_(),
 parameters_(),
@@ -485,6 +494,14 @@ attributes_(other.attributes_) {
 			fileSets_.append(copy);
 		}
 	}
+
+    foreach (QSharedPointer<FileDependency> dependency, other.fileDependencies_) {
+        if (dependency) {
+            QSharedPointer<FileDependency> copy = QSharedPointer<FileDependency>(
+                new FileDependency(*dependency.data()));
+            fileDependencies_.append(copy);
+        }
+    }
 
 	foreach (QSharedPointer<Cpu> cpu, other.cpus_) {
 		if (cpu) {
@@ -628,6 +645,15 @@ Component & Component::operator=( const Component &other ) {
 			}
 		}
 
+        fileDependencies_.clear();
+        foreach (QSharedPointer<FileDependency> dependency, other.fileDependencies_) {
+            if (dependency) {
+                QSharedPointer<FileDependency> copy = QSharedPointer<FileDependency>(
+                    new FileDependency(*dependency.data()));
+                fileDependencies_.append(copy);
+            }
+        }
+
 		cpus_.clear();
 		foreach (QSharedPointer<Cpu> cpu, other.cpus_) {
 			if (cpu) {
@@ -687,6 +713,7 @@ Component::~Component() {
 	compGenerators_.clear();
 	choices_.clear();
 	fileSets_.clear();
+    fileDependencies_.clear();
 	cpus_.clear();
 	otherClockDrivers_.clear();
 	parameters_.clear();
@@ -923,6 +950,18 @@ void Component::write(QFile& file) {
             }
 
             writer.writeEndElement(); // kactus2:apiInterfaces
+        }
+
+        if (!fileDependencies_.empty())
+        {
+            writer.writeStartElement("kactus2:fileDependencies");
+
+            // write each file set
+            for (int i = 0; i < fileDependencies_.size(); ++i) {
+                fileDependencies_.at(i)->write(writer);
+            }
+
+            writer.writeEndElement(); // kactus2:fileDependencies
         }
 
 		writer.writeEndElement(); // kactus2:extensions
@@ -2895,6 +2934,23 @@ void Component::parseApiInterfaces(QDomNode& node)
 }
 
 //-----------------------------------------------------------------------------
+// Function: Component::parseFileDependencies()
+//-----------------------------------------------------------------------------
+void Component::parseFileDependencies(QDomNode& node)
+{
+    for (int i = 0; i < node.childNodes().count(); ++i)
+    {
+        QDomNode depNode = node.childNodes().at(i);
+
+        if (depNode.nodeName() == "kactus2:fileDependency")
+        {
+            QSharedPointer<FileDependency> dependency(new FileDependency(depNode));
+            fileDependencies_.append(dependency);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
 // Function: Component::getComInterfaces()
 //-----------------------------------------------------------------------------
 QList<QSharedPointer<ComInterface> > const& Component::getComInterfaces() const
@@ -3319,4 +3375,28 @@ MemoryMap const* Component::getMemoryMap(QString const& name) const
     }
 
     return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::getFileDependencies()
+//-----------------------------------------------------------------------------
+const QList<QSharedPointer<FileDependency> >& Component::getFileDependencies() const
+{
+    return fileDependencies_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::getFileDependencies()
+//-----------------------------------------------------------------------------
+QList<QSharedPointer<FileDependency> >& Component::getFileDependencies()
+{
+    return fileDependencies_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::setFileDependencies()
+//-----------------------------------------------------------------------------
+void Component::setFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies)
+{
+    fileDependencies_ = fileDependencies;
 }
