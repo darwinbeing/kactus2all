@@ -314,7 +314,12 @@ public:
 	 */
 	const QMap<QString, QString>& getNameAttributes();
 
-	/*! \brief Set the attributes for the file
+    /*!
+     *  Returns the last calculated hash.
+     */
+    quint64 getLastHash() const;
+
+    /*! \brief Set the attributes for the file
 	 *
 	 * Calling this function will delete old attributes.
 	 *
@@ -405,6 +410,13 @@ public:
 	 * \param nameAttributes QMap the new attributes.
 	 */
 	void setNameAttributes(const QMap<QString, QString> &nameAttributes);
+
+    /*!
+     *  Sets the last calculated hash.
+     *
+     *      @param [in] hash The calculated hash value.
+     */
+    void setLastHash(quint64 hash);
 
 	/*! \brief Set the userFileTypes for this file
 	 *
@@ -598,9 +610,11 @@ private:
 	 */
 	QList<Define> defines_;
 
+    //! The last calculated hash (from the file contents).
+    quint64 lastHash_;
+
 	//! \brief Pointer to the FileSet that contains this file.
 	FileSet* parent_;
-
 };
 
 #endif /* FILE_H_ */

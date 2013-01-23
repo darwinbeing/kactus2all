@@ -53,8 +53,8 @@ Global
 		{D47FBAF4-1642-4F73-837C-F289DCB9E8FE} = {DCE9488F-27AD-4CDF-8164-47A01207F7F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		AMDCaProjectFile = D:\user\maattaj\FunBase\public\trunk\CodeAnalyst\Kactus2_Solution.caw
-		BuildVersion_UpdateAssemblyVersion = True
 		BuildVersion_UpdateFileVersion = True
+		BuildVersion_UpdateAssemblyVersion = True
+		AMDCaProjectFile = D:\user\maattaj\FunBase\public\trunk\CodeAnalyst\Kactus2_Solution.caw
 	EndGlobalSection
 EndGlobal

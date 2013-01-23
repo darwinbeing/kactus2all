@@ -12,10 +12,12 @@
 #ifndef FILEDEPENDENCYGRAPHWIDGET_H
 #define FILEDEPENDENCYGRAPHWIDGET_H
 
+#include <QAbstractScrollArea>
+
 //-----------------------------------------------------------------------------
 //! Widget for showing the table-style file dependency graph.
 //-----------------------------------------------------------------------------
-class FileDependencyGraphWidget : public QWidget
+class FileDependencyGraphWidget : public QAbstractScrollArea
 {
 public:
     /*!

@@ -12,12 +12,18 @@
 #ifndef FILEDEPENDENCYEDITOR_H
 #define FILEDEPENDENCYEDITOR_H
 
+#include "FileDependencyGraphWidget.h"
+#include "FileDependencyInfoWidget.h"
+
 #include <QGroupBox>
+#include <QToolBar>
+#include <QTableWidget>
+#include <QProgressBar>
 
 //-----------------------------------------------------------------------------
 //! File dependency editor which encapsulates the whole dependency UI.
 //-----------------------------------------------------------------------------
-class FileDependencyEditor : public QGroupBox
+class FileDependencyEditor : public QWidget
 {
 public:
     /*!
@@ -31,6 +37,27 @@ public:
      *  Destructor.
      */
     ~FileDependencyEditor();
+
+private:
+    // Disable copying.
+    FileDependencyEditor(FileDependencyEditor const& rhs);
+    FileDependencyEditor& operator=(FileDependencyEditor const& rhs);
+
+    //-----------------------------------------------------------------------------
+    // Data.
+    //-----------------------------------------------------------------------------
+
+    //! Toolbar.
+    QToolBar toolbar_;
+
+    //! The progress bar.
+    QProgressBar progressBar_;
+
+    //! The dependency graph widget.
+    FileDependencyGraphWidget graphWidget_;
+
+    //! The dependency info widget,.
+    FileDependencyInfoWidget infoWidget_;
 };
 
 //-----------------------------------------------------------------------------

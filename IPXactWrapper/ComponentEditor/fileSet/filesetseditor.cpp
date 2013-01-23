@@ -7,6 +7,7 @@
 
 #include "filesetseditor.h"
 #include "filesetsdelegate.h"
+
 #include <common/widgets/summaryLabel/summarylabel.h>
 
 #include <QVBoxLayout>
@@ -15,7 +16,8 @@ FileSetsEditor::FileSetsEditor( QSharedPointer<Component> component):
 ItemEditor(component),
 view_(this),
 model_(component, this),
-proxy_(this) {
+proxy_(this),
+dependencyEditor_(this) {
 
 	// display a label on top the table
 	SummaryLabel* summaryLabel = new SummaryLabel(tr("File sets summary"), this);
@@ -23,6 +25,7 @@ proxy_(this) {
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->addWidget(summaryLabel, 0, Qt::AlignCenter);
 	layout->addWidget(&view_);
+    layout->addWidget(&dependencyEditor_, 1);
 	layout->setContentsMargins(0, 0, 0, 0);
 
 	proxy_.setSourceModel(&model_);

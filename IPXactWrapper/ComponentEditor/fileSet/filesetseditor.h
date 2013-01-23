@@ -8,9 +8,11 @@
 #ifndef FILESETSEDITOR_H
 #define FILESETSEDITOR_H
 
+#include "filesetsmodel.h"
+#include "dependencyAnalysis/FileDependencyEditor.h"
+
 #include <IPXactWrapper/ComponentEditor/itemeditor.h>
 #include <common/views/EditableTableView/editabletableview.h>
-#include "filesetsmodel.h"
 
 #include <QSortFilterProxyModel>
 
@@ -74,6 +76,9 @@ private:
 
 	//! \brief The proxy to do the sorting
 	QSortFilterProxyModel proxy_;
+
+    //! The file dependency editor.
+    FileDependencyEditor dependencyEditor_;
 };
 
 #endif // FILESETSEDITOR_H

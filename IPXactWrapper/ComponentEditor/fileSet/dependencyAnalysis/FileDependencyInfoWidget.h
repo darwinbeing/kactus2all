@@ -13,6 +13,7 @@
 #define FILEDEPENDENCYINFOWIDGET_H
 
 #include <QGroupBox>
+#include <QPlainTextEdit>
 
 //-----------------------------------------------------------------------------
 //! Widget for showing information about one file dependency.
@@ -40,6 +41,9 @@ private:
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    //! Editor for description.
+    QPlainTextEdit descEdit_;
 };
 
 //-----------------------------------------------------------------------------

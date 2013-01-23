@@ -28,6 +28,7 @@
       <file>graphics/vhdl_gen.png</file>
       <file>graphics/modelsim_generator.png</file>
       <file>graphics/refresh.png</file>
+      <file>graphics/refresh_16x16.png</file>
       <file>graphics/import.png</file>
       <file>graphics/search.png</file>
       <file>graphics/export.png</file>
@@ -77,6 +78,16 @@
       <file>graphics/naming-policy.png</file>
       <file>graphics/lock-on.png</file>
       <file>graphics/lock-off.png</file>
+      <file>graphics/traffic-light_green.png</file>
+      <file>graphics/traffic-light_red.png</file>
+      <file>graphics/traffic-light_yellow.png</file>
+      <file>graphics/traffic-light_gray.png</file>
+      <file>graphics/dependency_oneway.png</file>
+      <file>graphics/dependency_twoway.png</file>
+      <file>graphics/dependency_manual.png</file>
+      <file>graphics/dependency_auto.png</file>
+      <file>graphics/diff.png</file>
+      <file>graphics/import_folders.png</file>
   </qresource>
     <qresource prefix="/">        
         <file>graphics/splash.png</file>

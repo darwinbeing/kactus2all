@@ -185,6 +185,27 @@ parent_(parent) {
 		else if (tempNode.nodeName() == QString("spirit:description")) {
 			description_ = tempNode.childNodes().at(0).nodeValue();
 		}
+        else if(tempNode.nodeName() == QString("spirit:vendorExtensions"))
+        {
+            for (int j = 0; j < tempNode.childNodes().count(); ++j) {
+
+                QDomNode extensionNode = tempNode.childNodes().at(j);
+
+                // if node is for kactus2 extensions
+                if (extensionNode.nodeName() == "kactus2:extensions")
+                {
+                    for (int k = 0; k < extensionNode.childNodes().count(); ++k)
+                    {
+                        QDomNode childNode = extensionNode.childNodes().at(k);
+
+                        if (childNode.nodeValue() == "kactus2:hash")
+                        {
+                            lastHash_ = childNode.nodeValue().toULongLong();
+                        }
+                    }
+                }
+            }
+        }
 	}
 	return;
 }
@@ -410,6 +431,15 @@ void File::write(QXmlStreamWriter& writer) {
 	if (!description_.isEmpty()) {
 		writer.writeTextElement("spirit:description", description_);
 	}
+
+    if (lastHash_ != 0)
+    {
+        writer.writeStartElement("spirit:vendorExtensions");
+        writer.writeStartElement("kactus2:extensions");
+        writer.writeTextElement("kactus2:hash", QString::number(lastHash_));
+        writer.writeEndElement(); // kactus2:extensions
+        writer.writeEndElement(); // spirit:vendorExtensions
+    }
 
 	writer.writeEndElement(); // spirit:file
 }
@@ -805,4 +835,20 @@ void File::setAllFileTypes( const QStringList& fileTypes ) {
 			userFileTypes_.append(fileType);
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Function: File::getLastHash()
+//-----------------------------------------------------------------------------
+quint64 File::getLastHash() const
+{
+    return lastHash_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: File::setLastHash()
+//-----------------------------------------------------------------------------
+void File::setLastHash(quint64 hash)
+{
+    lastHash_ = hash;
 }
