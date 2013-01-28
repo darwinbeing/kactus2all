@@ -86,15 +86,11 @@ quint64 CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const&
 
     // Read the file data
     QString fileData;
-    bool runningComment = false;
     while (!file.atEnd())
     {
         QString line = file.readLine();
         fileData.append(line);
-    }
-    
-    //stripComments(fileData, runningComment);
-    
+    }   
     
         // TODO: Strip comments and whitespace here
         // 1. if no running comment active, look for the first // or /*
@@ -116,7 +112,49 @@ quint64 CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const&
 void CppSourceAnalyzer::getFileDependencies(IPluginUtility* utility, QString const& filename,
                                             QList<FileDependencyDesc>& dependencies)
 {
-    // TODO: File dependency retrieval.
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        // File could not be opened, show error
+        return;
+    }
+
+    // Read the file data
+    QStringList fileData;
+    while (!file.atEnd())
+    {
+        QString line = file.readLine();
+        fileData.append(line.simplified());
+    }
+
+    // TODO: Strip comments..
+
+    // Find #includes
+    for (int i=0; i < fileData.length(); i++)
+    {
+        const QString* currentLine = &fileData.at(i);
+        // include found (can they be somewhere else than start of line?
+        int includePosition = currentLine->indexOf("#include");
+        if (includePosition == 0)
+        {
+            int includeStart = 0;
+            int includeEnd = 0;
+            // includes with < >
+            if (currentLine->indexOf("<") != -1)
+            {
+                includeStart = currentLine->indexOf("<") + 1;
+                includeEnd = currentLine->indexOf(">");
+            }
+            // includes with " "
+            else
+            {
+                includeStart = currentLine->indexOf("\"") + 1;
+                includeEnd = currentLine->indexOf("\"", includeStart+1);
+            }
+            // Include found, TODO: store it
+            QString includeName = currentLine->mid(includeStart, includeEnd-includeStart);
+        }
+    }
 }
 
 
