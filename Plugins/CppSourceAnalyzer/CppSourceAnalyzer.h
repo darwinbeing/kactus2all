@@ -84,7 +84,7 @@ private:
     // Disable copying.
     CppSourceAnalyzer(CppSourceAnalyzer const& rhs);
     CppSourceAnalyzer& operator=(CppSourceAnalyzer const& rhs);
-
+    
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------

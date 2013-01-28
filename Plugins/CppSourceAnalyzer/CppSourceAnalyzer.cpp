@@ -16,6 +16,8 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QCoreApplication>
+#include <QCryptographicHash>
+#include <QRegExp>
 
 #include <PluginSystem/IPluginUtility.h>
 
@@ -74,8 +76,39 @@ bool CppSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
 quint64 CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
 {
     // TODO: Hash calculation.
+    // Try to open the file
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        // File could not be opened, show error
+        return 0;
+    }
+
+    // Read the file data
+    QString fileData;
+    bool runningComment = false;
+    while (!file.atEnd())
+    {
+        QString line = file.readLine();
+        fileData.append(line);
+    }
+    
+    //stripComments(fileData, runningComment);
+    
+    
+        // TODO: Strip comments and whitespace here
+        // 1. if no running comment active, look for the first // or /*
+        // 2. in case /* is the first one, look if */ is on the same line
+        // 3. if running comment is active, look for */ and go to 1.
+
+    // Calculate the hash
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(fileData.toAscii());
+
+    QString result = hash.result().toHex();
     return 0;
 }
+
 
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::getFileDependencies()
