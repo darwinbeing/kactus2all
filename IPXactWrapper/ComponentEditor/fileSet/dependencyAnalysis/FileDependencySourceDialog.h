@@ -14,12 +14,21 @@
 
 #include <QDialog>
 #include <QStringList>
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QListView>
+#include <QStringListModel>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 //! Dialog for choosing the file dependency source directories.
 //-----------------------------------------------------------------------------
 class FileDependencySourceDialog : public QDialog
 {
+    Q_OBJECT
 public:
     /*!
      *  Constructor.
@@ -41,7 +50,7 @@ public:
      *
      *      @remarks Valid only when the user presses OK.
      */
-    QStringList const& getSourceDirectories() const;
+    QStringList const& getSourceDirectories() const;    
 
 private slots:
     /*!
@@ -62,6 +71,16 @@ private:
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    QGroupBox* mainGroupBox_;
+    QPushButton* buttonAdd_;
+    QPushButton* buttonRemove_;
+    QDialogButtonBox* buttonBox_;
+    QVBoxLayout* verizontalMainLayout_;
+    QHBoxLayout* horizontalGroupBoxLayout_;
+    QVBoxLayout* verizontalGroupBoxLayout_;
+    QListView* directoryListView_;
+    QStringListModel* directoryListModel_;
 };
 
 //-----------------------------------------------------------------------------
