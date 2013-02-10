@@ -14,6 +14,7 @@
 
 #include <PluginSystem/IPlugin.h>
 #include <PluginSystem/ISourceAnalyzerPlugin.h>
+#include <QFileInfo>
 
 #include <QObject>
 
@@ -84,6 +85,26 @@ private:
     // Disable copying.
     CppSourceAnalyzer(CppSourceAnalyzer const& rhs);
     CppSourceAnalyzer& operator=(CppSourceAnalyzer const& rhs);
+
+    /*!
+     *
+     * Reads source file data from given file. Used by calulateHash and getFileDependencies.
+     *
+     *      @param [in] file    The file that is read.
+     *
+     *      @return The meaningful source data of the file, with comments and empty lines removed.
+     */
+    QString getSourceData(QFile& file);
+
+    /*!
+     *
+     * Removes comments from a string that consists of a C/C++ source code
+     *
+     *      @param [inout] data    The input source code with comments.
+     *
+     *      @return The meaningful source data of the file, with comments removed.
+     */
+    QString removeComments(QString& source);
     
     //-----------------------------------------------------------------------------
     // Data.
