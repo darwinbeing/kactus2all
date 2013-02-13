@@ -16,9 +16,12 @@
 //-----------------------------------------------------------------------------
 
 
-FileDependencySourceDialog::FileDependencySourceDialog(QStringList const& sourceDirs, QWidget* parent)
+FileDependencySourceDialog::FileDependencySourceDialog(QStringList const& sourceDirs,
+                                                       QWidget* parent)
+    : QDialog(parent)
 {
-    QFileDialog::QFileDialog(parent);
+    setWindowTitle(tr("Import Sources"));
+
     mainGroupBox_ = new QGroupBox(tr("Directories"), this);
     buttonAdd_ = new QPushButton(tr("Add"), this);
     buttonRemove_ = new QPushButton(tr("Remove"), this);

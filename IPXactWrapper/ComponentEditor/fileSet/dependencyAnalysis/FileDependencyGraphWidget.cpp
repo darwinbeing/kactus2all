@@ -11,12 +11,15 @@
 
 #include "FileDependencyGraphWidget.h"
 
+#include "FileDependencyModel.h"
+
 //-----------------------------------------------------------------------------
 // Function: FileDependencyGraphWidget::FileDependencyGraphWidget()
 //-----------------------------------------------------------------------------
 FileDependencyGraphWidget::FileDependencyGraphWidget(QWidget* parent)
-    : QAbstractScrollArea(parent)
+    : QTreeView(parent)
 {
+    setModel(new FileDependencyModel());
 }
 
 //-----------------------------------------------------------------------------

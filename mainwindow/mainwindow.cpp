@@ -2228,7 +2228,7 @@ void MainWindow::createSWDesign(VLNV const& vlnv)
 //-----------------------------------------------------------------------------
 void MainWindow::openSettings()
 {
-	SettingsDialog dialog(this);
+    SettingsDialog dialog(this);
 
 	connect(&dialog, SIGNAL(scanLibrary()),
 		this, SLOT(onLibrarySearch()), Qt::UniqueConnection);

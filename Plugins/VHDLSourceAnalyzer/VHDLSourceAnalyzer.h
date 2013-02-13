@@ -1,55 +1,52 @@
 //-----------------------------------------------------------------------------
-// File: ISourceAnalyzerPlugin.h
+// File: VHDLSourceAnalyzer.h
 //-----------------------------------------------------------------------------
 // Project: Kactus 2
-// Author: Joni-Matti M‰‰tt‰
-// Date: 14.01.2013
+// Author: Mikko Honkonen, Joni-Matti M‰‰tt‰
+// Date: 18.1.2013
 //
 // Description:
-// Source analyzer plugin interface for dependency analysis.
+// C/C++ source analyzer plugin.
 //-----------------------------------------------------------------------------
 
-#ifndef ISOURCEANALYZER_H
-#define ISOURCEANALYZER_H
+#ifndef VHDLSOURCEANALYZER_H
+#define VHDLSOURCEANALYZER_H
 
-#include "IPlugin.h"
-#include "IPluginUtility.h"
+#include <PluginSystem/IPlugin.h>
+#include <PluginSystem/ISourceAnalyzerPlugin.h>
+#include <QFileInfo>
 
-#include <models/component.h>
+#include <QObject>
 
-#include <QString>
-#include <QSharedPointer>
-#include <QList>
-#include <QtPlugin>
-
-class FileDependency;
+class IPluginUtility;
 
 //-----------------------------------------------------------------------------
-//! File dependency description structure.
+//! MCAPI code generator.
 //-----------------------------------------------------------------------------
-struct FileDependencyDesc
+class VHDLSourceAnalyzer : public QObject, public ISourceAnalyzerPlugin
 {
-    QString filename;       //!< The name of the dependent file.
-    QString description;    //!< Possible automatically deduced description for the dependency.
+    Q_OBJECT
+    Q_INTERFACES(IPlugin)
+    Q_INTERFACES(ISourceAnalyzerPlugin)
 
-    /*!
-     *  Default constructor.
-     */
-    FileDependencyDesc() : filename(), description()
-    {
-    }
-};
-
-//-----------------------------------------------------------------------------
-//! Source analyzer plugin interface for dependency analysis.
-//-----------------------------------------------------------------------------
-class ISourceAnalyzerPlugin : public IPlugin
-{
 public:
+    VHDLSourceAnalyzer();
+    ~VHDLSourceAnalyzer();
+
     /*!
-     *  Destructor.
+     *  Returns the name of the plugin.
      */
-    virtual ~ISourceAnalyzerPlugin() {}
+    virtual QString const& getName() const;
+
+    /*!
+     *  Returns the version of the plugin.
+     */
+    virtual QString const& getVersion() const;
+
+    /*!
+     *  Returns the description of the plugin.
+     */
+    virtual QString const& getDescription() const;
 
     /*!
      *  Checks whether the plugin supports analysis for the given file type.
@@ -58,7 +55,7 @@ public:
      *
      *      @return True, if the plugin supports the file type; false if it doesn't.
      */
-    virtual bool checkFileTypeSupport(QString const& fileType) = 0;
+    virtual bool checkFileTypeSupport(QString const& fileType);
 
     /*!
      *  Calculates a language-dependent hash for the given file.
@@ -70,7 +67,7 @@ public:
      *
      *      @remarks Comments and whitespace are ignored and do not affect the hash value.
      */
-    virtual QString calculateHash(IPluginUtility* utility, QString const& filename) = 0;
+    virtual QString calculateHash(IPluginUtility* utility, QString const& filename);
 
     /*!
      *  Retrieves all file dependencies the given file has.
@@ -83,11 +80,19 @@ public:
     virtual void getFileDependencies(IPluginUtility* utility,
                                      QSharedPointer<Component const> component,
                                      QString const& filename,
-                                     QList<FileDependencyDesc>& dependencies) = 0;
+                                     QList<FileDependencyDesc>& dependencies);
+
+    
+private:
+    // Disable copying.
+    VHDLSourceAnalyzer(VHDLSourceAnalyzer const& rhs);
+    VHDLSourceAnalyzer& operator=(VHDLSourceAnalyzer const& rhs);
+
+    //-----------------------------------------------------------------------------
+    // Data.
+    //-----------------------------------------------------------------------------
+
+    // TODO: Possible member variables.
 };
 
-//-----------------------------------------------------------------------------
-
-Q_DECLARE_INTERFACE(ISourceAnalyzerPlugin, "com.tut.Kactus2.ISourceAnalyzerPlugin/1.0")
-
-#endif // ISOURCEANALYZER_H
+#endif // VHDLSOURCEANALYZER_H

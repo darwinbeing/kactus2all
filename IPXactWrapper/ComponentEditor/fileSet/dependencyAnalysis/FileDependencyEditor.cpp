@@ -11,6 +11,8 @@
 
 #include "FileDependencyEditor.h"
 
+#include "FileDependencySourceDialog.h"
+
 #include <QVBoxLayout>
 #include <QIcon>
 
@@ -53,7 +55,8 @@ FileDependencyEditor::FileDependencyEditor(QWidget* parent)
     toolbar_.addAction(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed");
     toolbar_.addAction(QIcon(":/icons/graphics/diff.png"), "Show Differences");
     toolbar_.addSeparator();
-    toolbar_.addAction(QIcon(":/icons/graphics/import_folders.png"), "Import Source Directories");
+    toolbar_.addAction(QIcon(":/icons/graphics/import_folders.png"), "Import Source Directories",
+                       this, SLOT(openSourceDialog()));
     toolbar_.addAction(QIcon(":/icons/graphics/refresh_16x16.png"), "Rescan");
 }
 
@@ -63,4 +66,16 @@ FileDependencyEditor::FileDependencyEditor(QWidget* parent)
 FileDependencyEditor::~FileDependencyEditor()
 {
 
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyEditor::openSourceDialog()
+//-----------------------------------------------------------------------------
+void FileDependencyEditor::openSourceDialog()
+{
+    FileDependencySourceDialog dialog(QStringList(), this);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+    }
 }

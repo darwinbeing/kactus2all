@@ -25,6 +25,8 @@
 //-----------------------------------------------------------------------------
 class FileDependencyEditor : public QWidget
 {
+    Q_OBJECT
+
 public:
     /*!
      *  Constructor.
@@ -37,6 +39,12 @@ public:
      *  Destructor.
      */
     ~FileDependencyEditor();
+
+private slots:
+    /*!
+     *  Opens up the source selection dialog.
+     */
+    void openSourceDialog();
 
 private:
     // Disable copying.

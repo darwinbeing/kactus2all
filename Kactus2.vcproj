@@ -112,7 +112,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="verbuild version.h *.*.+.* -xFp -b0.0.0.0  -e10.10.9999.0 -s&#x0D;&#x0A;CreateHelp&#x0D;&#x0A;"
+				CommandLine="CreateHelp&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -1692,6 +1692,14 @@
 							</File>
 							<File
 								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyInfoWidget.cpp"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyItem.cpp"
+								>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyModel.cpp"
 								>
 							</File>
 							<File
@@ -15374,10 +15382,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyEditor.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15385,10 +15393,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyEditor.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\debug&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15396,10 +15404,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyEditor.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15407,10 +15415,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyEditor.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\release&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\vhdlGenerator&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\dirLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\common\delegates&quot; &quot;-I.\common\widgets\attributeBox&quot; &quot;-I.\common\views\EditableTableView&quot; &quot;-I.\common\views\EditableListView&quot; &quot;-I.\common\widgets\LibraryPathSelector&quot; &quot;-I.\common\widgets\LibraryPathEditor&quot; &quot;-I.\common\validators\LibraryPathValidator&quot; &quot;-I.\common\widgets\EditorDockWidget&quot; &quot;-I.\common\widgets\EditorScrollArea&quot; &quot;-I.\common\widgets\ScanProgressWidget&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\common\widgets\ParameterEditor&quot; &quot;-I.\common\widgets\ParameterGroupBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\common\widgets\NumberLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\IPXactWrapper\ComponentEditor&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\nameGroupEditor&quot; &quot;-I.\common\dialogs\selectDirectoryDialog&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 							</File>
@@ -15511,17 +15519,17 @@
 								</FileConfiguration>
 							</File>
 							<File
-								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyModel.h"
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyItem.h"
 								>
 								<FileConfiguration
 									Name="Debug|Win32"
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyItem.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15529,10 +15537,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyItem.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\debug&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15540,10 +15548,10 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyItem.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 								<FileConfiguration
@@ -15551,10 +15559,58 @@
 									>
 									<Tool
 										Name="VCCustomBuildTool"
-										Description="Performing Custom Build Step"
-										CommandLine=""
-										AdditionalDependencies=""
-										Outputs=""
+										Description="Moc&apos;ing FileDependencyItem.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\release&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\vhdlGenerator&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\dirLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\common\delegates&quot; &quot;-I.\common\widgets\attributeBox&quot; &quot;-I.\common\views\EditableTableView&quot; &quot;-I.\common\views\EditableListView&quot; &quot;-I.\common\widgets\LibraryPathSelector&quot; &quot;-I.\common\widgets\LibraryPathEditor&quot; &quot;-I.\common\validators\LibraryPathValidator&quot; &quot;-I.\common\widgets\EditorDockWidget&quot; &quot;-I.\common\widgets\EditorScrollArea&quot; &quot;-I.\common\widgets\ScanProgressWidget&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\common\widgets\ParameterEditor&quot; &quot;-I.\common\widgets\ParameterGroupBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\common\widgets\NumberLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\IPXactWrapper\ComponentEditor&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\nameGroupEditor&quot; &quot;-I.\common\dialogs\selectDirectoryDialog&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+									/>
+								</FileConfiguration>
+							</File>
+							<File
+								RelativePath=".\IPXactWrapper\ComponentEditor\fileSet\dependencyAnalysis\FileDependencyModel.h"
+								>
+								<FileConfiguration
+									Name="Debug|Win32"
+									>
+									<Tool
+										Name="VCCustomBuildTool"
+										Description="Moc&apos;ing FileDependencyModel.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+									/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Debug|x64"
+									>
+									<Tool
+										Name="VCCustomBuildTool"
+										Description="Moc&apos;ing FileDependencyModel.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\debug&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+									/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|Win32"
+									>
+									<Tool
+										Name="VCCustomBuildTool"
+										Description="Moc&apos;ing FileDependencyModel.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+									/>
+								</FileConfiguration>
+								<FileConfiguration
+									Name="Release|x64"
+									>
+									<Tool
+										Name="VCCustomBuildTool"
+										Description="Moc&apos;ing FileDependencyModel.h..."
+										CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_DLL -DQT_XMLPATTERNS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DKACTUS2_EXPORTS &quot;-I$(QTDIR)\include\QtCore&quot; &quot;-I$(QTDIR)\include\QtGui&quot; &quot;-I$(QTDIR)\include\QtXml&quot; &quot;-I$(QTDIR)\include\QtXmlPatterns&quot; &quot;-I$(QTDIR)\include&quot; &quot;-I.&quot; &quot;-I.\release&quot; &quot;-I.\GeneratedFiles&quot; &quot;-I.\vhdlGenerator&quot; &quot;-I.\common\widgets\listManager&quot; &quot;-I.\common\widgets\dirLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet&quot; &quot;-I.\IPXactWrapper\ComponentEditor\channels&quot; &quot;-I.\IPXactWrapper\ComponentEditor\views&quot; &quot;-I.\common\delegates&quot; &quot;-I.\common\widgets\attributeBox&quot; &quot;-I.\common\views\EditableTableView&quot; &quot;-I.\common\views\EditableListView&quot; &quot;-I.\common\widgets\LibraryPathSelector&quot; &quot;-I.\common\widgets\LibraryPathEditor&quot; &quot;-I.\common\validators\LibraryPathValidator&quot; &quot;-I.\common\widgets\EditorDockWidget&quot; &quot;-I.\common\widgets\EditorScrollArea&quot; &quot;-I.\common\widgets\ScanProgressWidget&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces&quot; &quot;-I.\common\widgets\ParameterEditor&quot; &quot;-I.\common\widgets\ParameterGroupBox&quot; &quot;-I.\IPXactWrapper\ComponentEditor\cpus&quot; &quot;-I.\common\widgets\NumberLineEdit&quot; &quot;-I.\IPXactWrapper\ComponentEditor\memoryMaps&quot; &quot;-I.\IPXactWrapper\ComponentEditor&quot; &quot;-I.\IPXactWrapper\ComponentEditor\treeStructure&quot; &quot;-I.\common\widgets\nameGroupEditor&quot; &quot;-I.\common\dialogs\selectDirectoryDialog&quot; &quot;-I.\common\widgets\summaryLabel&quot; &quot;-I.\IPXactWrapper\ComponentEditor\fileSet\file&quot; &quot;-I.\IPXactWrapper\ComponentEditor\busInterfaces&quot; &quot;-I.\common\widgets\interfaceModeSelector&quot; &quot;-I.\common\widgets\addressSpaceSelector&quot; &quot;-I.\common\widgets\memoryMapSelector&quot; &quot;-I.\common\widgets\interfaceSelector&quot; &quot;-I.\IPXactWrapper\ComponentEditor\software&quot; &quot;-I$(QTDIR)\include\QtHelp&quot; &quot;-I.\common\widgets\usageComboBox&quot; &quot;-I.\common\widgets\accessComboBox&quot; &quot;-I.\common\widgets\modWriteComboBox&quot; &quot;-I.\common\widgets\testConstraintComboBox&quot; &quot;-I.\common\widgets\readActionComboBox&quot; &quot;-I.\models&quot; &quot;-I.\IPXactWrapper\ComponentEditor\addressSpaces\localMemoryMap&quot;&#x0D;&#x0A;"
+										AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+										Outputs="&quot;$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 									/>
 								</FileConfiguration>
 							</File>
@@ -31906,6 +31962,66 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\Debug\moc_FileDependencyEditor.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Debug\moc_FileDependencyItem.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Debug\moc_FileDependencyModel.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\Debug\moc_FileDependencySourceDialog.cpp"
 					>
 					<FileConfiguration
@@ -39453,6 +39569,66 @@
 				</File>
 				<File
 					RelativePath=".\Release\moc_filedefineview.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Release\moc_FileDependencyEditor.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Release\moc_FileDependencyItem.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Release\moc_FileDependencyModel.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"

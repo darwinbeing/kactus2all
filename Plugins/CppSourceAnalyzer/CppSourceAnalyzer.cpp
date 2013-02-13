@@ -73,7 +73,7 @@ bool CppSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::calculateHash()
 //-----------------------------------------------------------------------------
-quint64 CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
+QString CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
 {
     // TODO: Hash calculation.
     // Try to open the file
@@ -91,14 +91,15 @@ quint64 CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const&
     hash.addData(source.toAscii());
 
     QString result = hash.result().toHex();
-    return 0;
+    return result;
 }
-
 
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::getFileDependencies()
 //-----------------------------------------------------------------------------
-void CppSourceAnalyzer::getFileDependencies(IPluginUtility* utility, QString const& filename,
+void CppSourceAnalyzer::getFileDependencies(IPluginUtility* utility,
+                                            QSharedPointer<Component const> /*component*/,
+                                            QString const& filename,
                                             QList<FileDependencyDesc>& dependencies)
 {
     QFile file(filename);

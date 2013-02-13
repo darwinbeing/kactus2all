@@ -67,16 +67,18 @@ public:
      *
      *      @remarks Comments and whitespace are ignored and do not affect the hash value.
      */
-    virtual quint64 calculateHash(IPluginUtility* utility, QString const& filename);
+    virtual QString calculateHash(IPluginUtility* utility, QString const& filename);
 
     /*!
      *  Retrieves all file dependencies the given file has.
      *
      *      @param [in]  utility       The plugin utility interface.
+     *      @param [in]  component     The component to which the dependency scan is being run.
      *      @param [in]  filename      The name of the file to which the analysis is run.
      *      @param [out] dependencies  The list of found dependencies.
      */
     virtual void getFileDependencies(IPluginUtility* utility,
+                                     QSharedPointer<Component const> component,
                                      QString const& filename,
                                      QList<FileDependencyDesc>& dependencies);
 

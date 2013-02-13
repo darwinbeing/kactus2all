@@ -14,6 +14,10 @@
 
 #include <QGroupBox>
 #include <QPlainTextEdit>
+#include <QCheckBox>
+#include <QComboBox>
+
+class FileDependency;
 
 //-----------------------------------------------------------------------------
 //! Widget for showing information about one file dependency.
@@ -33,6 +37,21 @@ public:
      */
     ~FileDependencyInfoWidget();
 
+    /*!
+     *  Sets the given file dependency editable in the widget.
+     *
+     *      @param [in] dependency The dependency to set for editing.
+     *
+     *      @remarks If the dependency is null, all contents of the widgets are cleared and
+     *               the widgets are set to disabled mode.
+     */
+    void setEditedDependency(QSharedPointer<FileDependency> dependency);
+
+    /*!
+     *  Returns the currently edited dependency.
+     */
+    QSharedPointer<FileDependency> getEditedDependency() const;
+
 private:
     // Disable copying.
     FileDependencyInfoWidget(FileDependencyInfoWidget const& rhs);
@@ -44,6 +63,15 @@ private:
 
     //! Editor for description.
     QPlainTextEdit descEdit_;
+
+    //! Combo box for changing dependency direction.
+    QComboBox directionCombo_;
+    
+    //! Check box for locked state.
+    QCheckBox lockedCheck_;
+
+    //! The currently edited dependency.
+    QSharedPointer<FileDependency> dependency_;
 };
 
 //-----------------------------------------------------------------------------
