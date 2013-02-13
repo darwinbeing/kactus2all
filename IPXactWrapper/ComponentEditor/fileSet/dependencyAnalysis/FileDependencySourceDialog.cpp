@@ -18,6 +18,7 @@
 
 FileDependencySourceDialog::FileDependencySourceDialog(QStringList const& sourceDirs, QWidget* parent)
 {
+    QFileDialog::QFileDialog(parent);
     mainGroupBox_ = new QGroupBox(tr("Directories"), this);
     buttonAdd_ = new QPushButton(tr("Add"), this);
     buttonRemove_ = new QPushButton(tr("Remove"), this);
@@ -59,32 +60,75 @@ QStringList const& FileDependencySourceDialog::getSourceDirectories() const
 
 void FileDependencySourceDialog::addSource()
 {
-    QStringList sourceDirectories = directoryListModel_->stringList();
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"), QDir::currentPath(), QFileDialog::ReadOnly );
 
+    if( newDirectory.size() < 1 )
+    {
+        return;
+    }
+    if( !checkIfSelectedDirectoryHasBeenPreviouslyAdded(newDirectory) )
+    {
+        // Now removing possibly unnecessary directories
+        removeUnnecessaryDirectories(newDirectory);
+        // Adding the new directory to the list.
+        QStringList sourceDirectories = directoryListModel_->stringList();
+        sourceDirectories.push_back(newDirectory);
+        directoryListModel_->setStringList(sourceDirectories);
+    }
+}
+
+bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory)
+{
+    QStringList oldDirectories = directoryListModel_->stringList();
     // Checking if the selected directory has been previously added.
-    for( int i = 0; i < sourceDirectories.count(); ++i )
+    for(int i = 0; i < oldDirectories.count(); ++i)
     {
         int subDirectory = 0;
-        for( int j = 0; j < newDirectory.count("/"); ++j )
+        for(int j = 0; j < newDirectory.count("/"); ++j)
         {
             subDirectory = newDirectory.indexOf("/", subDirectory+1);
-            if( newDirectory.left(subDirectory) == sourceDirectories.at(i) )
+            if( newDirectory.left(subDirectory) == oldDirectories.at(i) )
             {
-                return;
+                return true;
             }
-            else if( newDirectory == sourceDirectories.at(i))
+            else if( newDirectory == oldDirectories.at(i) )
             {
-                return;
+                return true;
             }
         }
     }
-    // TODO:
-    /* toisinpäin tarkastus
-     *
-     */
-    sourceDirectories.push_back(newDirectory);
-    directoryListModel_->setStringList(sourceDirectories);
+    return false;
+}
+
+void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirectory)
+{
+    QStringList oldDirectories = directoryListModel_->stringList();
+    QStringList tempDirectoryList;
+    bool necessaryDirectory = true;
+    // Checking if unnecessary directories exist in the list.
+    for(int i = 0; i < oldDirectories.count(); ++i)
+    {
+        int subDirectory = 0;
+        necessaryDirectory = true;
+        for(int j = 0; j < oldDirectories.at(i).count("/"); ++j)
+        {
+            subDirectory = oldDirectories.at(i).indexOf("/", subDirectory+1);
+            // Checking to see if old directory is contained in the new directory.
+            if( newDirectory == oldDirectories.at(i).left(subDirectory))
+            {
+                // Unnecessary directory found. Marking it unnecessary.
+                necessaryDirectory = false;
+                break;
+            }
+        }
+        // Checking to see if directory is needed after the new added directory
+        if( necessaryDirectory )
+        {
+            tempDirectoryList.push_back(oldDirectories.at(i));
+        }
+    }
+    // Updating the source directory model.
+   directoryListModel_->setStringList(tempDirectoryList);
 }
 
 void FileDependencySourceDialog::removeSource()

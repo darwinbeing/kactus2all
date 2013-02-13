@@ -50,7 +50,7 @@ public:
      *
      *      @remarks Valid only when the user presses OK.
      */
-    QStringList const& getSourceDirectories() const;    
+    QStringList const& getSourceDirectories() const;
 
 private slots:
     /*!
@@ -67,6 +67,10 @@ private:
     // Disable copying.
     FileDependencySourceDialog(FileDependencySourceDialog const& rhs);
     FileDependencySourceDialog& operator=(FileDependencySourceDialog const& rhs);
+
+    // Help functions.
+    bool checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory);
+    void removeUnnecessaryDirectories(QString newDirectory);
 
     //-----------------------------------------------------------------------------
     // Data.
