@@ -79,10 +79,8 @@ private:
     QGroupBox* mainGroupBox_;
     QPushButton* buttonAdd_;
     QPushButton* buttonRemove_;
-    QDialogButtonBox* buttonBox_;
     QVBoxLayout* verizontalMainLayout_;
     QHBoxLayout* horizontalGroupBoxLayout_;
-    QVBoxLayout* verizontalGroupBoxLayout_;
     QListView* directoryListView_;
     QStringListModel* directoryListModel_;
 };
