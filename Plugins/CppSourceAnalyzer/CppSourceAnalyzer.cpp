@@ -75,7 +75,6 @@ bool CppSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
 //-----------------------------------------------------------------------------
 QString CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
 {
-    // TODO: Hash calculation.
     // Try to open the file
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
@@ -191,7 +190,7 @@ QString CppSourceAnalyzer::removeComments(QString& source)
             // No (more) comments on the line
             if (!singleLineFound && !multiLineFound)
             {
-                finalData.append(line.append("\n"));
+                finalData.append(line);
                 checkForComments = false;
             }
             // Normal comment before multiline
@@ -208,7 +207,7 @@ QString CppSourceAnalyzer::removeComments(QString& source)
                 else if (line.left(index).count("\"") % 2 == 0)
                 {
                     line = line.left(index);
-                    finalData.append(line.append("\n"));
+                    finalData.append(line);
                     checkForComments = false;
                 }
                 // Comment marker inside string

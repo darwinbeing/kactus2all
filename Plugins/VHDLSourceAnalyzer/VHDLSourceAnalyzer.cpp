@@ -75,8 +75,22 @@ bool VHDLSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
 //-----------------------------------------------------------------------------
 QString VHDLSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
 {
-    // TODO:
-    return QString();
+    // Try to open the file
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        // File could not be opened, show error
+        return 0;
+    }
+
+    QString source = getSourceData(file);
+
+    // Calculate the hash
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    hash.addData(source.toAscii());
+
+    QString result = hash.result().toHex();
+    return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +102,60 @@ void VHDLSourceAnalyzer::getFileDependencies(IPluginUtility* utility,
                                              QList<FileDependencyDesc>& dependencies)
 {
     // TODO:
+}
+
+QString VHDLSourceAnalyzer::getSourceData(QFile& file)
+{
+    // Read the file data
+    QString fileData;
+    while (!file.atEnd())
+    {
+        QString line = file.readLine();
+        line = line.simplified();
+        if (line == "")
+        {
+            // Skip empty lines
+            continue;
+        }
+        fileData.append(line.append("\n"));
+    }
+    
+    // Remove comments from the source
+    QString finalData = removeComments(fileData);
+
+    return finalData;
+}
+
+
+QString VHDLSourceAnalyzer::removeComments(QString& source)
+{
+    QTextStream sourceStream(&source);
+    QString finalData;
+    QString line;
+    // Read the data line by line
+    while (!sourceStream.atEnd())
+    {
+        line = sourceStream.readLine();
+
+        // Find start of comment on the line
+        if (line.count("--") > 0)
+        {
+            int index = line.indexOf("--");
+            line = line.left(index).simplified();
+
+            // Only add the line if it's not empty after removing comments 
+            if (line != "")
+            {
+                finalData.append(line);
+            }
+        }
+        // No comment on line, just add the line
+        else
+        {
+            finalData.append(line);
+        }
+    }
+    return finalData;
 }
 
 Q_EXPORT_PLUGIN2(VHDLSourceAnalyzer, VHDLSourceAnalyzer)
