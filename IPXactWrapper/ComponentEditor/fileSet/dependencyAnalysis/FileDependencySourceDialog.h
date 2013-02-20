@@ -50,7 +50,7 @@ public:
      *
      *      @remarks Valid only when the user presses OK.
      */
-    QStringList const& getSourceDirectories() const;
+    QStringList getSourceDirectories() const;
 
 private slots:
     /*!

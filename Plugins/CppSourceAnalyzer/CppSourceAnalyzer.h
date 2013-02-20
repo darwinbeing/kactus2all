@@ -54,13 +54,9 @@ public:
     virtual PluginSettingsWidget* getSettingsWidget();
 
     /*!
-     *  Checks whether the plugin supports analysis for the given file type.
-     *
-     *      @param [in] fileType The file type to check.
-     *
-     *      @return True, if the plugin supports the file type; false if it doesn't.
+     *  Returns the list of file types this plugin can run analysis for.
      */
-    virtual bool checkFileTypeSupport(QString const& fileType);
+    virtual QStringList const& getSupportedFileTypes() const;
 
     /*!
      *  Calculates a language-dependent hash for the given file.
@@ -117,7 +113,8 @@ private:
     // Data.
     //-----------------------------------------------------------------------------
 
-    // TODO: Possible member variables.
+    //! The supported file types.
+    QStringList fileTypes_;
 };
 
 #endif // CPPSOURCEANALYZER_H

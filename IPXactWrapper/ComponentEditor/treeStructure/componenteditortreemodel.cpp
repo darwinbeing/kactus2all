@@ -11,11 +11,13 @@
 
 #include <QDebug>
 
-ComponentEditorTreeModel::ComponentEditorTreeModel( LibraryInterface* libHandler,
-												   QObject* parent):
-QAbstractItemModel(parent),
-libHandler_(libHandler),
-rootItem_() {
+ComponentEditorTreeModel::ComponentEditorTreeModel(LibraryInterface* libHandler,
+                                                   PluginManager& pluginMgr,
+												   QObject* parent)
+    : QAbstractItemModel(parent),
+      libHandler_(libHandler),
+      pluginMgr_(pluginMgr),
+      rootItem_() {
 
 	setObjectName(tr("ComponentEditorTreeModel"));
 }
@@ -29,7 +31,7 @@ void ComponentEditorTreeModel::setComponent( QSharedPointer<Component> component
 	beginResetModel();
 	rootItem_.clear();
 	rootItem_ = QSharedPointer<ComponentEditorRootItem>(
-		new ComponentEditorRootItem(libHandler_, component, this));
+		new ComponentEditorRootItem(libHandler_, pluginMgr_, component, this));
 
 	endResetModel();
 }

@@ -12,12 +12,12 @@
 
 #include <QVBoxLayout>
 
-FileSetsEditor::FileSetsEditor( QSharedPointer<Component> component):
+FileSetsEditor::FileSetsEditor(QSharedPointer<Component> component, PluginManager& pluginMgr):
 ItemEditor(component),
 view_(this),
 model_(component, this),
 proxy_(this),
-dependencyEditor_(this) {
+dependencyEditor_(component, pluginMgr, this) {
 
 	// display a label on top the table
 	SummaryLabel* summaryLabel = new SummaryLabel(tr("File sets summary"), this);

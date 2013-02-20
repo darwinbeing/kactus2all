@@ -21,6 +21,7 @@
 #include <QHBoxLayout>
 
 ComponentEditor::ComponentEditor(LibraryInterface* libHandler,
+                                 PluginManager& pluginMgr,
 								 QSharedPointer<Component> component,
 								 QWidget *parent):
 TabDocument(parent, DOC_PROTECTION_SUPPORT),
@@ -28,7 +29,7 @@ libHandler_(libHandler),
 component_(component),
 navigationSplitter_(Qt::Horizontal, this),
 editorVisualizerSplitter_(Qt::Horizontal, &navigationSplitter_), 
-navigationModel_(libHandler, this),
+navigationModel_(libHandler, pluginMgr, this),
 navigationView_(libHandler, *component->getVlnv(), &navigationSplitter_),
 editorSlot_(&editorVisualizerSplitter_),
 visualizerSlot_(&editorVisualizerSplitter_) {

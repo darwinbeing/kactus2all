@@ -66,7 +66,7 @@ FileDependencySourceDialog::~FileDependencySourceDialog()
 {
 }
 
-QStringList const& FileDependencySourceDialog::getSourceDirectories() const
+QStringList FileDependencySourceDialog::getSourceDirectories() const
 {
     return directoryListModel_->stringList();
 }

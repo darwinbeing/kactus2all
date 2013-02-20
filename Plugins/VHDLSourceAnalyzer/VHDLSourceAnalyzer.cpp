@@ -25,7 +25,9 @@
 // Function: VHDLSourceAnalyzer::VHDLSourceAnalyzer()
 //-----------------------------------------------------------------------------
 VHDLSourceAnalyzer::VHDLSourceAnalyzer()
+    : fileTypes_()
 {
+    fileTypes_.append("vhdlSource");
 }
 
 //-----------------------------------------------------------------------------
@@ -70,12 +72,13 @@ PluginSettingsWidget* VHDLSourceAnalyzer::getSettingsWidget()
     return new PluginSettingsWidget();
 }
 
+
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::checkFileTypeSupport()
+// Function: VHDLSourceAnalyzer::getSupportedFileTypes()
 //-----------------------------------------------------------------------------
-bool VHDLSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
+QStringList const& VHDLSourceAnalyzer::getSupportedFileTypes() const
 {
-    return (fileType == "vhdlSource");
+    return fileTypes_;
 }
 
 //-----------------------------------------------------------------------------

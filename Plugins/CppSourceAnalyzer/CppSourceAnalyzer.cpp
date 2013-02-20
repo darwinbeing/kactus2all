@@ -25,7 +25,10 @@
 // Function: CppSourceAnalyzer::CppSourceAnalyzer()
 //-----------------------------------------------------------------------------
 CppSourceAnalyzer::CppSourceAnalyzer()
+    : fileTypes_()
 {
+    fileTypes_.append("cSource");
+    fileTypes_.append("cppSource");
 }
 
 //-----------------------------------------------------------------------------
@@ -71,11 +74,11 @@ PluginSettingsWidget* CppSourceAnalyzer::getSettingsWidget()
 }
 
 //-----------------------------------------------------------------------------
-// Function: CppSourceAnalyzer::checkFileTypeSupport()
+// Function: CppSourceAnalyzer::getSupportedFileTypes()
 //-----------------------------------------------------------------------------
-bool CppSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
+QStringList const& CppSourceAnalyzer::getSupportedFileTypes() const
 {
-    return (fileType == "cppSource" || fileType == "cSource");
+    return fileTypes_;
 }
 
 //-----------------------------------------------------------------------------

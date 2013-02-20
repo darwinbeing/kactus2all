@@ -18,6 +18,7 @@
 #include <models/component.h>
 
 #include <QString>
+#include <QStringList>
 #include <QSharedPointer>
 #include <QList>
 #include <QtPlugin>
@@ -52,13 +53,9 @@ public:
     virtual ~ISourceAnalyzerPlugin() {}
 
     /*!
-     *  Checks whether the plugin supports analysis for the given file type.
-     *
-     *      @param [in] fileType The file type to check.
-     *
-     *      @return True, if the plugin supports the file type; false if it doesn't.
+     *  Returns the list of file types this plugin can run analysis for.
      */
-    virtual bool checkFileTypeSupport(QString const& fileType) = 0;
+    virtual QStringList const& getSupportedFileTypes() const = 0;
 
     /*!
      *  Calculates a language-dependent hash for the given file.

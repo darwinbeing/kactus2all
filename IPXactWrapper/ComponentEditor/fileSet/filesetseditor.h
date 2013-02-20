@@ -16,6 +16,8 @@
 
 #include <QSortFilterProxyModel>
 
+class PluginManager;
+
 /*! \brief The editor to add/remove/edit file sets of a component.
  *
  */
@@ -32,10 +34,10 @@ public:
 
 	/*! \brief The constructor
 	 *
-	 * \param component Pointer to the component being edited.
-	 *
-	*/
-	FileSetsEditor(QSharedPointer<Component> component);
+	 * \param component  Pointer to the component being edited.
+     * \param pluginMgr  The plugin manager.    
+	 */
+	FileSetsEditor(QSharedPointer<Component> component, PluginManager& pluginMgr);
 	
 	//! \brief The destructor
 	~FileSetsEditor();
