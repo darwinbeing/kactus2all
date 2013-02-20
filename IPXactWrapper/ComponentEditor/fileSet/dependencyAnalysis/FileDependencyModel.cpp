@@ -13,14 +13,19 @@
 
 #include "FileDependencyItem.h"
 
+#include <QIcon>
+
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::FileDependencyModel()
 //-----------------------------------------------------------------------------
 FileDependencyModel::FileDependencyModel()
     : root_(new FileDependencyItem())
 {
-    root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/testi");
-    root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/testi2");
+    FileDependencyItem* folder = root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/code");
+    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "main.c");
+    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.c");
+    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.h");
+    root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/documentation");
 }
 
 //-----------------------------------------------------------------------------
@@ -28,7 +33,7 @@ FileDependencyModel::FileDependencyModel()
 //-----------------------------------------------------------------------------
 FileDependencyModel::~FileDependencyModel()
 {
-
+    delete root_;
 }
 
 //-----------------------------------------------------------------------------
@@ -37,7 +42,7 @@ FileDependencyModel::~FileDependencyModel()
 QVariant FileDependencyModel::headerData(int section, Qt::Orientation orientation,
                                          int role /*= Qt::DisplayRole*/) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole)
     {
         switch (section)
         {
@@ -71,6 +76,10 @@ QVariant FileDependencyModel::headerData(int section, Qt::Orientation orientatio
                 return tr("References");
             }
         }
+    }
+    else if (role == Qt::TextAlignmentRole)
+    {
+        return Qt::AlignCenter;
     }
 
     return QVariant();
@@ -169,6 +178,57 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
             {
                 return item->getSimplePath();
             }
+
+        case FILE_DEPENDENCY_COLUMN_FILESETS:
+            {
+                return tr("none");
+            }
+        }
+    }
+    else if (role == Qt::DecorationRole)
+    {
+        if (index.column() == FILE_DEPENDENCY_COLUMN_STATUS)
+        {
+            switch (item->getStatus())
+            {
+            case FILE_DEPENDENCY_STATUS_UNKNOWN:
+                {
+                    return QIcon(":icons/graphics/traffic-light_gray.png");
+                }
+
+            case FILE_DEPENDENCY_STATUS_OK:
+                {
+                    return QIcon(":icons/graphics/traffic-light_green.png");
+                }
+
+            case FILE_DEPENDENCY_STATUS_CHANGED:
+                {
+                    return QIcon(":icons/graphics/traffic-light_yellow.png");
+                }
+
+            case FILE_DEPENDENCY_STATUS_CHANGED2:
+                {
+                    return QIcon(":icons/graphics/traffic-light_red.png");
+                }
+            }
+        }
+    }
+    else if (role == Qt::SizeHintRole)
+    {
+        if (index.column() == FILE_DEPENDENCY_COLUMN_STATUS)
+        {
+            return QSize(16, 16);
+        }
+    }
+    else if (role == Qt::BackgroundRole)
+    {
+        if (item->getType() == FileDependencyItem::ITEM_TYPE_FOLDER)
+        {
+            return QColor(230, 230, 230);
+        }
+        else
+        {
+            return QColor(Qt::white);
         }
     }
 
@@ -195,5 +255,19 @@ bool FileDependencyModel::hasChildren(const QModelIndex& parent /*= QModelIndex(
 //-----------------------------------------------------------------------------
 Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
 {
-    return QAbstractItemModel::flags(index);
+    if (!index.isValid())
+    {
+        return Qt::NoItemFlags;
+    }
+
+    switch (index.column())
+    {
+    case FILE_DEPENDENCY_COLUMN_STATUS:
+    case FILE_DEPENDENCY_COLUMN_CREATE:
+    case FILE_DEPENDENCY_COLUMN_DEPENDENCIES:
+        return Qt::NoItemFlags;
+
+    default:
+        return Qt::ItemIsEnabled;
+    }
 }

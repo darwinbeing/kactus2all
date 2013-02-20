@@ -50,6 +50,11 @@ public:
     virtual QString const& getDescription() const;
 
     /*!
+     *  Returns the settings widget.
+     */
+    virtual PluginSettingsWidget* getSettingsWidget();
+
+    /*!
      *  Checks whether the generator supports generation for the given library component.
      *
      *      @param [in] libComp The library component for which to check support.

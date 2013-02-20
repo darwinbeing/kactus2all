@@ -49,6 +49,11 @@ public:
     virtual QString const& getDescription() const;
 
     /*!
+     *  Returns the settings widget.
+     */
+    virtual PluginSettingsWidget* getSettingsWidget();
+
+    /*!
      *  Checks whether the plugin supports analysis for the given file type.
      *
      *      @param [in] fileType The file type to check.

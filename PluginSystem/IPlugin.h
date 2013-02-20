@@ -9,14 +9,16 @@
 // Base plugin interface.
 //-----------------------------------------------------------------------------
 
-#ifndef IPLUGININFORMATION_H
-#define IPLUGININFORMATION_H
+#ifndef IPLUGIN_H
+#define IPLUGIN_H
+
+#include "PluginSettingsWidget.h"
 
 #include <QString>
 #include <QtPlugin>
 
 //-----------------------------------------------------------------------------
-//! Base plugin interface.
+//! Plugin information interface.
 //-----------------------------------------------------------------------------
 class IPlugin
 {
@@ -40,10 +42,15 @@ public:
      *  Returns the description of the plugin.
      */
     virtual QString const& getDescription() const = 0;
+
+    /*!
+     *  Returns the settings widget.
+     */
+    virtual PluginSettingsWidget* getSettingsWidget() = 0;
 };
 
 Q_DECLARE_INTERFACE(IPlugin, "com.tut.Kactus2.IPlugin/1.0")
 
 //-----------------------------------------------------------------------------
 
-#endif // IPLUGININFORMATION_H
+#endif // IPLUGIN_H

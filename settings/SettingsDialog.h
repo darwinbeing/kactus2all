@@ -13,6 +13,7 @@
 #define SETTINGSDIALOG_H
 
 #include <common/dialogs/propertyPageDialog/PropertyPageDialog.h>
+#include <PluginSystem/PluginManager.h>
 
 #include <QSettings>
 
@@ -26,8 +27,11 @@ class SettingsDialog : public PropertyPageDialog
 public:
     /*!
      *  Constructor.
+     *
+     *      @param [in] pluginMgr The plugin manager.
+     *      @param [in] parent    The parent widget.
      */
-    SettingsDialog(QWidget* parent = 0);
+    SettingsDialog(PluginManager& pluginMgr, QWidget* parent = 0);
 
     /*!
      *  Destructor.
@@ -38,7 +42,6 @@ public slots:
     virtual void accept();
 
 signals:
-
 	//! \brief Emitted when user has changed the library paths and scan should be performed.
 	void scanLibrary();
 

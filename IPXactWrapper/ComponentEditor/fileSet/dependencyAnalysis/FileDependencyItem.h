@@ -85,6 +85,16 @@ public:
     int getIndex();
 
     /*!
+     *  Returns the status of the item.
+     */
+    FileDependencyStatus getStatus() const;
+
+    /*!
+     *  Returns the item type.
+     */
+    ItemType getType() const;
+
+    /*!
      *  Returns a shortened version of the path.
      */
     QString getSimplePath();

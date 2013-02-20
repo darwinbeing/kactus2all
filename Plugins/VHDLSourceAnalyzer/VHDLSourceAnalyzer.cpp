@@ -63,6 +63,14 @@ QString const& VHDLSourceAnalyzer::getDescription() const
 }
 
 //-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::getSettingsWidget()
+//-----------------------------------------------------------------------------
+PluginSettingsWidget* VHDLSourceAnalyzer::getSettingsWidget()
+{
+    return new PluginSettingsWidget();
+}
+
+//-----------------------------------------------------------------------------
 // Function: VHDLSourceAnalyzer::checkFileTypeSupport()
 //-----------------------------------------------------------------------------
 bool VHDLSourceAnalyzer::checkFileTypeSupport(QString const& fileType)

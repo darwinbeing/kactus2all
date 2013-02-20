@@ -14,12 +14,15 @@
 #include "GeneralSettingsPage.h"
 #include "CodeEditorSettingsPage.h"
 #include "NamingPolicySettingsPage.h"
+#include "PluginSettingsPage.h"
+#include "FileTypeSettingsPage.h"
 
 //-----------------------------------------------------------------------------
 // Function: SettingsDialog()
 //-----------------------------------------------------------------------------
-SettingsDialog::SettingsDialog(QWidget* parent) : PropertyPageDialog(QSize(48, 48), 1, APPLY_ALL, parent),
-                                                  settings_()
+SettingsDialog::SettingsDialog(PluginManager& pluginMgr, QWidget* parent)
+    : PropertyPageDialog(QSize(24, 24), 1, VIEW_LIST, APPLY_ALL, parent),
+      settings_()
 {
     //setFixedSize(600, 440);
     setWindowTitle(tr("Settings"));
@@ -33,9 +36,14 @@ SettingsDialog::SettingsDialog(QWidget* parent) : PropertyPageDialog(QSize(48, 4
 	addPage(QIcon(":icons/graphics/settings-code_editor.png"), tr("Code Editor"),
             new CodeEditorSettingsPage(settings_));
 
-    finalizePages();
+    addPage(QIcon(":icons/graphics/settings-file_types.png"), tr("File Types"),
+            new FileTypeSettingsPage(settings_));
 
-    setFixedSize(sizeHint().width(), minimumSizeHint().height());
+    addPage(QIcon(":icons/graphics/settings-plugins.png"), tr("Plugins"),
+            new PluginSettingsPage(settings_, pluginMgr));
+
+    finalizePages();
+    resize(sizeHint().width(), minimumHeight());
 }
 
 //-----------------------------------------------------------------------------
@@ -51,5 +59,4 @@ SettingsDialog::~SettingsDialog()
 void SettingsDialog::accept()
 {
     PropertyPageDialog::accept();
-    settings_.sync();
 }

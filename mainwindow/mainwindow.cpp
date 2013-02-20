@@ -1478,9 +1478,9 @@ void MainWindow::runGeneratorPlugin()
     QSharedPointer<LibraryComponent> libComp = libraryHandler_->getModel(doc->getDocumentVLNV());
     PluginListDialog dialog(this);
 
-    foreach (QObject* plugin, pluginMgr_->getPlugins())
+    foreach (IPlugin* plugin, pluginMgr_->getPlugins())
     {
-        IGeneratorPlugin* genPlugin = qobject_cast<IGeneratorPlugin*>(plugin);
+        IGeneratorPlugin* genPlugin = dynamic_cast<IGeneratorPlugin*>(plugin);
 
         if (genPlugin != 0 && genPlugin->checkGeneratorSupport(libComp))
         {
@@ -1491,8 +1491,8 @@ void MainWindow::runGeneratorPlugin()
     // Show the dialog and if the user pressed OK, run the selected plugin.
     if (dialog.exec() == QDialog::Accepted)
     {
-        QObject* plugin = dialog.getSelectedPlugin();
-        IGeneratorPlugin* genPlugin = qobject_cast<IGeneratorPlugin*>(plugin);
+        IPlugin* plugin = dialog.getSelectedPlugin();
+        IGeneratorPlugin* genPlugin = dynamic_cast<IGeneratorPlugin*>(plugin);
         Q_ASSERT(genPlugin != 0);
 
         genPlugin->runGenerator(this, libComp);
@@ -1882,7 +1882,8 @@ void MainWindow::updateZoomTools()
 void MainWindow::createNew()
 {
     // Create a property page dialog to work as a "New" dialog.
-	PropertyPageDialog dialog(QSize(48, 48), 1, PropertyPageDialog::APPLY_CURRENT, this);
+    PropertyPageDialog dialog(QSize(48, 48), 1, PropertyPageDialog::VIEW_ICONS,
+                              PropertyPageDialog::APPLY_CURRENT, this);
 	dialog.setFixedWidth(620);
 	//dialog.resize(620, 690);
 	dialog.setWindowTitle(tr("New"));
@@ -2228,7 +2229,7 @@ void MainWindow::createSWDesign(VLNV const& vlnv)
 //-----------------------------------------------------------------------------
 void MainWindow::openSettings()
 {
-    SettingsDialog dialog(this);
+    SettingsDialog dialog(*pluginMgr_, this);
 
 	connect(&dialog, SIGNAL(scanLibrary()),
 		this, SLOT(onLibrarySearch()), Qt::UniqueConnection);

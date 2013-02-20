@@ -29,7 +29,7 @@ FileDependencyItem::FileDependencyItem()
 //-----------------------------------------------------------------------------
 FileDependencyItem::FileDependencyItem(FileDependencyItem* parent, ItemType type, QString const& path)
     : parent_(parent),
-      status_(FILE_DEPENDENCY_STATUS_UNKNOWN),
+      status_(FILE_DEPENDENCY_STATUS_OK),
       type_(type),
       path_(path),
       references_(),
@@ -43,6 +43,10 @@ FileDependencyItem::FileDependencyItem(FileDependencyItem* parent, ItemType type
 //-----------------------------------------------------------------------------
 FileDependencyItem::~FileDependencyItem()
 {
+    foreach (FileDependencyItem* item, children_)
+    {
+        delete item;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -95,6 +99,22 @@ int FileDependencyItem::getIndex()
     }
 
     return parent_->children_.indexOf(this);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getStatus()
+//-----------------------------------------------------------------------------
+FileDependencyStatus FileDependencyItem::getStatus() const
+{
+    return status_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getType()
+//-----------------------------------------------------------------------------
+FileDependencyItem::ItemType FileDependencyItem::getType() const
+{
+    return type_;
 }
 
 //-----------------------------------------------------------------------------

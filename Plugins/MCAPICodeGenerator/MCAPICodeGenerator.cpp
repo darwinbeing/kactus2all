@@ -70,6 +70,14 @@ QString const& MCAPICodeGenerator::getDescription() const
 }
 
 //-----------------------------------------------------------------------------
+// Function: MCAPICodeGenerator::getSettingsWidget()
+//-----------------------------------------------------------------------------
+PluginSettingsWidget* MCAPICodeGenerator::getSettingsWidget()
+{
+    return new PluginSettingsWidget();
+}
+
+//-----------------------------------------------------------------------------
 // Function: MCAPICodeGenerator::checkGeneratorSupport()
 //-----------------------------------------------------------------------------
 bool MCAPICodeGenerator::checkGeneratorSupport(QSharedPointer<LibraryComponent> libComp) const

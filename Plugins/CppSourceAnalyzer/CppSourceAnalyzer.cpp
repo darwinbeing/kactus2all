@@ -63,6 +63,14 @@ QString const& CppSourceAnalyzer::getDescription() const
 }
 
 //-----------------------------------------------------------------------------
+// Function: CppSourceAnalyzer::getSettingsWidget()
+//-----------------------------------------------------------------------------
+PluginSettingsWidget* CppSourceAnalyzer::getSettingsWidget()
+{
+    return new PluginSettingsWidget();
+}
+
+//-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::checkFileTypeSupport()
 //-----------------------------------------------------------------------------
 bool CppSourceAnalyzer::checkFileTypeSupport(QString const& fileType)
@@ -267,6 +275,5 @@ QString CppSourceAnalyzer::removeComments(QString& source)
     }
     return finalData;
 }
-
 
 Q_EXPORT_PLUGIN2(CppSourceAnalyzer, CppSourceAnalyzer)
