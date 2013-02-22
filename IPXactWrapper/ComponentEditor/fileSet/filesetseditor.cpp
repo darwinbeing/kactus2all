@@ -12,12 +12,13 @@
 
 #include <QVBoxLayout>
 
-FileSetsEditor::FileSetsEditor(QSharedPointer<Component> component, PluginManager& pluginMgr):
+FileSetsEditor::FileSetsEditor(QSharedPointer<Component> component,
+                               LibraryInterface* libInterface, PluginManager& pluginMgr):
 ItemEditor(component),
 view_(this),
 model_(component, this),
 proxy_(this),
-dependencyEditor_(component, pluginMgr, this) {
+dependencyEditor_(component, libInterface, pluginMgr, this) {
 
 	// display a label on top the table
 	SummaryLabel* summaryLabel = new SummaryLabel(tr("File sets summary"), this);
@@ -49,6 +50,7 @@ dependencyEditor_(component, pluginMgr, this) {
 		&model_, SLOT(onAddItem(const QModelIndex&)), Qt::UniqueConnection);
 	connect(&view_, SIGNAL(removeItem(const QModelIndex&)),
 		&model_, SLOT(onRemoveItem(const QModelIndex&)), Qt::UniqueConnection);
+    connect(&dependencyEditor_, SIGNAL(fileSetsUpdated()), this, SLOT(updateFileSetView()));
 }
 
 FileSetsEditor::~FileSetsEditor() {
@@ -70,4 +72,13 @@ void FileSetsEditor::refresh() {
 void FileSetsEditor::showEvent( QShowEvent* event ) {
 	QWidget::showEvent(event);
 	emit helpUrlRequested("componenteditor/filesets.html");
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileSetsEditor::updateFileSetView()
+//-----------------------------------------------------------------------------
+void FileSetsEditor::updateFileSetView()
+{
+    model_.refresh();
+    //view_.update();
 }

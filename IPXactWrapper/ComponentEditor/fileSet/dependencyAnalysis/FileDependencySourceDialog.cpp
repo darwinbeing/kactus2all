@@ -16,7 +16,8 @@
 //-----------------------------------------------------------------------------
 
 
-FileDependencySourceDialog::FileDependencySourceDialog(QStringList const& sourceDirs,
+FileDependencySourceDialog::FileDependencySourceDialog(QString const& xmlPath,
+                                                       QStringList const& sourceDirs,
                                                        QWidget* parent)
     : QDialog(parent)
 {

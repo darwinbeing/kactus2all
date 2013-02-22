@@ -12,8 +12,13 @@
 #include "FileDependencyEditor.h"
 
 #include "FileDependencySourceDialog.h"
+#include "FileDependencyItem.h"
+
+#include <LibraryManager/libraryinterface.h>
 
 #include <models/component.h>
+#include <models/fileset.h>
+#include <models/file.h>
 
 #include <PluginSystem/PluginManager.h>
 #include <PluginSystem/ISourceAnalyzerPlugin.h>
@@ -22,11 +27,13 @@
 #include <QIcon>
 #include <QFileInfoList>
 #include <QSettings>
+#include <QHeaderView>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyEditor::FileDependencyEditor()
 //-----------------------------------------------------------------------------
 FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
+                                           LibraryInterface* libInterface,
                                            PluginManager& pluginMgr, QWidget* parent)
     : QWidget(parent),
       toolbar_(this),
@@ -34,19 +41,15 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       graphWidget_(this),
       infoWidget_(this),
       component_(component),
+      libInterface_(libInterface),
       pluginMgr_(pluginMgr),
       sourceDirectories_(),
       analyzerPluginMap_(),
-      fileTypeLookup_()
+      fileTypeLookup_(),
+      model_(),
+      xmlPath_()
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->addWidget(&toolbar_);
-    layout->addWidget(&progressBar_);
-    layout->addWidget(&graphWidget_, 1);
-    layout->addWidget(&infoWidget_);
-    layout->setContentsMargins(0, 0, 0, 0);
-    //layout->setSpacing(1);
-    
+    // Initialize the widgets.
     progressBar_.setStyleSheet("QProgressBar:horizontal { margin: 0px; border: none; background: #cccccc; } "
                                "QProgressBar::chunk:horizontal { background: #009eff;}");
     progressBar_.setFixedHeight(2);
@@ -55,6 +58,15 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     progressBar_.setValue(50);
 
     graphWidget_.setContentsMargins(0, 0, 0, 0);
+    graphWidget_.setModel(&model_);
+
+    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_TREE);
+    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_STATUS);
+    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_CREATE);
+    graphWidget_.setColumnWidth(FILE_DEPENDENCY_COLUMN_PATH, 250);
+    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_TREE, QHeaderView::Fixed);
+    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_STATUS, QHeaderView::Fixed);
+    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_CREATE, QHeaderView::Fixed);
 
     toolbar_.setFloatable(false);
     toolbar_.setMovable(false);
@@ -73,7 +85,18 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     toolbar_.addAction(QIcon(":/icons/graphics/refresh_16x16.png"), "Rescan",
                        this, SLOT(scan()));
 
+    // Create the layout.
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->addWidget(&toolbar_);
+    layout->addWidget(&progressBar_);
+    layout->addWidget(&graphWidget_, 1);
+    layout->addWidget(&infoWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+    //layout->setSpacing(1);
+
+    // Resolve plugins and save the component's xml path.
     resolvePlugins();
+    xmlPath_ = QFileInfo(libInterface_->getPath(*component_->getVlnv())).path();
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +113,7 @@ FileDependencyEditor::~FileDependencyEditor()
 void FileDependencyEditor::openSourceDialog()
 {
     // Show the source directories dialog.
-    FileDependencySourceDialog dialog(sourceDirectories_, this);
+    FileDependencySourceDialog dialog(xmlPath_, sourceDirectories_, this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
@@ -108,10 +131,16 @@ void FileDependencyEditor::scan()
     resolveExtensionFileTypes();
 
     // Phase 1. Scan all files and folders in the source paths recursively.
+    model_.beginReset();
+    
     foreach (QString const& sourcePath, sourceDirectories_)
     {
         scanFiles(sourcePath);
     }
+
+    model_.endReset();
+
+    emit fileSetsUpdated();
 }
 
 //-----------------------------------------------------------------------------
@@ -174,18 +203,46 @@ void FileDependencyEditor::resolveExtensionFileTypes()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::scanFiles(QString const& path)
 {
-    QFileInfoList list = QDir(path).entryInfoList();
+    QString relativePath = General::getRelativePath(xmlPath_, path);
+    FileDependencyItem* folderItem = model_.addFolder(relativePath);
+
+    QFileInfoList list = QDir(path).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
 
     foreach (QFileInfo const& info, list)
     {
         // Check if the entry is a directory.
         if (info.isDir())
         {
-            //scanFiles(info.filePath());
+            scanFiles(info.filePath());
         }
         else
         {
+            // Otherwise the entry is a file.
+            // Check which file type corresponds to the extension.
+            QString fileType = fileTypeLookup_.value(info.completeSuffix(), "unknown");
 
+            // Check if the file is already packaged into the metadata.
+            File* file = 0; // TODO: Search from the component metadata.
+
+            if (file == 0)
+            {
+                // Check if the file set does not exist in the component.
+                FileSet* fileSet = component_->getFileSet(fileType + "s");
+
+                if (fileSet == 0)
+                {
+                    fileSet = new FileSet(fileType + "s", "");
+                    component_->addFileSet(fileSet);
+                }
+
+                QString relativePath = General::getRelativePath(xmlPath_, info.absoluteFilePath());
+
+                file = new File(relativePath, fileSet);
+                file->addFileType(fileType);
+                fileSet->addFile(file);
+            }
+
+            folderItem->addChild(FileDependencyItem::ITEM_TYPE_FILE, info.filePath());
         }
     }
 }

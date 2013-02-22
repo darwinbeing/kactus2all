@@ -15,7 +15,7 @@ ComponentEditorFileSetsItem::ComponentEditorFileSetsItem( ComponentEditorTreeMod
 														 ComponentEditorItem* parent):
 ComponentEditorItem(model, libHandler, component, parent),
 fileSets_(component->getFileSets()),
-editor_(component, pluginMgr) {
+editor_(component, libHandler, pluginMgr) {
 
 	foreach (QSharedPointer<FileSet> fileSet, fileSets_) {
 		QSharedPointer<ComponentEditorFileSetItem> fileSetItem(

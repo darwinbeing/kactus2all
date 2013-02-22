@@ -11,6 +11,8 @@
 
 #include "FileDependencyItem.h"
 
+#include <QFileInfo>
+
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::FileDependencyItem()
 //-----------------------------------------------------------------------------
@@ -122,5 +124,13 @@ FileDependencyItem::ItemType FileDependencyItem::getType() const
 //-----------------------------------------------------------------------------
 QString FileDependencyItem::getSimplePath()
 {
-    return path_;
+    if (type_ == ITEM_TYPE_FILE)
+    {
+        QFileInfo info(path_);
+        return info.fileName();
+    }
+    else
+    {
+        return path_;
+    }
 }

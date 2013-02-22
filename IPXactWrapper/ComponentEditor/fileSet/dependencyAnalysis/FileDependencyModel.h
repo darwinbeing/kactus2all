@@ -50,6 +50,23 @@ public:
     ~FileDependencyModel();
 
     /*!
+     *  Begins reset.
+     */
+    void beginReset();
+
+    /*!
+     *  Ends reset.
+     */
+    void endReset();
+
+    /*!
+     *  Adds a new folder item to the model.
+     *
+     *      @param [in] path The folder path.
+     */
+    FileDependencyItem* addFolder(QString const& path);
+
+    /*!
      *  Return header data for the given header column.
      *
      *      @param [in] section      The index of the header column.
@@ -106,7 +123,7 @@ public:
      * \return QVariant Containing the requested data.
     */
     virtual QVariant data(const QModelIndex& index,
-    		int role = Qt::DisplayRole) const;
+    		              int role = Qt::DisplayRole) const;
 
     /*! \brief Does the specified item have child items or not.
      *

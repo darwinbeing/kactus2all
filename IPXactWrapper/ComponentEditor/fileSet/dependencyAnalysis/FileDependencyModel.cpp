@@ -21,11 +21,11 @@
 FileDependencyModel::FileDependencyModel()
     : root_(new FileDependencyItem())
 {
-    FileDependencyItem* folder = root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/code");
-    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "main.c");
-    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.c");
-    folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.h");
-    root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/documentation");
+//     FileDependencyItem* folder = root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/code");
+//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "main.c");
+//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.c");
+//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.h");
+//     root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/documentation");
 }
 
 //-----------------------------------------------------------------------------
@@ -270,4 +270,28 @@ Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
     default:
         return Qt::ItemIsEnabled;
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::addFolder()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyModel::addFolder(QString const& path)
+{
+    return root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, path);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::beginReset()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::beginReset()
+{
+    beginResetModel();
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::endReset()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::endReset()
+{
+    endResetModel();
 }

@@ -14,6 +14,7 @@
 
 #include "FileDependencyGraphWidget.h"
 #include "FileDependencyInfoWidget.h"
+#include "FileDependencyModel.h"
 
 #include <QGroupBox>
 #include <QToolBar>
@@ -23,6 +24,7 @@
 class Component;
 class PluginManager;
 class ISourceAnalyzerPlugin;
+class LibraryInterface;
 
 //-----------------------------------------------------------------------------
 //! File dependency editor which encapsulates the whole dependency UI.
@@ -35,11 +37,13 @@ public:
     /*!
      *  Constructor.
      *
-     *      @param [in] component  The component being edited.
-     *      @param [in] pluginMgr  The plugin manager for accessing plugins.
-     *      @param [in] parent     The parent widget.
+     *      @param [in] component     The component being edited.
+     *      @param [in] libInterface  The library interface.
+     *      @param [in] pluginMgr     The plugin manager for accessing plugins.
+     *      @param [in] parent        The parent widget.
      */
     FileDependencyEditor(QSharedPointer<Component> component,
+                         LibraryInterface* libInterface,
                          PluginManager& pluginMgr, QWidget* parent);
 
     /*!
@@ -47,13 +51,16 @@ public:
      */
     ~FileDependencyEditor();
 
+signals:
+    //! Emitted when the file sets have been updated.
+    void fileSetsUpdated();
+
 private slots:
     /*!
      *  Opens up the source selection dialog.
      */
     void openSourceDialog();
 
-private slots:
     /*!
      *  Scans the source directories for new files, adds them to the component
      *  file sets and runs the dependency analysis.
@@ -101,6 +108,9 @@ private:
     //! The component being edited.
     QSharedPointer<Component> component_;
 
+    //! The library interface.
+    LibraryInterface* libInterface_;
+
     //! The plugin manager.
     PluginManager& pluginMgr_;
 
@@ -112,6 +122,12 @@ private:
 
     //! Extension fileset lookup.
     QMap<QString, QString> fileTypeLookup_;
+
+    //! The file dependency model.
+    FileDependencyModel model_;
+
+    //! The XML base path for the component.
+    QString xmlPath_;
 };
 
 //-----------------------------------------------------------------------------

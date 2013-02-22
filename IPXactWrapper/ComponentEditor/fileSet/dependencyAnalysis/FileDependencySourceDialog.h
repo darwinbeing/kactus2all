@@ -33,10 +33,12 @@ public:
     /*!
      *  Constructor.
      *
+     *      @param [in] xmlPath     The directory path where the parent component is located.
+     *                              Source directories are saved relative to this path.
      *      @param [in] sourceDirs  The current list of source directories.
      *      @param [in] parent      The parent widget.
      */
-    FileDependencySourceDialog(QStringList const& sourceDirs, QWidget* parent = 0);
+    FileDependencySourceDialog(QString const& xmlPath, QStringList const& sourceDirs, QWidget* parent = 0);
 
     /*!
      *  Destructor.

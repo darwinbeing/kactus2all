@@ -17,6 +17,7 @@
 #include <QSortFilterProxyModel>
 
 class PluginManager;
+class LibraryInterface;
 
 /*! \brief The editor to add/remove/edit file sets of a component.
  *
@@ -34,10 +35,13 @@ public:
 
 	/*! \brief The constructor
 	 *
-	 * \param component  Pointer to the component being edited.
-     * \param pluginMgr  The plugin manager.    
+	 * \param component        Pointer to the component being edited.
+     * \param libraryInterface The library interface.
+     * \param pluginMgr        The plugin manager.    
 	 */
-	FileSetsEditor(QSharedPointer<Component> component, PluginManager& pluginMgr);
+	FileSetsEditor(QSharedPointer<Component> component,
+                   LibraryInterface* libInterface,
+                   PluginManager& pluginMgr);
 	
 	//! \brief The destructor
 	~FileSetsEditor();
@@ -57,6 +61,9 @@ public:
 	*/
 	virtual void refresh();
 
+private slots:
+    void updateFileSetView();
+
 protected:
 
 	//! \brief Handler for widget's show event
@@ -69,7 +76,7 @@ private:
 
 	//! \brief No assignment
 	FileSetsEditor& operator=(const FileSetsEditor& other);
-
+    
 	//! \brief The view to display the file sets.
 	EditableTableView view_;
 
