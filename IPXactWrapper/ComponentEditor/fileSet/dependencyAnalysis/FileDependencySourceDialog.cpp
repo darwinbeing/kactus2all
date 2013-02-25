@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------
 
 
-FileDependencySourceDialog::FileDependencySourceDialog(QString const& xmlPath,
+FileDependencySourceDialog::FileDependencySourceDialog(QString const& basePath,
                                                        QStringList const& sourceDirs,
                                                        QWidget* parent)
     : QDialog(parent)
@@ -75,6 +75,7 @@ QStringList FileDependencySourceDialog::getSourceDirectories() const
 void FileDependencySourceDialog::addSource()
 {
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
+    newDirectory = QFileInfo(newDirectory).filePath();
 
     if( newDirectory.size() < 1 )
     {

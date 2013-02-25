@@ -38,7 +38,7 @@ public:
      *      @param [in] sourceDirs  The current list of source directories.
      *      @param [in] parent      The parent widget.
      */
-    FileDependencySourceDialog(QString const& xmlPath, QStringList const& sourceDirs, QWidget* parent = 0);
+    FileDependencySourceDialog(QString const& basePath, QStringList const& sourceDirs, QWidget* parent = 0);
 
     /*!
      *  Destructor.

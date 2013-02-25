@@ -904,6 +904,11 @@ public:
 	*/
 	const QList<QSharedPointer<FileDependency> >& getFileDependencies() const;
 
+    /*!
+     *  Returns the list of source directories.
+     */
+    QStringList const& getSourceDirectories() const;
+
 	/*! \brief Get the file dependencies of this component.
 	 *
 	 * \return QList containing pointers to the file dependencies.
@@ -927,6 +932,13 @@ public:
 	* \param fileDependencies QList containing the file dependencies to be set
 	*/
 	void setFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies);
+
+    /*!
+     *  Sets the source directories where to automatically scan files to file sets.
+     *
+     *      @param [in] sourceDirs The source directories to set.
+     */
+    void setSourceDirectories(QStringList const& sourceDirs);
 
 	/*! \brief Get the specified file set if one exists
 	*
@@ -1514,7 +1526,20 @@ private:
      *      @param [in] node The source XML node.
      */
     void parseSystemViews(QDomNode& node);
+
+    /*!
+     *  Parses file dependencies from the given XML node.
+     *
+     *      @param [in] node The source XML node.
+     */
     void parseFileDependencies(QDomNode& node);
+
+    /*!
+     *  Parses source directories from the given XML node.
+     *
+     *      @param [in] node The source XML node.
+     */
+    void parseSourceDirectories(QDomNode& node);
 
 	/*! \brief Specifies all the interfaces for this component.
 	 * OPTIONAL spirit:busInterfaces
@@ -1583,6 +1608,10 @@ private:
     //! The list of file dependencies.
     //! OPTIONAL kactus2:fileDependencies
     QList< QSharedPointer<FileDependency> > fileDependencies_;
+
+    //! The list of source directories.
+    //! OPTIONAL kactus2:sourceDirectories
+    QStringList sourceDirs_;
 
 	/*! \brief Contains the cpus.
 	 * OPTIONAL spirit:cpus

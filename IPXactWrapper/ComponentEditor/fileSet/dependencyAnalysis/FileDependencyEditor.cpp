@@ -43,7 +43,6 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       component_(component),
       libInterface_(libInterface),
       pluginMgr_(pluginMgr),
-      sourceDirectories_(),
       analyzerPluginMap_(),
       fileTypeLookup_(),
       model_(),
@@ -113,11 +112,11 @@ FileDependencyEditor::~FileDependencyEditor()
 void FileDependencyEditor::openSourceDialog()
 {
     // Show the source directories dialog.
-    FileDependencySourceDialog dialog(xmlPath_, sourceDirectories_, this);
+    FileDependencySourceDialog dialog(xmlPath_, component_->getSourceDirectories(), this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        sourceDirectories_ = dialog.getSourceDirectories();
+        component_->setSourceDirectories(dialog.getSourceDirectories());
         scan();
     }
 }
@@ -133,7 +132,7 @@ void FileDependencyEditor::scan()
     // Phase 1. Scan all files and folders in the source paths recursively.
     model_.beginReset();
     
-    foreach (QString const& sourcePath, sourceDirectories_)
+    foreach (QString const& sourcePath, component_->getSourceDirectories())
     {
         scanFiles(sourcePath);
     }

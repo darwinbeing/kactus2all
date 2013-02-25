@@ -114,9 +114,6 @@ private:
     //! The plugin manager.
     PluginManager& pluginMgr_;
 
-    //! The current source directories.
-    QStringList sourceDirectories_;
-
     //! Analyzer plugin map for fast access to correct plugin for each file type.
     QMap<QString, ISourceAnalyzerPlugin*> analyzerPluginMap_;
 

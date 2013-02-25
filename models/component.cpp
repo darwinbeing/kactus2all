@@ -60,6 +60,7 @@ compGenerators_(),
 choices_(), 
 fileSets_(),
 fileDependencies_(),
+sourceDirs_(),
 cpus_(),
 otherClockDrivers_(),
 parameters_(), 
@@ -321,6 +322,10 @@ systemViews_() {
                         {
                             parseFileDependencies(childNode);
                         }
+                        else if (childNode.nodeName() == "kactus2:sourceDirectories")
+                        {
+                            parseSourceDirectories(childNode);
+                        }
 					}
 				}
 			}
@@ -351,6 +356,7 @@ compGenerators_(),
 choices_(),
 fileSets_(),
 fileDependencies_(),
+sourceDirs_(),
 cpus_(),
 otherClockDrivers_(),
 parameters_(), 
@@ -378,6 +384,7 @@ compGenerators_(),
 choices_(),
 fileSets_(), 
 fileDependencies_(),
+sourceDirs_(),
 cpus_(), 
 otherClockDrivers_(), 
 parameters_(),
@@ -403,6 +410,7 @@ compGenerators_(),
 choices_(),
 fileSets_(),
 fileDependencies_(),
+sourceDirs_(other.sourceDirs_),
 cpus_(),
 otherClockDrivers_(),
 parameters_(),
@@ -653,6 +661,8 @@ Component & Component::operator=( const Component &other ) {
                 fileDependencies_.append(copy);
             }
         }
+
+        sourceDirs_ = other.sourceDirs_;
 
 		cpus_.clear();
 		foreach (QSharedPointer<Cpu> cpu, other.cpus_) {
@@ -956,12 +966,23 @@ void Component::write(QFile& file) {
         {
             writer.writeStartElement("kactus2:fileDependencies");
 
-            // write each file set
             for (int i = 0; i < fileDependencies_.size(); ++i) {
                 fileDependencies_.at(i)->write(writer);
             }
 
             writer.writeEndElement(); // kactus2:fileDependencies
+        }
+
+        if (!sourceDirs_.empty())
+        {
+            writer.writeStartElement("kactus2:sourceDirectories");
+
+            foreach (QString dir, sourceDirs_)
+            {
+                writer.writeTextElement("kactus2:sourceDirectory", dir);
+            }
+
+            writer.writeEndElement(); // kactus2:sourceDirectories
         }
 
 		writer.writeEndElement(); // kactus2:extensions
@@ -3399,4 +3420,36 @@ QList<QSharedPointer<FileDependency> >& Component::getFileDependencies()
 void Component::setFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies)
 {
     fileDependencies_ = fileDependencies;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::setSourceDirectories()
+//-----------------------------------------------------------------------------
+void Component::setSourceDirectories(QStringList const& sourceDirs)
+{
+    sourceDirs_ = sourceDirs;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::getSourceDirectories()
+//-----------------------------------------------------------------------------
+QStringList const& Component::getSourceDirectories() const
+{
+    return sourceDirs_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::parseSourceDirectories()
+//-----------------------------------------------------------------------------
+void Component::parseSourceDirectories(QDomNode& node)
+{
+    for (int i = 0; i < node.childNodes().count(); ++i)
+    {
+        QDomNode childNode = node.childNodes().at(i);
+
+        if (childNode.nodeName() == "kactus2:sourceDirectory")
+        {
+            sourceDirs_.append(childNode.childNodes().at(0).nodeValue());
+        }
+    }
 }
