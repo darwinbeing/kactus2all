@@ -11,7 +11,13 @@
 
 #include "FileDependencyItem.h"
 
+#include <models/component.h>
+#include <models/file.h>
+#include <models/fileset.h>
+
 #include <QFileInfo>
+
+#include <windows.h>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::FileDependencyItem()
@@ -22,6 +28,7 @@ FileDependencyItem::FileDependencyItem()
       type_(ITEM_TYPE_ROOT),
       path_(),
       references_(),
+      fileRefs_(),
       children_()
 {
 }
@@ -29,15 +36,34 @@ FileDependencyItem::FileDependencyItem()
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::FileDependencyItem()
 //-----------------------------------------------------------------------------
-FileDependencyItem::FileDependencyItem(FileDependencyItem* parent, ItemType type, QString const& path)
+FileDependencyItem::FileDependencyItem(FileDependencyItem* parent,
+                                       Component* component, QString const& path)
     : parent_(parent),
-      status_(FILE_DEPENDENCY_STATUS_OK),
-      type_(type),
+      status_(FILE_DEPENDENCY_STATUS_UNKNOWN),
+      type_(ITEM_TYPE_FOLDER),
+      component_(component),
       path_(path),
       references_(),
+      fileRefs_(),
       children_()
 {
-    Q_ASSERT(type != ITEM_TYPE_ROOT);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::FileDependencyItem()
+//-----------------------------------------------------------------------------
+FileDependencyItem::FileDependencyItem(FileDependencyItem* parent,
+                                       Component* component, QString const& path,
+                                       QList<File*> const& fileRefs)
+    : parent_(parent),
+      status_(FILE_DEPENDENCY_STATUS_UNKNOWN),
+      type_(ITEM_TYPE_FILE),
+      component_(component),
+      path_(path),
+      references_(),
+      fileRefs_(fileRefs),
+      children_()
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -49,16 +75,6 @@ FileDependencyItem::~FileDependencyItem()
     {
         delete item;
     }
-}
-
-//-----------------------------------------------------------------------------
-// Function: FileDependencyItem::addChild()
-//-----------------------------------------------------------------------------
-FileDependencyItem* FileDependencyItem::addChild(ItemType type, QString const& path)
-{
-    FileDependencyItem* item = new FileDependencyItem(this, type, path);
-    children_.append(item);
-    return item;
 }
 
 //-----------------------------------------------------------------------------
@@ -133,4 +149,51 @@ QString FileDependencyItem::getSimplePath()
     {
         return path_;
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getFileSets()
+//-----------------------------------------------------------------------------
+QList<FileSet*> FileDependencyItem::getFileSets() const
+{
+    QList<FileSet*> fileSets;
+
+    foreach (File* file, fileRefs_)
+    {
+        if (!fileSets.contains(file->getParent()))
+        {
+            fileSets.append(file->getParent());
+        }
+    }
+
+    return fileSets;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::addFile()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyItem::addFile(Component* component, QString const& path,
+                                                QList<File*> const& fileRefs)
+{
+    FileDependencyItem* item = new FileDependencyItem(this, component, path, fileRefs);
+    children_.append(item);
+    return item;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::addFolder()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString const& path)
+{
+    FileDependencyItem* item = new FileDependencyItem(this, component, path);
+    children_.append(item);
+    return item;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::updateStatus()
+//-----------------------------------------------------------------------------
+void FileDependencyItem::updateStatus()
+{
+    status_ = FILE_DEPENDENCY_STATUS_OK;
 }

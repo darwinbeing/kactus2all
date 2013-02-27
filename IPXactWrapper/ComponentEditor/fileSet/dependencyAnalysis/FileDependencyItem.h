@@ -17,6 +17,11 @@
 #include <QObject>
 #include <QString>
 #include <QList>
+#include <QSharedPointer>
+
+class File;
+class FileSet;
+class Component;
 
 //-----------------------------------------------------------------------------
 //! Dependency status enumeration.
@@ -54,13 +59,27 @@ public:
      */
     virtual ~FileDependencyItem();
 
+    void updateStatus();
+
     /*!
-     *  Adds a child item.
+     *  Adds a file item.
      *
-     *      @param [in] type  The item type.
-     *      @param [in] path  The path of the file/folder.
+     *      @param [in] type       The item type.
+     *      @param [in] component  The component being edited.
+     *      @param [in] path       The file path.
+     *      @param [in] fileRefs   The file references.
      */
-    FileDependencyItem* addChild(ItemType type, QString const& path);
+    FileDependencyItem* addFile(Component* component, QString const& path,
+                                QList<File*> const& fileRefs);
+
+    /*!
+     *  Adds a folder item.
+     *
+     *      @param [in] type       The item type.
+     *      @param [in] component  The component being edited.
+     *      @param [in] path       The folder path.
+     */
+    FileDependencyItem* addFolder(Component* component, QString const& path);
 
     /*!
      *  Returns the child at the given index.
@@ -95,6 +114,11 @@ public:
     ItemType getType() const;
 
     /*!
+     *  Returns the file sets where the file is currently contained.
+     */
+    QList<FileSet*> getFileSets() const;
+
+    /*!
      *  Returns a shortened version of the path.
      */
     QString getSimplePath();
@@ -105,14 +129,25 @@ private:
     FileDependencyItem& operator=(FileDependencyItem const& rhs);
 
     /*!
-     *  Constructor which creates a file/folder item.
+     *  Constructor which creates a file item.
      *
-     *      @param [in] parent  The parent item.
-     *      @param [in] type    The item type.
-     *      @param [in] path    The path of the file/folder.
+     *      @param [in] parent     The parent item.
+     *      @param [in] component  The component being edited.
+     *      @param [in] path       The path of the file/folder.
+     *      @param [in] fileRefs   The file references.
      */
-    FileDependencyItem(FileDependencyItem* parent, ItemType type, QString const& path);
-    
+    FileDependencyItem(FileDependencyItem* parent, Component* component, QString const& path,
+                       QList<File*> const& fileRefs);
+
+    /*!
+     *  Constructor which creates a folder item.
+     *
+     *      @param [in] parent     The parent item.
+     *      @param [in] component  The component being edited.
+     *      @param [in] path       The path of the file/folder.
+     */
+    FileDependencyItem(FileDependencyItem* parent, Component* component, QString const& path);
+
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
@@ -126,11 +161,17 @@ private:
     //! The item type.
     ItemType type_;
 
+    //! The component being edited.
+    Component* component_;
+
     //! The file path of the file/folder.
     QString path_;
 
     //! VLNV references.
     QList<VLNV> references_;
+
+    //! File pointers.
+    QList<File*> fileRefs_;
 
     //! The child items.
     QList<FileDependencyItem*> children_;

@@ -13,19 +13,20 @@
 
 #include "FileDependencyItem.h"
 
+#include <models/fileset.h>
+
 #include <QIcon>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::FileDependencyModel()
 //-----------------------------------------------------------------------------
 FileDependencyModel::FileDependencyModel()
-    : root_(new FileDependencyItem())
+    : root_(new FileDependencyItem()),
+      timer_(0),
+      curFolderIndex_(0),
+      curFileIndex_(0),
+      progressValue_(0)
 {
-//     FileDependencyItem* folder = root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/code");
-//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "main.c");
-//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.c");
-//     folder->addChild(FileDependencyItem::ITEM_TYPE_FILE, "utils.h");
-//     root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, "some/documentation");
 }
 
 //-----------------------------------------------------------------------------
@@ -181,7 +182,23 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
 
         case FILE_DEPENDENCY_COLUMN_FILESETS:
             {
-                return tr("none");
+                QList<FileSet*> fileSets = item->getFileSets();
+
+                if (fileSets.empty())
+                {
+                    return tr("[none]");
+                }
+                else
+                {
+                    QString str = fileSets[0]->getName();
+
+                    for (int i = 1; i < fileSets.count(); ++i)
+                    {
+                        str += "; " + fileSets[i]->getName();
+                    }
+
+                    return str;
+                }
             }
         }
     }
@@ -273,11 +290,26 @@ Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
 }
 
 //-----------------------------------------------------------------------------
+// Function: FileDependencyModel::startAnalysis()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::startAnalysis()
+{
+    curFolderIndex_ = 0;
+    curFileIndex_ = 0;
+    progressValue_ = 0;
+    emit analysisProgressChanged(progressValue_ + 1);
+
+    timer_ = new QTimer(this);
+    connect(timer_, SIGNAL(timeout()), this, SLOT(performAnalysisStep()));
+    timer_->start();
+}
+
+//-----------------------------------------------------------------------------
 // Function: FileDependencyModel::addFolder()
 //-----------------------------------------------------------------------------
 FileDependencyItem* FileDependencyModel::addFolder(QString const& path)
 {
-    return root_->addChild(FileDependencyItem::ITEM_TYPE_FOLDER, path);
+    return root_->addFolder(0, path);
 }
 
 //-----------------------------------------------------------------------------
@@ -286,6 +318,8 @@ FileDependencyItem* FileDependencyModel::addFolder(QString const& path)
 void FileDependencyModel::beginReset()
 {
     beginResetModel();
+    delete root_;
+    root_ = new FileDependencyItem();
 }
 
 //-----------------------------------------------------------------------------
@@ -294,4 +328,84 @@ void FileDependencyModel::beginReset()
 void FileDependencyModel::endReset()
 {
     endResetModel();
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::performAnalysisStep()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::performAnalysisStep()
+{
+    // Safe-check whether the analysis has already ended.
+    if (curFolderIndex_ == root_->getChildCount())
+    {
+        return;
+    }
+
+    // Run the dependency analysis for the current file.
+    FileDependencyItem* fileItem = root_->getChild(curFolderIndex_)->getChild(curFileIndex_);
+    fileItem->updateStatus();
+
+    emit dataChanged(getItemIndex(fileItem, 0), getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
+
+    ++curFileIndex_;
+    ++progressValue_;
+
+    // Check if all files in the current folder have been analyzed.
+    if (curFileIndex_ == root_->getChild(curFolderIndex_)->getChildCount())
+    {
+        // Update the status of the folder and continue to the next folder.
+        root_->getChild(curFolderIndex_)->updateStatus();
+
+        ++curFolderIndex_;
+        curFileIndex_ = 0;
+    }
+
+    // Stop the timer when there are no more folders.
+    if (curFolderIndex_ == root_->getChildCount())
+    {
+        emit analysisProgressChanged(0);
+
+        timer_->stop();
+        delete timer_;
+    }
+    else
+    {
+        // Otherwise notify progress of the next file.
+        emit analysisProgressChanged(progressValue_ + 1);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::getTotalFileCount()
+//-----------------------------------------------------------------------------
+int FileDependencyModel::getTotalFileCount() const
+{
+    int count = 0;
+
+    for (int i = 0; i < root_->getChildCount(); ++i)
+    {
+        count += root_->getChild(i)->getChildCount();
+    }
+
+    return count;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::updateData()
+//-----------------------------------------------------------------------------
+QModelIndex FileDependencyModel::getItemIndex(FileDependencyItem* item, int column) const
+{
+    if (item == 0)
+    {
+        return QModelIndex();
+    }
+
+    FileDependencyItem* parent = item->getParent();
+
+    if (parent == 0)
+    {
+        return QModelIndex();
+    }
+
+    return createIndex(item->getIndex(), column, item);
 }

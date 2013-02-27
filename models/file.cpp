@@ -852,3 +852,11 @@ void File::setLastHash(quint64 hash)
 {
     lastHash_ = hash;
 }
+
+//-----------------------------------------------------------------------------
+// Function: File::getParent()
+//-----------------------------------------------------------------------------
+FileSet* File::getParent() const
+{
+    return parent_;
+}

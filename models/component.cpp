@@ -1937,6 +1937,23 @@ QStringList Component::getFiles() const {
 	return files;
 }
 
+//-----------------------------------------------------------------------------
+// Function: Component::getFiles()
+//-----------------------------------------------------------------------------
+void Component::getFiles(QString const& filename, QList<File*>& files)
+{
+    foreach (QSharedPointer<FileSet> fileSet, fileSets_)
+    {
+        foreach (QSharedPointer<File> file, fileSet->getFiles())
+        {
+            if (file->getName() == filename)
+            {
+                files.append(file.data());
+            }
+        }
+    }
+}
+
 void Component::removeFileSet( const QString& fileSetName ) {
 	for (int i = 0; i <fileSets_.size(); ++i) {
 		

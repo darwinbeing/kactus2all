@@ -67,6 +67,13 @@ private slots:
      */
     void scan();
 
+    /*!
+     *  Updates the progress bar with the given value.
+     *
+     *      @param [in] value The value to set to the progress bar.
+     */
+    void updateProgressBar(int value);
+
 private:
     // Disable copying.
     FileDependencyEditor(FileDependencyEditor const& rhs);

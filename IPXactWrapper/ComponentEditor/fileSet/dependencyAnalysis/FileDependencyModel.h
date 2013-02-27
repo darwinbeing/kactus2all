@@ -13,6 +13,7 @@
 #define FILEDEPENDENCYMODEL_H
 
 #include <QAbstractItemModel>
+#include <QTimer>
 
 class FileDependencyItem;
 
@@ -58,6 +59,11 @@ public:
      *  Ends reset.
      */
     void endReset();
+
+    /*!
+     *  Starts the dependency analysis.
+     */
+    void startAnalysis();
 
     /*!
      *  Adds a new folder item to the model.
@@ -141,11 +147,35 @@ public:
     */
     Qt::ItemFlags flags(const QModelIndex& index) const;
 
+    /*!
+     *  Returns the number of files in the model.
+     */
+    int getTotalFileCount() const;
+
+signals:
+    /*!
+     *  Emitted when the analysis progress has changed.
+     */
+    void analysisProgressChanged(int value);
+
+private slots:
+    /*!
+     *  Performs one step of the dependency analysis.
+     */
+    void performAnalysisStep();
+
 private:
     // Disable copying.
     FileDependencyModel(FileDependencyModel const& rhs);
     FileDependencyModel& operator=(FileDependencyModel const& rhs);
 
+    /*!
+     *  Returns the model index of the given file dependency item.
+     *
+     *      @param [in] item The file dependency item.
+     */
+    QModelIndex getItemIndex(FileDependencyItem* item, int column) const;
+    
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
@@ -153,6 +183,17 @@ private:
     //! The dependency tree root.
     FileDependencyItem* root_;
 
+    //! The timer for running the analysis.
+    QTimer* timer_;
+
+    //! The current folder scan index.
+    int curFolderIndex_;
+
+    //! The current file scan index.
+    int curFileIndex_;
+
+    //! The current analysis progress.
+    int progressValue_;
 };
 
 //-----------------------------------------------------------------------------

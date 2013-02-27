@@ -892,6 +892,14 @@ public:
 	*/
 	const QList<QSharedPointer<FileSet> >& getFileSets() const;
 
+    /*!
+     *  Returns all file pointers in all file sets that reference the given file name.
+     *
+     *      @param [in]  filename The filename to search for.
+     *      @param [out] files    All found files that reference the given file name.
+     */
+    void getFiles(QString const& filename, QList<File*>& files);
+
 	/*! \brief Get the file sets of this component.
 	 *
 	 * \return QList containing pointers to the file sets.

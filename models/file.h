@@ -466,6 +466,11 @@ public:
 	*/
 	void setParent(FileSet* fileSet);
 
+    /*!
+     *  Returns the parent file set.
+     */
+    FileSet* getParent() const;
+
 	/*! \brief Get the build command's command-part
 	 *
 	 * \return QString containing the command.

@@ -28,6 +28,7 @@
 #include <QFileInfoList>
 #include <QSettings>
 #include <QHeaderView>
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyEditor::FileDependencyEditor()
@@ -54,7 +55,7 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     progressBar_.setFixedHeight(2);
     progressBar_.setTextVisible(false);
     progressBar_.setContentsMargins(0, 0, 0, 0);
-    progressBar_.setValue(50);
+    progressBar_.setValue(0);
 
     graphWidget_.setContentsMargins(0, 0, 0, 0);
     graphWidget_.setModel(&model_);
@@ -96,6 +97,11 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     // Resolve plugins and save the component's xml path.
     resolvePlugins();
     xmlPath_ = QFileInfo(libInterface_->getPath(*component_->getVlnv())).path();
+
+    connect(&model_, SIGNAL(analysisProgressChanged(int)),
+            this, SLOT(updateProgressBar(int)), Qt::UniqueConnection);
+
+    //scan();
 }
 
 //-----------------------------------------------------------------------------
@@ -138,6 +144,12 @@ void FileDependencyEditor::scan()
     }
 
     model_.endReset();
+
+    // Phase 2. Run the dependency analysis.
+    progressBar_.setMaximum(model_.getTotalFileCount());
+    progressBar_.setValue(0);
+
+    model_.startAnalysis();
 
     emit fileSetsUpdated();
 }
@@ -221,9 +233,12 @@ void FileDependencyEditor::scanFiles(QString const& path)
             QString fileType = fileTypeLookup_.value(info.completeSuffix(), "unknown");
 
             // Check if the file is already packaged into the metadata.
-            File* file = 0; // TODO: Search from the component metadata.
+            QString relativePath = General::getRelativePath(xmlPath_, info.absoluteFilePath());
 
-            if (file == 0)
+            QList<File*> fileRefs;
+            component_->getFiles(relativePath, fileRefs);
+
+            if (fileRefs.empty())
             {
                 // Check if the file set does not exist in the component.
                 FileSet* fileSet = component_->getFileSet(fileType + "s");
@@ -234,14 +249,22 @@ void FileDependencyEditor::scanFiles(QString const& path)
                     component_->addFileSet(fileSet);
                 }
 
-                QString relativePath = General::getRelativePath(xmlPath_, info.absoluteFilePath());
-
-                file = new File(relativePath, fileSet);
+                File* file = new File(relativePath, fileSet);
                 file->addFileType(fileType);
                 fileSet->addFile(file);
+
+                fileRefs.append(file);
             }
 
-            folderItem->addChild(FileDependencyItem::ITEM_TYPE_FILE, info.filePath());
+            folderItem->addFile(component_.data(), relativePath, fileRefs);
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyEditor::updateProgressBar()
+//-----------------------------------------------------------------------------
+void FileDependencyEditor::updateProgressBar(int value)
+{
+    progressBar_.setValue(value);
 }
