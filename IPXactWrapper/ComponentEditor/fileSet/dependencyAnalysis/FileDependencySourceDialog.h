@@ -85,6 +85,7 @@ private:
     QHBoxLayout* horizontalGroupBoxLayout_;
     QListView* directoryListView_;
     QStringListModel* directoryListModel_;
+    QString basePath_;
 };
 
 //-----------------------------------------------------------------------------

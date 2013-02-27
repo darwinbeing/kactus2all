@@ -24,6 +24,7 @@ class FileDependency;
 //-----------------------------------------------------------------------------
 class FileDependencyInfoWidget : public QGroupBox
 {
+    Q_OBJECT
 public:
     /*!
      *  Constructor.
@@ -51,6 +52,12 @@ public:
      *  Returns the currently edited dependency.
      */
     QSharedPointer<FileDependency> getEditedDependency() const;
+
+private slots:
+
+    void directionComboChanged(int index);
+    void lockedCheckChanged(int state);
+    void descEditTextChanged();
 
 private:
     // Disable copying.

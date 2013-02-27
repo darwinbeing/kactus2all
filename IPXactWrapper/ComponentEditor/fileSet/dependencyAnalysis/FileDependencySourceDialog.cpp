@@ -12,15 +12,14 @@
 #include "FileDependencySourceDialog.h"
 
 //-----------------------------------------------------------------------------
-//! Dialog for choosing the file dependency source directories.
+// Function: FileDependencySourceDialog::FileDependencySourceDialog()
 //-----------------------------------------------------------------------------
-
-
 FileDependencySourceDialog::FileDependencySourceDialog(QString const& basePath,
                                                        QStringList const& sourceDirs,
                                                        QWidget* parent)
     : QDialog(parent)
 {
+    basePath_ = basePath;
     setWindowTitle(tr("Import Sources"));
 
     mainGroupBox_ = new QGroupBox(tr("Directories"), this);
@@ -63,15 +62,31 @@ FileDependencySourceDialog::FileDependencySourceDialog(QString const& basePath,
     resize(600, sizeHint().height());
 }
 
+//-----------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::~FileDependencySourceDialog()
+//-----------------------------------------------------------------------------
 FileDependencySourceDialog::~FileDependencySourceDialog()
 {
 }
 
+//-----------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::getSourceDirectories()
+//-----------------------------------------------------------------------------
 QStringList FileDependencySourceDialog::getSourceDirectories() const
 {
-    return directoryListModel_->stringList();
+    QStringList returnList = directoryListModel_->stringList();
+
+    //returnList.push_back(basePath_);
+//    for( int i = 0; i < returnList.count(); ++i )
+  //  {
+      //  returnList.at(i) = 
+    // }
+    return returnList;
 }
 
+//-----------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::addSource()
+//-----------------------------------------------------------------------------
 void FileDependencySourceDialog::addSource()
 {
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
@@ -93,6 +108,9 @@ void FileDependencySourceDialog::addSource()
     }
 }
 
+//-----------------------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded()
+//-----------------------------------------------------------------------------------------
 bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory)
 {
     QStringList oldDirectories = directoryListModel_->stringList();
@@ -100,15 +118,9 @@ bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(
     for(int i = 0; i < oldDirectories.count(); ++i)
     {
         int subDirectory = 0;
-#ifdef Q_WS_WIN
-        for(int j = 0; j < newDirectory.count("\\"); ++j)
-        {
-            subDirectory = newDirectory.indexOf("\\", subDirectory+1);
-#else
         for(int j = 0; j < newDirectory.count("/"); ++j)
         {
             subDirectory = newDirectory.indexOf("/", subDirectory+1);
-#endif
             // Checking whether old directory is a root directory.
             QString oldDirString = oldDirectories.at(i);
             if( oldDirString.right(1) == "\\" || oldDirString.right(1) == "/" )
@@ -129,6 +141,9 @@ bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(
     return false;
 }
 
+//-----------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::removeUnnecessaryDirectories()
+//-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirectory)
 {
     QStringList oldDirectories = directoryListModel_->stringList();
@@ -146,15 +161,9 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
     {
         int subDirectory = 0;
         necessaryDirectory = true;
-#ifdef Q_WS_WIN
-        for(int j = 0; j < oldDirectories.at(i).count("\\"); ++j)
-        {
-            subDirectory = oldDirectories.at(i).indexOf("\\", subDirectory+1);
-#else
         for(int j = 0; j < oldDirectories.at(i).count("/"); ++j)
         {
             subDirectory = oldDirectories.at(i).indexOf("/", subDirectory+1);
-#endif
             // Checking to see if old directory is contained in the new directory.
             if( newDirectory == oldDirectories.at(i).left(subDirectory))
             {
@@ -173,6 +182,9 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
    directoryListModel_->setStringList(tempDirectoryList);
 }
 
+//-----------------------------------------------------------------------------
+// Function: FileDependencySourceDialog::removeSource()
+//-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeSource()
 {
     directoryListModel_->removeRow(directoryListView_->selectionModel()->currentIndex().row());

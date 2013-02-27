@@ -48,6 +48,10 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->addLayout(leftLayout, 1);
     layout->addLayout(rightLayout);
+
+    connect(&directionCombo_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
+    connect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
+    connect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
 }
 
 //-----------------------------------------------------------------------------
@@ -64,7 +68,43 @@ FileDependencyInfoWidget::~FileDependencyInfoWidget()
 void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency> dependency)
 {
     dependency_ = dependency;
-    // TODO: Update contents of all widgets.
+    
+    // Clearing the widgets.
+    descEdit_.clear();
+    directionCombo_.setCurrentIndex(0);
+    lockedCheck_.setChecked(false);
+    // Disabling the widgets.
+    descEdit_.setEnabled(false);
+    directionCombo_.setEnabled(false);
+    lockedCheck_.setEnabled(false);
+    
+    if(dependency_ != NULL)
+    {
+        // Enabling the widgets.
+        descEdit_.setEnabled(true);
+        
+        // Enable editing for direction and locking only for manual dependencies.
+        if(dependency_->isManual())
+        {
+            directionCombo_.setEnabled(true);
+            lockedCheck_.setEnabled(true);
+        }
+
+        // Read locked state.
+        lockedCheck_.setChecked(dependency_->isLocked());
+        // Set previous text.
+        descEdit_.setPlainText(dependency_->getDescription());
+        // Set direction combobox.
+        if(dependency_->isBidirectional())
+        {
+            directionCombo_.setCurrentIndex(2);
+        }
+        else
+        {
+            directionCombo_.setCurrentIndex(0);
+        }
+    }
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -73,4 +113,35 @@ void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency
 QSharedPointer<FileDependency> FileDependencyInfoWidget::getEditedDependency() const
 {
     return dependency_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyInfoWidget::directionComboChanged()
+//-----------------------------------------------------------------------------
+void FileDependencyInfoWidget::directionComboChanged(int index)
+{
+    if( index == 2 )
+    {
+        dependency_->setBidirectional(true);
+    }
+    else
+    {
+        dependency_->setBidirectional(false);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyInfoWidget::lockedCheckChanged()
+//-----------------------------------------------------------------------------
+void FileDependencyInfoWidget::lockedCheckChanged(int state)
+{
+    dependency_->setLocked(lockedCheck_.isChecked());
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyInfoWidget::descEditTextChanged()
+//-----------------------------------------------------------------------------
+void FileDependencyInfoWidget::descEditTextChanged()
+{
+    dependency_->setDescription(descEdit_.toPlainText());
 }
