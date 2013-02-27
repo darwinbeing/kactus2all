@@ -80,11 +80,6 @@ private:
     FileDependencyEditor& operator=(FileDependencyEditor const& rhs);
 
     /*!
-     *  Resolves plugins for each file type.
-     */
-    void resolvePlugins();
-
-    /*!
      *  Resolves the correct file type for each extension specified in the settings.
      */
     void resolveExtensionFileTypes();
@@ -120,9 +115,6 @@ private:
 
     //! The plugin manager.
     PluginManager& pluginMgr_;
-
-    //! Analyzer plugin map for fast access to correct plugin for each file type.
-    QMap<QString, ISourceAnalyzerPlugin*> analyzerPluginMap_;
 
     //! Extension fileset lookup.
     QMap<QString, QString> fileTypeLookup_;

@@ -84,7 +84,7 @@ QStringList const& CppSourceAnalyzer::getSupportedFileTypes() const
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::calculateHash()
 //-----------------------------------------------------------------------------
-QString CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
+QString CppSourceAnalyzer::calculateHash(QString const& filename)
 {
     // Try to open the file
     QFile file(filename);
@@ -107,8 +107,7 @@ QString CppSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const&
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::getFileDependencies()
 //-----------------------------------------------------------------------------
-void CppSourceAnalyzer::getFileDependencies(IPluginUtility* utility,
-                                            QSharedPointer<Component const> /*component*/,
+void CppSourceAnalyzer::getFileDependencies(Component const* /*component*/,
                                             QString const& filename,
                                             QList<FileDependencyDesc>& dependencies)
 {
@@ -277,6 +276,20 @@ QString CppSourceAnalyzer::removeComments(QString& source)
         }
     }
     return finalData;
+}
+
+//-----------------------------------------------------------------------------
+// Function: CppSourceAnalyzer::beginAnalysis()
+//-----------------------------------------------------------------------------
+void CppSourceAnalyzer::beginAnalysis(Component const* component)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Function: CppSourceAnalyzer::endAnalysis()
+//-----------------------------------------------------------------------------
+void CppSourceAnalyzer::endAnalysis(Component const* component)
+{
 }
 
 Q_EXPORT_PLUGIN2(CppSourceAnalyzer, CppSourceAnalyzer)

@@ -44,9 +44,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       component_(component),
       libInterface_(libInterface),
       pluginMgr_(pluginMgr),
-      analyzerPluginMap_(),
       fileTypeLookup_(),
-      model_(),
+      model_(pluginMgr, component, QFileInfo(libInterface_->getPath(*component_->getVlnv())).path() + "/"),
       xmlPath_()
 {
     // Initialize the widgets.
@@ -95,7 +94,6 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     //layout->setSpacing(1);
 
     // Resolve plugins and save the component's xml path.
-    resolvePlugins();
     xmlPath_ = QFileInfo(libInterface_->getPath(*component_->getVlnv())).path();
 
     connect(&model_, SIGNAL(analysisProgressChanged(int)),
@@ -147,35 +145,9 @@ void FileDependencyEditor::scan()
 
     // Phase 2. Run the dependency analysis.
     progressBar_.setMaximum(model_.getTotalFileCount());
-    progressBar_.setValue(0);
-
     model_.startAnalysis();
 
     emit fileSetsUpdated();
-}
-
-//-----------------------------------------------------------------------------
-// Function: FileDependencyEditor::resolvePlugins()
-//-----------------------------------------------------------------------------
-void FileDependencyEditor::resolvePlugins()
-{
-    analyzerPluginMap_.clear();
-
-    foreach (IPlugin* plugin, pluginMgr_.getPlugins())
-    {
-        ISourceAnalyzerPlugin* analyzer = dynamic_cast<ISourceAnalyzerPlugin*>(plugin);
-
-        if (analyzer != 0)
-        {
-            foreach (QString const& fileType, analyzer->getSupportedFileTypes())
-            {
-                if (!analyzerPluginMap_.contains(fileType))
-                {
-                    analyzerPluginMap_.insert(fileType, analyzer);
-                }
-            }
-        }
-    }
 }
 
 //-----------------------------------------------------------------------------

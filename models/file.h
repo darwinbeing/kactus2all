@@ -317,7 +317,7 @@ public:
     /*!
      *  Returns the last calculated hash.
      */
-    quint64 getLastHash() const;
+    QString const& getLastHash() const;
 
     /*! \brief Set the attributes for the file
 	 *
@@ -416,7 +416,7 @@ public:
      *
      *      @param [in] hash The calculated hash value.
      */
-    void setLastHash(quint64 hash);
+    void setLastHash(QString const& hash);
 
 	/*! \brief Set the userFileTypes for this file
 	 *
@@ -616,7 +616,7 @@ private:
 	QList<Define> defines_;
 
     //! The last calculated hash (from the file contents).
-    quint64 lastHash_;
+    QString lastHash_;
 
 	//! \brief Pointer to the FileSet that contains this file.
 	FileSet* parent_;

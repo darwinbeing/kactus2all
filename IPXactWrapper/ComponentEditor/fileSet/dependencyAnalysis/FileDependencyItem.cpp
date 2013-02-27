@@ -138,7 +138,7 @@ FileDependencyItem::ItemType FileDependencyItem::getType() const
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::getSimplePath()
 //-----------------------------------------------------------------------------
-QString FileDependencyItem::getSimplePath()
+QString FileDependencyItem::getSimplePath() const
 {
     if (type_ == ITEM_TYPE_FILE)
     {
@@ -196,4 +196,89 @@ FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString 
 void FileDependencyItem::updateStatus()
 {
     status_ = FILE_DEPENDENCY_STATUS_OK;
+
+    foreach (FileDependencyItem* item, children_)
+    {
+        switch (item->getStatus())
+        {
+        case FILE_DEPENDENCY_STATUS_CHANGED2:
+            {
+                status_ = FILE_DEPENDENCY_STATUS_CHANGED2;
+                break;
+            }
+
+        case FILE_DEPENDENCY_STATUS_CHANGED:
+            {
+                if (status_ == FILE_DEPENDENCY_STATUS_OK)
+                {
+                    status_ = FILE_DEPENDENCY_STATUS_CHANGED;
+                }
+                break;
+            }
+
+        default:
+            break;
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getFileTypes()
+//-----------------------------------------------------------------------------
+QStringList FileDependencyItem::getFileTypes() const
+{
+    QStringList list;
+
+    foreach (File* file, fileRefs_)
+    {
+        foreach (QString const& type, file->getFileTypes())
+        {
+            if (!list.contains(type))
+            {
+                list.append(type);
+            }
+        }
+    }
+
+    return list;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getName()
+//-----------------------------------------------------------------------------
+QString const& FileDependencyItem::getPath() const
+{
+    return path_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::setStatus()
+//-----------------------------------------------------------------------------
+void FileDependencyItem::setStatus(FileDependencyStatus status)
+{
+    status_ = status;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::getLastHash()
+//-----------------------------------------------------------------------------
+QString FileDependencyItem::getLastHash() const
+{
+    if (fileRefs_.empty())
+    {
+        return QString();
+    }
+
+    return fileRefs_[0]->getLastHash();
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::setLastHash()
+//-----------------------------------------------------------------------------
+void FileDependencyItem::setLastHash(QString const& hash)
+{
+    foreach (File* file, fileRefs_)
+    {
+        file->setLastHash(hash);
+    }
 }

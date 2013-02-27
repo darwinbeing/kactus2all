@@ -84,7 +84,7 @@ QStringList const& VHDLSourceAnalyzer::getSupportedFileTypes() const
 //-----------------------------------------------------------------------------
 // Function: VHDLSourceAnalyzer::calculateHash()
 //-----------------------------------------------------------------------------
-QString VHDLSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const& filename)
+QString VHDLSourceAnalyzer::calculateHash(QString const& filename)
 {
     // Try to open the file
     QFile file(filename);
@@ -107,8 +107,7 @@ QString VHDLSourceAnalyzer::calculateHash(IPluginUtility* utility, QString const
 //-----------------------------------------------------------------------------
 // Function: VHDLSourceAnalyzer::getFileDependencies()
 //-----------------------------------------------------------------------------
-void VHDLSourceAnalyzer::getFileDependencies(IPluginUtility* utility,
-                                             QSharedPointer<Component const> component,
+void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
                                              QString const& filename,
                                              QList<FileDependencyDesc>& dependencies)
 {
@@ -167,6 +166,20 @@ QString VHDLSourceAnalyzer::removeComments(QString& source)
         }
     }
     return finalData;
+}
+
+//-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::beginAnalysis()
+//-----------------------------------------------------------------------------
+void VHDLSourceAnalyzer::beginAnalysis(Component const* component)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::endAnalysis()
+//-----------------------------------------------------------------------------
+void VHDLSourceAnalyzer::endAnalysis(Component const* component)
+{
 }
 
 Q_EXPORT_PLUGIN2(VHDLSourceAnalyzer, VHDLSourceAnalyzer)

@@ -14,8 +14,13 @@
 
 #include <QAbstractItemModel>
 #include <QTimer>
+#include <QMap>
+#include <QSharedPointer>
 
 class FileDependencyItem;
+class ISourceAnalyzerPlugin;
+class Component;
+class PluginManager;
 
 //-----------------------------------------------------------------------------
 //! Dependency headers.
@@ -42,8 +47,13 @@ class FileDependencyModel : public QAbstractItemModel
 public:
     /*!
      *  Constructor.
+     *
+     *      @param [in] pluginMgr  The plugin manager.
+     *      @param [in] component  The component to which this model is made.
+     *      @param [in] basePath   The component's base path.
      */
-    FileDependencyModel();
+    FileDependencyModel(PluginManager& pluginMgr, QSharedPointer<Component> component,
+                        QString const& basePath);
 
     /*!
      *  Destructor.
@@ -175,10 +185,31 @@ private:
      *      @param [in] item The file dependency item.
      */
     QModelIndex getItemIndex(FileDependencyItem* item, int column) const;
+
+    /*!
+     *  Resolves plugins for each file type.
+     */
+    void resolvePlugins();
+
+    /*!
+     *  Analyzes the given file item.
+     *
+     *      @param [in] fileItem The file item to analyze.
+     */
+    void analyze(FileDependencyItem* fileItem);
     
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    //! The plugin manager.
+    PluginManager& pluginMgr_;
+
+    //! The parent component.
+    QSharedPointer<Component> component_;
+
+    //! The component's base path.
+    QString basePath_;
 
     //! The dependency tree root.
     FileDependencyItem* root_;
@@ -194,6 +225,12 @@ private:
 
     //! The current analysis progress.
     int progressValue_;
+
+    //! The list of used plugins on the current run.
+    QList<ISourceAnalyzerPlugin*> usedPlugins_;
+
+    //! Analyzer plugin map for fast access to correct plugin for each file type.
+    QMap<QString, ISourceAnalyzerPlugin*> analyzerPluginMap_;
 };
 
 //-----------------------------------------------------------------------------

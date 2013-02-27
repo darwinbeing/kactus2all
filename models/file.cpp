@@ -200,7 +200,7 @@ parent_(parent) {
 
                         if (childNode.nodeValue() == "kactus2:hash")
                         {
-                            lastHash_ = childNode.nodeValue().toULongLong();
+                            lastHash_ = childNode.nodeValue();
                         }
                     }
                 }
@@ -432,11 +432,11 @@ void File::write(QXmlStreamWriter& writer) {
 		writer.writeTextElement("spirit:description", description_);
 	}
 
-    if (lastHash_ != 0)
+    if (!lastHash_.isEmpty())
     {
         writer.writeStartElement("spirit:vendorExtensions");
         writer.writeStartElement("kactus2:extensions");
-        writer.writeTextElement("kactus2:hash", QString::number(lastHash_));
+        writer.writeTextElement("kactus2:hash", lastHash_);
         writer.writeEndElement(); // kactus2:extensions
         writer.writeEndElement(); // spirit:vendorExtensions
     }
@@ -840,7 +840,7 @@ void File::setAllFileTypes( const QStringList& fileTypes ) {
 //-----------------------------------------------------------------------------
 // Function: File::getLastHash()
 //-----------------------------------------------------------------------------
-quint64 File::getLastHash() const
+QString const& File::getLastHash() const
 {
     return lastHash_;
 }
@@ -848,7 +848,7 @@ quint64 File::getLastHash() const
 //-----------------------------------------------------------------------------
 // Function: File::setLastHash()
 //-----------------------------------------------------------------------------
-void File::setLastHash(quint64 hash)
+void File::setLastHash(QString const& hash)
 {
     lastHash_ = hash;
 }

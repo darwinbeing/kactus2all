@@ -59,8 +59,6 @@ public:
      */
     virtual ~FileDependencyItem();
 
-    void updateStatus();
-
     /*!
      *  Adds a file item.
      *
@@ -80,6 +78,27 @@ public:
      *      @param [in] path       The folder path.
      */
     FileDependencyItem* addFolder(Component* component, QString const& path);
+
+    /*!
+     *  Sets the status of the item.
+     *
+     *      @param [in] status The new status to set.
+     */
+    void setStatus(FileDependencyStatus status);
+
+    /*!
+     *  Updates the status based on the child items.
+     *
+     *      @remarks Only relevant to folder items.
+     */
+    void updateStatus();
+
+    /*!
+     *  Sets the latest hash to the metadata.
+     *
+     *      @param [in] hash The hash to set.
+     */
+    void setLastHash(QString const& hash);
 
     /*!
      *  Returns the child at the given index.
@@ -119,9 +138,24 @@ public:
     QList<FileSet*> getFileSets() const;
 
     /*!
+     *  Returns the all file types the file represents.
+     */
+    QStringList getFileTypes() const;
+
+    /*!
      *  Returns a shortened version of the path.
      */
-    QString getSimplePath();
+    QString getSimplePath() const;
+
+    /*!
+     *  Returns the name of the file (i.e. the packaged relative name).
+     */
+    QString const& getPath() const;
+
+    /*!
+     *  Returns the latest calculated hash or an empty string if the file is a new one.
+     */
+    QString getLastHash() const;
 
 private:
     // Disable copying.
@@ -147,7 +181,7 @@ private:
      *      @param [in] path       The path of the file/folder.
      */
     FileDependencyItem(FileDependencyItem* parent, Component* component, QString const& path);
-
+    
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
