@@ -17,6 +17,9 @@
 #include <QFileInfo>
 
 #include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QMap>
 
 class IPluginUtility;
 
@@ -116,13 +119,21 @@ private:
 
     /*!
      *
-     * Removes comments from a string that consists of a C/C++ source code
+     * Removes comments from a string that consists of a VHDL source code
      *
      *      @param [inout] data    The input source code with comments.
      *
      *      @return The meaningful source data of the file, with comments removed.
      */
     QString removeComments(QString& source);
+    
+    /*!
+     *
+     * Scans all the files in the component to find VHDL entities.
+     *
+     *      @param [in] component    The component from which files are scanned.
+     */
+    void scanEntities(Component const* component);
 
     //-----------------------------------------------------------------------------
     // Data.
@@ -130,6 +141,9 @@ private:
 
     //! The supported file types.
     QStringList fileTypes_;
+
+    //! The container used for caching scanned entitites
+    QMap<QString, QStringList> cachedEntities_;
 };
 
 #endif // VHDLSOURCEANALYZER_H

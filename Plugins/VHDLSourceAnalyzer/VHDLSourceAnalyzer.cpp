@@ -111,7 +111,56 @@ void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
                                              QString const& filename,
                                              QList<FileDependencyDesc>& dependencies)
 {
-    // TODO:
+    // Try to open the file
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        // File could not be opened, end
+        return;
+    }
+
+    QString line;
+    // Read the data line by line
+    while (!file.atEnd())
+    {
+        line = file.readLine();
+
+        // Check if there's a component specification
+        if (line.contains("component", Qt::CaseInsensitive))
+        {
+            int index = line.indexOf("component", Qt::CaseInsensitive);
+            // This is a component end, ignore
+            if (line.contains("end", Qt::CaseInsensitive) && 
+                line.indexOf("end", Qt::CaseInsensitive) < line.indexOf("component", Qt::CaseInsensitive))
+            {
+                continue;
+            }
+            // Commented, ignore
+            else if (line.contains("--") && line.indexOf("--") < line.indexOf("component", Qt::CaseInsensitive))
+            {
+                continue;
+            }
+            // Get the component name
+            else
+            {
+                line = line.right(line.length()-index-9);
+                QStringList words = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                // Now the component name should be the first word of the list
+                QString componentName = words.at(0).toLower();
+                if (cachedEntities_.contains(componentName))
+                {
+                    // Add all existing entities to the 
+                    for (int j=0; j<cachedEntities_[componentName].count(); j++)
+                    {
+                        FileDependencyDesc dependency;
+                        dependency.description = "Component instantiation.";
+                        dependency.filename = cachedEntities_[componentName].at(j);
+                        dependencies.append(dependency);
+                    }
+                }
+            }
+        }
+    }
 }
 
 QString VHDLSourceAnalyzer::getSourceData(QFile& file)
@@ -137,6 +186,9 @@ QString VHDLSourceAnalyzer::getSourceData(QFile& file)
 }
 
 
+//-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::removeComments(QString& source)
+//-----------------------------------------------------------------------------
 QString VHDLSourceAnalyzer::removeComments(QString& source)
 {
     QTextStream sourceStream(&source);
@@ -156,13 +208,13 @@ QString VHDLSourceAnalyzer::removeComments(QString& source)
             // Only add the line if it's not empty after removing comments 
             if (line != "")
             {
-                finalData.append(line);
+                finalData.append(line.append("\n"));
             }
         }
         // No comment on line, just add the line
         else
         {
-            finalData.append(line);
+            finalData.append(line.append("\n"));
         }
     }
     return finalData;
@@ -173,6 +225,7 @@ QString VHDLSourceAnalyzer::removeComments(QString& source)
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::beginAnalysis(Component const* component)
 {
+    scanEntities(component);
 }
 
 //-----------------------------------------------------------------------------
@@ -180,6 +233,62 @@ void VHDLSourceAnalyzer::beginAnalysis(Component const* component)
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::endAnalysis(Component const* component)
 {
+    cachedEntities_.clear();
+}
+
+
+//-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::scanEntities(Component const* component)
+//-----------------------------------------------------------------------------
+void VHDLSourceAnalyzer::scanEntities(Component const* component)
+{
+    // Get all the files from component
+    QStringList files = component->getFiles();
+    
+    // Go through all the files
+    for (int i=0; i<files.size(); i++)
+    {
+        // Try to open the file
+        QFile file(files.at(i));
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+        {
+            // File could not be opened, skip
+            continue;
+        }
+
+        QString line;
+        // Read the data line by line
+        while (!file.atEnd())
+        {
+            line = file.readLine();
+
+            // Check if there's an entity specification
+            if (line.contains("entity", Qt::CaseInsensitive))
+            {
+                int index = line.indexOf("entity", Qt::CaseInsensitive);
+                // This is an entity end, ignore
+                if (line.contains("end", Qt::CaseInsensitive) && 
+                    line.indexOf("end", Qt::CaseInsensitive) < line.indexOf("entity", Qt::CaseInsensitive))
+                {
+                    continue;
+                }
+                // Commented, ignore
+                else if (line.contains("--") && line.indexOf("--") < line.indexOf("entity", Qt::CaseInsensitive))
+                {
+                    continue;
+                }
+                // Get the entity name
+                else
+                {
+                    line = line.right(line.length()-index-6);
+                    QStringList words = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                    // Now the entity name should be the first word of the list
+                    QString entityName = words.at(0).toLower();
+                    cachedEntities_[entityName].append(files.at(i).toLower());
+                }
+            }
+        }
+    }
 }
 
 Q_EXPORT_PLUGIN2(VHDLSourceAnalyzer, VHDLSourceAnalyzer)

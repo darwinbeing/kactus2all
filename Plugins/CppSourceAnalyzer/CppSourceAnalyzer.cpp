@@ -200,7 +200,7 @@ QString CppSourceAnalyzer::removeComments(QString& source)
             // No (more) comments on the line
             if (!singleLineFound && !multiLineFound)
             {
-                finalData.append(line);
+                finalData.append(line.append("\n"));
                 checkForComments = false;
             }
             // Normal comment before multiline
@@ -217,7 +217,7 @@ QString CppSourceAnalyzer::removeComments(QString& source)
                 else if (line.left(index).count("\"") % 2 == 0)
                 {
                     line = line.left(index);
-                    finalData.append(line);
+                    finalData.append(line.append("\n"));
                     checkForComments = false;
                 }
                 // Comment marker inside string
