@@ -64,3 +64,12 @@ void FileDependencyDelegate::paint(QPainter *painter, QStyleOptionViewItem const
         QItemDelegate::paint(painter, viewItemOption, index);
     }
 }
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyDelegate::sizeHint()
+//-----------------------------------------------------------------------------
+QSize FileDependencyDelegate::sizeHint(QStyleOptionViewItem const& option,
+                                       QModelIndex const& index) const
+{
+    return QItemDelegate::sizeHint(option, index) + QSize(0, 4);
+}

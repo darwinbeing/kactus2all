@@ -113,9 +113,6 @@ private:
     //! The library interface.
     LibraryInterface* libInterface_;
 
-    //! The plugin manager.
-    PluginManager& pluginMgr_;
-
     //! Extension fileset lookup.
     QMap<QString, QString> fileTypeLookup_;
 

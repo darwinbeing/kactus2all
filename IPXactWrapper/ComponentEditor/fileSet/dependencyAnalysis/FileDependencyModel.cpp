@@ -15,11 +15,13 @@
 
 #include <models/fileset.h>
 #include <models/component.h>
+#include <models/FileDependency.h>
 
 #include <PluginSystem/PluginManager.h>
 #include <PluginSystem/ISourceAnalyzerPlugin.h>
 
 #include <QIcon>
+#include <QDir>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::FileDependencyModel()
@@ -33,7 +35,8 @@ FileDependencyModel::FileDependencyModel(PluginManager& pluginMgr, QSharedPointe
       timer_(0),
       curFolderIndex_(0),
       curFileIndex_(0),
-      progressValue_(0)
+      progressValue_(0),
+      dependencies_()
 {
 }
 
@@ -251,10 +254,10 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
         {
             return QColor(230, 230, 230);
         }
-        else
-        {
-            return QColor(Qt::white);
-        }
+//         else
+//         {
+//             return QColor(Qt::white);
+//         }
     }
 
     return QVariant();
@@ -360,12 +363,14 @@ void FileDependencyModel::performAnalysisStep()
     }
 
     // Run the dependency analysis for the current file.
-    FileDependencyItem* fileItem = root_->getChild(curFolderIndex_)->getChild(curFileIndex_);
-    analyze(fileItem);
+    if (curFileIndex_ < root_->getChild(curFolderIndex_)->getChildCount())
+    {
+        FileDependencyItem* fileItem = root_->getChild(curFolderIndex_)->getChild(curFileIndex_);
+        analyze(fileItem);
 
-
-    ++curFileIndex_;
-    ++progressValue_;
+        ++curFileIndex_;
+        ++progressValue_;
+    }
 
     // Check if all files in the current folder have been analyzed.
     while (curFileIndex_ == root_->getChild(curFolderIndex_)->getChildCount())
@@ -495,6 +500,24 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
         QString hash = plugin->calculateHash(absPath);
         QString lastHash = fileItem->getLastHash();
 
+        // If the hash has changed, resolve dependencies.
+        if (hash != lastHash)
+        {
+            QList<FileDependencyDesc> dependencyDescs;
+            plugin->getFileDependencies(component_.data(), absPath, dependencyDescs);
+
+            foreach (FileDependencyDesc const& desc, dependencyDescs)
+            {
+                QSharedPointer<FileDependency> dependency(new FileDependency());
+                dependency->setFile1(fileItem->getPath());
+                dependency->setFile2(QFileInfo(fileItem->getPath()).path() + "/" + desc.filename);
+                dependency->setDescription(desc.description);
+
+                dependencies_.append(dependency);
+                emit dependencyAdded(dependency.data());
+            }
+        }
+
         if (!lastHash.isEmpty() && hash != lastHash)
         {
             fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED);
@@ -504,12 +527,44 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
             fileItem->setStatus(FILE_DEPENDENCY_STATUS_OK);
         }
 
-        fileItem->setLastHash(hash);
+        //fileItem->setLastHash(hash);
     }
     else
     {
         fileItem->setStatus(FILE_DEPENDENCY_STATUS_OK);
     }
 
-    //emit dataChanged(getItemIndex(fileItem, 0), getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
+    emit dataChanged(getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_STATUS),
+                     getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_STATUS));
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::findItem()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyModel::findFileItem(QString const& path)
+{
+    // Extract the folder part of the path.
+    QFileInfo info(path);
+    QString folderPath = info.path();
+
+    // Search for a matching folder.
+    for (int i = 0; i < root_->getChildCount(); ++i)
+    {
+        FileDependencyItem* folderItem = root_->getChild(i);
+
+        if (folderItem->getPath() == folderPath)
+        {
+            for (int j = 0; j < folderItem->getChildCount(); ++j)
+            {
+                FileDependencyItem* fileItem = folderItem->getChild(j);
+
+                if (fileItem->getPath() == path)
+                {
+                    return fileItem;
+                }
+            }
+        }
+    }
+
+    return 0;
 }

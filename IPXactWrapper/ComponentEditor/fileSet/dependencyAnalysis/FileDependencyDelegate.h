@@ -33,6 +33,11 @@ public:
      */
     ~FileDependencyDelegate();
 
+    /*!
+     *  Returns the size hint for the given model index.
+     */
+    virtual QSize sizeHint(QStyleOptionViewItem const& option, QModelIndex const& index) const;
+
 protected:
     /*!
      *  Handles the painting of UI elements in the file dependency model.

@@ -43,7 +43,6 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       infoWidget_(this),
       component_(component),
       libInterface_(libInterface),
-      pluginMgr_(pluginMgr),
       fileTypeLookup_(),
       model_(pluginMgr, component, QFileInfo(libInterface_->getPath(*component_->getVlnv())).path() + "/"),
       xmlPath_()
@@ -142,6 +141,7 @@ void FileDependencyEditor::scan()
     }
 
     model_.endReset();
+    graphWidget_.expandAll();
 
     // Phase 2. Run the dependency analysis.
     progressBar_.setMaximum(model_.getTotalFileCount());

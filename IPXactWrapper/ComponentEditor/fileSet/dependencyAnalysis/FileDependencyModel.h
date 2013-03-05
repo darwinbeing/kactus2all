@@ -18,6 +18,7 @@
 #include <QSharedPointer>
 
 class FileDependencyItem;
+class FileDependency;
 class ISourceAnalyzerPlugin;
 class Component;
 class PluginManager;
@@ -59,6 +60,22 @@ public:
      *  Destructor.
      */
     ~FileDependencyModel();
+
+    /*!
+     *  Searches for a file item with the given path.
+     *
+     *      @param [in] path The path.
+     *
+     *      @return The corresponding item of null if not found in the model.
+     */
+    FileDependencyItem* findFileItem(QString const& path);
+
+    /*!
+     *  Returns the model index of the given file dependency item.
+     *
+     *      @param [in] item The file dependency item.
+     */
+    QModelIndex getItemIndex(FileDependencyItem* item, int column) const;
 
     /*!
      *  Begins reset.
@@ -168,6 +185,21 @@ signals:
      */
     void analysisProgressChanged(int value);
 
+    /*!
+     *  Emitted when a file dependency has been added to the model.
+     */
+    void dependencyAdded(FileDependency* dependency);
+
+    /*!
+     *  Emitted when a file dependency has been removed from the model.
+     */
+    void dependencyRemoved(FileDependency* dependency);
+
+    /*!
+     *  Emitted when a file dependency has changed.
+     */
+    void dependencyChanged(FileDependency* dependency);
+
 private slots:
     /*!
      *  Performs one step of the dependency analysis.
@@ -178,13 +210,6 @@ private:
     // Disable copying.
     FileDependencyModel(FileDependencyModel const& rhs);
     FileDependencyModel& operator=(FileDependencyModel const& rhs);
-
-    /*!
-     *  Returns the model index of the given file dependency item.
-     *
-     *      @param [in] item The file dependency item.
-     */
-    QModelIndex getItemIndex(FileDependencyItem* item, int column) const;
 
     /*!
      *  Resolves plugins for each file type.
@@ -231,6 +256,9 @@ private:
 
     //! Analyzer plugin map for fast access to correct plugin for each file type.
     QMap<QString, ISourceAnalyzerPlugin*> analyzerPluginMap_;
+
+    //! Dependency list.
+    QList< QSharedPointer<FileDependency> > dependencies_;
 };
 
 //-----------------------------------------------------------------------------
