@@ -2,7 +2,7 @@
 // File: FileDependencyInfoWidget.h
 //-----------------------------------------------------------------------------
 // Project: Kactus 2
-// Author: Joni-Matti M‰‰tt‰
+// Author: Joni-Matti M‰‰tt‰, Tommi Korhonen
 // Date: 19.01.2013
 //
 // Description:
@@ -16,6 +16,7 @@
 #include <QPlainTextEdit>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QPushButton>
 
 class FileDependency;
 
@@ -58,6 +59,7 @@ private slots:
     void directionComboChanged(int index);
     void lockedCheckChanged(int state);
     void descEditTextChanged();
+    void directionReversed();
 
 private:
     // Disable copying.
@@ -71,11 +73,14 @@ private:
     //! Editor for description.
     QPlainTextEdit descEdit_;
 
-    //! Combo box for changing dependency direction.
+    //! Combo box for changing whether direction is bidirectional.
     QComboBox directionCombo_;
     
     //! Check box for locked state.
     QCheckBox lockedCheck_;
+
+    //! Button for reversing the direction.
+    QPushButton directionButton_;
 
     //! The currently edited dependency.
     QSharedPointer<FileDependency> dependency_;

@@ -10,6 +10,7 @@
 //-----------------------------------------------------------------------------
 
 #include "FileDependencySourceDialog.h"
+#include <models/generaldeclarations.h>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencySourceDialog::FileDependencySourceDialog()
@@ -57,9 +58,18 @@ FileDependencySourceDialog::FileDependencySourceDialog(QString const& basePath,
     {
         buttonRemove_->setEnabled(true);
     }
-    directoryListModel_ = new QStringListModel(sourceDirs);
+    
+
+    for(int i = 0; i < sourceDirs.count(); ++i )
+    {
+        absolutePaths_.push_back(sourceDirs.at(i));
+    }
+    toRelative();
+
+    directoryListModel_ = new QStringListModel(relativePaths_);
     directoryListView_->setModel(directoryListModel_);
     resize(600, sizeHint().height());
+
 }
 
 //-----------------------------------------------------------------------------
@@ -74,14 +84,7 @@ FileDependencySourceDialog::~FileDependencySourceDialog()
 //-----------------------------------------------------------------------------
 QStringList FileDependencySourceDialog::getSourceDirectories() const
 {
-    QStringList returnList = directoryListModel_->stringList();
-
-    //returnList.push_back(basePath_);
-//    for( int i = 0; i < returnList.count(); ++i )
-  //  {
-      //  returnList.at(i) = 
-    // }
-    return returnList;
+    return absolutePaths_;
 }
 
 //-----------------------------------------------------------------------------
@@ -89,7 +92,7 @@ QStringList FileDependencySourceDialog::getSourceDirectories() const
 //-----------------------------------------------------------------------------
 void FileDependencySourceDialog::addSource()
 {
-    QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
+    QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"), basePath_);
     newDirectory = QFileInfo(newDirectory).filePath();
 
     if( newDirectory.size() < 1 )
@@ -101,9 +104,9 @@ void FileDependencySourceDialog::addSource()
         // Now removing possibly unnecessary directories
         removeUnnecessaryDirectories(newDirectory);
         // Adding the new directory to the list.
-        QStringList sourceDirectories = directoryListModel_->stringList();
-        sourceDirectories.push_back(newDirectory);
-        directoryListModel_->setStringList(sourceDirectories);
+        absolutePaths_.push_back(newDirectory);
+        toRelative();
+        directoryListModel_->setStringList(relativePaths_);
         buttonRemove_->setEnabled(true);
     }
 }
@@ -113,7 +116,7 @@ void FileDependencySourceDialog::addSource()
 //-----------------------------------------------------------------------------------------
 bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory)
 {
-    QStringList oldDirectories = directoryListModel_->stringList();
+    QStringList oldDirectories = absolutePaths_;
     // Checking if the selected directory has been previously added.
     for(int i = 0; i < oldDirectories.count(); ++i)
     {
@@ -146,7 +149,7 @@ bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(
 //-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirectory)
 {
-    QStringList oldDirectories = directoryListModel_->stringList();
+    QStringList oldDirectories = absolutePaths_;
     QStringList tempDirectoryList;
     bool necessaryDirectory = true;
 
@@ -179,7 +182,8 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
         }
     }
     // Updating the source directory model.
-   directoryListModel_->setStringList(tempDirectoryList);
+    absolutePaths_.clear();
+    absolutePaths_ = tempDirectoryList;
 }
 
 //-----------------------------------------------------------------------------
@@ -187,10 +191,28 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
 //-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeSource()
 {
-    directoryListModel_->removeRow(directoryListView_->selectionModel()->currentIndex().row());
+    absolutePaths_.removeAt(directoryListView_->selectionModel()->currentIndex().row());
+    toRelative();
+    directoryListModel_->setStringList(relativePaths_);
     QStringList list = directoryListModel_->stringList();
     if( list.count() < 1 )
     {
         buttonRemove_->setEnabled(false);
+    }
+}
+
+void FileDependencySourceDialog::toRelative()
+{
+    relativePaths_.clear();
+    for( int i = 0; i < absolutePaths_.count(); ++i )
+    {
+        if( absolutePaths_.at(i).at(0) == basePath_.at(0) )
+        {
+            relativePaths_.push_back(General::getRelativePath(basePath_, absolutePaths_.at(i)));
+        }
+        else
+        {
+            relativePaths_.push_back(absolutePaths_.at(i));
+        }
     }
 }

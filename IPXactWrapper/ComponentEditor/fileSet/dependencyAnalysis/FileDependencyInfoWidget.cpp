@@ -2,8 +2,8 @@
 // File: FileDependencyInfoWidget.cpp
 //-----------------------------------------------------------------------------
 // Project: Kactus 2
-// Author: Joni-Matti Määttä
-// Date: 23.01.2013
+// Author: Joni-Matti Määttä, Tommi Korhonen
+// Date: 03.03.2013
 //
 // Description:
 // Widget for showing information about one file dependency.
@@ -25,14 +25,14 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
       descEdit_(this),
       directionCombo_(this),
       lockedCheck_(tr("Locked"), this),
+      directionButton_(tr("Reverse Direction"), this),
       dependency_()
 {
     directionCombo_.setFixedWidth(150);
     descEdit_.setMaximumHeight(100);
     //descEdit_.setMaximumWidth(600);
     
-    directionCombo_.addItem(QIcon(":/icons/graphics/dependency_oneway.png"), "Up");
-    directionCombo_.addItem(QIcon(":/icons/graphics/dependency_oneway.png"), "Down");
+    directionCombo_.addItem(QIcon(":/icons/graphics/dependency_oneway.png"), "One way");
     directionCombo_.addItem(QIcon(":/icons/graphics/dependency_twoway.png"), "Bidirectional");
 
     QVBoxLayout* leftLayout = new QVBoxLayout();
@@ -42,6 +42,7 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
     QVBoxLayout* rightLayout = new QVBoxLayout();
     rightLayout->addWidget(new QLabel(tr("Direction:"), this));
     rightLayout->addWidget(&directionCombo_);
+    rightLayout->addWidget(&directionButton_);
     rightLayout->addWidget(&lockedCheck_);
     rightLayout->addStretch(1);
 
@@ -52,6 +53,13 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
     connect(&directionCombo_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
     connect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
     connect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
+    connect(&directionButton_, SIGNAL(clicked()), this, SLOT(directionReversed()));
+
+    // Disabling the widgets.
+    descEdit_.setEnabled(false);
+    directionCombo_.setEnabled(false);
+    lockedCheck_.setEnabled(false);
+    directionButton_.setEnabled(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -77,6 +85,7 @@ void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency
     descEdit_.setEnabled(false);
     directionCombo_.setEnabled(false);
     lockedCheck_.setEnabled(false);
+    directionButton_.setEnabled(false);
     
     if(dependency_ != NULL)
     {
@@ -97,11 +106,13 @@ void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency
         // Set direction combobox.
         if(dependency_->isBidirectional())
         {
-            directionCombo_.setCurrentIndex(2);
+            directionCombo_.setCurrentIndex(1);
+            directionButton_.setEnabled(false);
         }
         else
         {
             directionCombo_.setCurrentIndex(0);
+            directionButton_.setEnabled(true);
         }
     }
     
@@ -120,13 +131,15 @@ QSharedPointer<FileDependency> FileDependencyInfoWidget::getEditedDependency() c
 //-----------------------------------------------------------------------------
 void FileDependencyInfoWidget::directionComboChanged(int index)
 {
-    if( index == 2 )
+    if( index == 1 )
     {
         dependency_->setBidirectional(true);
+        directionButton_.setEnabled(false);
     }
     else
     {
         dependency_->setBidirectional(false);
+        directionButton_.setEnabled(true);
     }
 }
 
@@ -144,4 +157,14 @@ void FileDependencyInfoWidget::lockedCheckChanged(int state)
 void FileDependencyInfoWidget::descEditTextChanged()
 {
     dependency_->setDescription(descEdit_.toPlainText());
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyInfoWidget::directionReversed()
+//-----------------------------------------------------------------------------
+void FileDependencyInfoWidget::directionReversed()
+{
+    QString tmpFile = dependency_->getFile1();
+    dependency_->setFile1(dependency_->getFile2());
+    dependency_->setFile2(tmpFile);
 }
