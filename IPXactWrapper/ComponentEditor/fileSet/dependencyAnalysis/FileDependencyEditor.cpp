@@ -56,15 +56,15 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     progressBar_.setValue(0);
 
     graphWidget_.setContentsMargins(0, 0, 0, 0);
-    graphWidget_.setModel(&model_);
+    graphWidget_.getView().setModel(&model_);
 
-    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_TREE);
-    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_STATUS);
-    graphWidget_.resizeColumnToContents(FILE_DEPENDENCY_COLUMN_CREATE);
-    graphWidget_.setColumnWidth(FILE_DEPENDENCY_COLUMN_PATH, 250);
-    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_TREE, QHeaderView::Fixed);
-    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_STATUS, QHeaderView::Fixed);
-    graphWidget_.header()->setResizeMode(FILE_DEPENDENCY_COLUMN_CREATE, QHeaderView::Fixed);
+    graphWidget_.getView().resizeColumnToContents(FILE_DEPENDENCY_COLUMN_TREE);
+    graphWidget_.getView().resizeColumnToContents(FILE_DEPENDENCY_COLUMN_STATUS);
+    graphWidget_.getView().resizeColumnToContents(FILE_DEPENDENCY_COLUMN_CREATE);
+    graphWidget_.getView().setColumnWidth(FILE_DEPENDENCY_COLUMN_PATH, 250);
+    graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_TREE, QHeaderView::Fixed);
+    graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_STATUS, QHeaderView::Fixed);
+    graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_CREATE, QHeaderView::Fixed);
 
     toolbar_.setFloatable(false);
     toolbar_.setMovable(false);
@@ -141,7 +141,7 @@ void FileDependencyEditor::scan()
     }
 
     model_.endReset();
-    graphWidget_.expandAll();
+    graphWidget_.getView().expandAll();
 
     // Phase 2. Run the dependency analysis.
     progressBar_.setMaximum(model_.getTotalFileCount());
