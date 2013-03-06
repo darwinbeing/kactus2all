@@ -26,6 +26,7 @@ class FileDependency;
 class FileDependencyInfoWidget : public QGroupBox
 {
     Q_OBJECT
+
 public:
     /*!
      *  Constructor.
@@ -40,6 +41,12 @@ public:
     ~FileDependencyInfoWidget();
 
     /*!
+     *  Returns the currently edited dependency.
+     */
+    FileDependency* getEditedDependency() const;
+
+public slots:
+    /*!
      *  Sets the given file dependency editable in the widget.
      *
      *      @param [in] dependency The dependency to set for editing.
@@ -47,12 +54,7 @@ public:
      *      @remarks If the dependency is null, all contents of the widgets are cleared and
      *               the widgets are set to disabled mode.
      */
-    void setEditedDependency(QSharedPointer<FileDependency> dependency);
-
-    /*!
-     *  Returns the currently edited dependency.
-     */
-    QSharedPointer<FileDependency> getEditedDependency() const;
+    void setEditedDependency(FileDependency* dependency);
 
 private slots:
 
@@ -83,7 +85,7 @@ private:
     QPushButton directionButton_;
 
     //! The currently edited dependency.
-    QSharedPointer<FileDependency> dependency_;
+    FileDependency* dependency_;
 };
 
 //-----------------------------------------------------------------------------

@@ -97,6 +97,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
 
     connect(&model_, SIGNAL(analysisProgressChanged(int)),
             this, SLOT(updateProgressBar(int)), Qt::UniqueConnection);
+    connect(&graphWidget_.getView(), SIGNAL(selectionChanged(FileDependency*)),
+            &infoWidget_, SLOT(setEditedDependency(FileDependency*)), Qt::UniqueConnection);
 
     //scan();
 }

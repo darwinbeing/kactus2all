@@ -26,7 +26,7 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
       directionCombo_(this),
       lockedCheck_(tr("Locked"), this),
       directionButton_(tr("Reverse Direction"), this),
-      dependency_()
+      dependency_(0)
 {
     directionCombo_.setFixedWidth(150);
     descEdit_.setMaximumHeight(100);
@@ -73,9 +73,14 @@ FileDependencyInfoWidget::~FileDependencyInfoWidget()
 //-----------------------------------------------------------------------------
 // Function: FileDependencyInfoWidget::setEditedDependency()
 //-----------------------------------------------------------------------------
-void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency> dependency)
+void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
 {
     dependency_ = dependency;
+
+    disconnect(&directionCombo_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
+    disconnect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
+    disconnect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
+    disconnect(&directionButton_, SIGNAL(clicked()), this, SLOT(directionReversed()));
     
     // Clearing the widgets.
     descEdit_.clear();
@@ -87,7 +92,7 @@ void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency
     lockedCheck_.setEnabled(false);
     directionButton_.setEnabled(false);
     
-    if(dependency_ != NULL)
+    if(dependency_ != 0)
     {
         // Enabling the widgets.
         descEdit_.setEnabled(true);
@@ -115,13 +120,17 @@ void FileDependencyInfoWidget::setEditedDependency(QSharedPointer<FileDependency
             directionButton_.setEnabled(true);
         }
     }
-    
+
+    connect(&directionCombo_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
+    connect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
+    connect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
+    connect(&directionButton_, SIGNAL(clicked()), this, SLOT(directionReversed()));
 }
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyInfoWidget::getEditedDependency()
 //-----------------------------------------------------------------------------
-QSharedPointer<FileDependency> FileDependencyInfoWidget::getEditedDependency() const
+FileDependency* FileDependencyInfoWidget::getEditedDependency() const
 {
     return dependency_;
 }

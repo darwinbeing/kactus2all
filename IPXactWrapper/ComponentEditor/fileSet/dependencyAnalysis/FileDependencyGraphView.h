@@ -58,6 +58,11 @@ public:
 
 signals:
     /*!
+     *  Emitted when a file dependency selection has changed.
+     */
+    void selectionChanged(FileDependency* dependency);
+
+    /*!
      *  Emitted when the maximum for the graph column scroll has changed.
      */
     void graphColumnScollMaximumChanged(int maximum);
@@ -198,16 +203,26 @@ private:
      *  Checks whether the given column has space for the given dependency.
      */
     bool hasSpace(GraphColumn const& column, GraphDependency const& dependency) const;
-    
+
+    /*!
+     *  Searches for a dependency at the given mouse coordinate.
+     *
+     *      @param [in] pt The mouse coordinate point to test for.
+     *
+     *      @return If found, the dependency at the given coordinate. Otherwise null.
+     */
+    FileDependency* findDependencyAt(QPoint const& pt) const;
+
     enum
     {
-        DOT_RADIUS = 2,
-        ARROW_WIDTH = 3,
-        ARROW_HEIGHT = 5,
-        POINTER_OFFSET = 2,
-        SAFE_MARGIN = 5,
-        GRAPH_MARGIN = 10,
-        GRAPH_SPACING = 20,
+        DOT_RADIUS = 2,       //!< The radius of the "from" dot for the arrows.
+        ARROW_WIDTH = 3,      //!< The half width of the arrow head.
+        ARROW_HEIGHT = 5,     //!< The height of the arrow head.
+        POINTER_OFFSET = 2,   //!< Pointer offset for drawing the arrow heads.
+        SAFE_MARGIN = 5,      //!< Safe margin for placing the dependencies into the columns.
+        GRAPH_MARGIN = 10,    //!< Left & right for the dependency graph in the Dependencies column.
+        GRAPH_SPACING = 20,   //!< Spacing between consecutive graph columns.
+        SELECTION_MARGIN = 4, //!< Mouse selection margin for dependencies.
     };
 
     //-----------------------------------------------------------------------------
@@ -225,6 +240,9 @@ private:
 
     //! The current scroll value of the dependency graph column.
     int scrollIndex_;
+
+    //! The currently selected dependency.
+    FileDependency* selectedDependency_;
 
     //! If true, the user is currently drawing a dependency.
     bool drawingDependency_;

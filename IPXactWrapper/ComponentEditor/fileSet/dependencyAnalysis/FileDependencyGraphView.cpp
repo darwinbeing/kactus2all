@@ -32,6 +32,7 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       columns_(),
       maxVisibleGraphColumns_(0),
       scrollIndex_(0),
+      selectedDependency_(0),
       drawingDependency_(false)
 {
     setUniformRowHeights(true);
@@ -167,15 +168,37 @@ void FileDependencyGraphView::paintEvent(QPaintEvent* event)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 {
-    QTreeView::mousePressEvent(event);
+    int column = columnAt(event->x());
 
-    // TODO[Tommi]
-    // Use columnViewportPosition() and columnWidth() functions to check
-    // if the user pressed the mouse button inside the creation column.
+    // Check if the user pressed over the dependencies column.
+    if (column == FILE_DEPENDENCY_COLUMN_DEPENDENCIES)
+    {
+        if (event->button() == Qt::LeftButton)
+        {
+            // Search for a dependency under the cursor.
+            FileDependency* dependency = findDependencyAt(event->pos());
 
-    // Use indexAt() to retrieve the model index.
-    // Use modelIndex.internalPointer() to retrieve the FileDependencyItem* pointer.
-    // Use getRowY(modelIndex) function to retrieve the center y coordinate for the row specified by the model index.
+            if (dependency != selectedDependency_)
+            {
+                selectedDependency_ = dependency;
+                viewport()->repaint();
+
+                emit selectionChanged(selectedDependency_);
+            }
+        }
+    }
+    // Otherwise check if the user pressed over the manual creation column.
+    else if (column == FILE_DEPENDENCY_COLUMN_CREATE)
+    {
+        // TODO[Tommi]
+        // Use indexAt() to retrieve the model index.
+        // Use modelIndex.internalPointer() to retrieve the FileDependencyItem* pointer.
+        // Use getRowY(modelIndex) function to retrieve the center y coordinate for the row specified by the model index.
+    }
+    else
+    {
+        QTreeView::mousePressEvent(event);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -357,9 +380,15 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
 
                 if (arrowRect.intersects(rect))
                 {
+                    // Choose color for the arrow based on the dependency information
+                    // and the selected dependency.
                     QColor color = Qt::black;
 
-                    if (dep.dependency->isManual())
+                    if (dep.dependency == selectedDependency_)
+                    {
+                        color = Qt::blue;
+                    }
+                    else if (dep.dependency->isManual())
                     {
                         color = Qt::magenta;
                     }
@@ -384,7 +413,7 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
 // Function: FileDependencyGraphWidget::drawRow()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem const& option,
-                                        QModelIndex const& index) const
+                                      QModelIndex const& index) const
 {
     // Handle base drawing.
     QTreeView::drawRow(painter, option, index);
@@ -404,7 +433,10 @@ void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem co
 void FileDependencyGraphView::onModelReset()
 {
     columns_.clear();
-    emit graphColumnScollMaximumChanged(qMax<int>(0, columns_.size() - maxVisibleGraphColumns_));
+    selectedDependency_ = 0;
+
+    emit graphColumnScollMaximumChanged(0);
+    emit selectionChanged(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -443,4 +475,51 @@ void FileDependencyGraphView::onSectionResized()
 
     emit graphColumnScollMaximumChanged(qMax<int>(0, columns_.size() - maxVisibleGraphColumns_));
     emit dependencyColumnPositionChanged(columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::findDependencyAt()
+//-----------------------------------------------------------------------------
+FileDependency* FileDependencyGraphView::findDependencyAt(QPoint const& pt) const
+{
+    int x = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES) + GRAPH_MARGIN;
+
+    for (int i = scrollIndex_; i < columns_.size(); ++i)
+    {
+        GraphColumn const& column = columns_[i];
+
+        // Check if the column contains the x coordinate.
+        if (qAbs(x - pt.x()) <= ARROW_WIDTH + SELECTION_MARGIN)
+        {
+            // Go through all dependencies in the column until we find a match.
+            foreach (GraphDependency const& dep, column.dependencies)
+            {
+                FileDependencyItem* fromItem = model_->findFileItem(dep.dependency->getFile1());
+                FileDependencyItem* toItem = model_->findFileItem(dep.dependency->getFile2());
+                Q_ASSERT(fromItem != 0);
+                Q_ASSERT(toItem != 0);
+
+                // Determine the y coordinates for the dependency.
+                int fromY = 0;
+                int toY = 0;
+
+                if (getVisualRowY(model_->getItemIndex(fromItem, 0), fromY) &&
+                    getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+                {
+                    // Interval intersection test.
+                    if (pt.y() >= qMin(fromY, toY) - SELECTION_MARGIN &&
+                        pt.y() <= qMax(fromY, toY) + SELECTION_MARGIN)
+                    {
+                        return dep.dependency;
+                    }
+                }
+            }
+
+            break;
+        }
+
+        x += GRAPH_SPACING;
+    }
+
+    return 0;
 }
