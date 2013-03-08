@@ -222,7 +222,15 @@ private:
      *      @param [in] fileItem The file item to analyze.
      */
     void analyze(FileDependencyItem* fileItem);
-    
+
+    /*!
+     *  Searches for a dependency between the given files.
+     *
+     *      @param [in] file1  File path of the first file.
+     *      @param [in] file2  File path of the second file.
+     */
+    FileDependency* findDependency(QString const& file1, QString const& file2) const;
+
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
@@ -238,6 +246,9 @@ private:
 
     //! The dependency tree root.
     FileDependencyItem* root_;
+
+    //! The externals item (for fast access).
+    FileDependencyItem* unlocated_;
 
     //! The timer for running the analysis.
     QTimer* timer_;

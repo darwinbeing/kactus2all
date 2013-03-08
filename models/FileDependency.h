@@ -19,6 +19,8 @@
 #include <QXmlStreamWriter>
 #include <QObject>
 
+class FileDependencyItem;
+
 //-----------------------------------------------------------------------------
 //! File dependency class.
 //-----------------------------------------------------------------------------
@@ -133,6 +135,28 @@ public:
      */
     FileDependency& operator=(FileDependency const& rhs);
 
+    //-----------------------------------------------------------------------------
+    // Internal methods.
+    //-----------------------------------------------------------------------------
+
+    /*!
+     *  Sets the file item pointers.
+     *
+     *      @param [in] fileItem1 The file item corresponding to file1.
+     *      @param [in] fileItem2 The file item corresponding to file2.
+     */
+    void setItemPointers(FileDependencyItem* fileItem1, FileDependencyItem* fileItem2);
+
+    /*!
+     *  Returns the file item pointer for file1.
+     */
+    FileDependencyItem* getFileItem1() const;
+
+    /*!
+     *  Returns the file item pointer for file2.
+     */
+    FileDependencyItem* getFileItem2() const;
+
 private:
     //-----------------------------------------------------------------------------
     // Data.
@@ -155,6 +179,10 @@ private:
 
     //! If true, the dependency is a manually created one.
     bool manual_;
+
+    //! The file item pointers.
+    FileDependencyItem* fileItem1_;
+    FileDependencyItem* fileItem2_;
 };
 
 #endif // FILEDEPENDENCY_H

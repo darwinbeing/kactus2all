@@ -85,8 +85,15 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
 {
-    FileDependencyItem* fromItem = model_->findFileItem(dependency->getFile1());
-    FileDependencyItem* toItem = model_->findFileItem(dependency->getFile2());
+    FileDependencyItem* fromItem = dependency->getFileItem1();
+    FileDependencyItem* toItem = dependency->getFileItem2(); 
+
+//     if (fromItem == 0 || toItem == 0)
+//     {
+//         fromItem = model_->findFileItem(dependency->getFile1());
+//         toItem = model_->findFileItem(dependency->getFile2());
+//         dependency->setItemPointers(fromItem, toItem);
+//     }
 
     if (fromItem != 0 && toItem != 0)
     {
@@ -127,7 +134,7 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
             columns_.append(GraphColumn());
             selColumn = &columns_.back();
 
-            emit graphColumnScollMaximumChanged(qMax<int>(0, columns_.size() - maxVisibleGraphColumns_));
+            onSectionResized();
         }
         
         selColumn->dependencies.append(graphDep);
@@ -354,29 +361,22 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
     int width = columnWidth(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
     int x = GRAPH_MARGIN;
     
-    for (int i = scrollIndex_; i < columns_.size(); ++i)
+    for (int i = scrollIndex_; i < qMin(columns_.size(), scrollIndex_ + maxVisibleGraphColumns_); ++i)
     {
         GraphColumn const& column = columns_[i];
 
         foreach (GraphDependency const& dep, column.dependencies)
         {
-            FileDependencyItem* fromItem = model_->findFileItem(dep.dependency->getFile1());
-            FileDependencyItem* toItem = model_->findFileItem(dep.dependency->getFile2());
-            Q_ASSERT(fromItem != 0);
-            Q_ASSERT(toItem != 0);
-
-            // Determine the y coordinates for the dependency.
             int fromY = 0;
             int toY = 0;
             
-            if (getVisualRowY(model_->getItemIndex(fromItem, 0), fromY) &&
-                getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+            if (getCoordinates(dep, fromY, toY))
             {
                 // Cull arrows that are not inside the view rectangle.
                 QRect arrowRect(columnOffset + x - ARROW_WIDTH,
                                 qMin(fromY, toY) - POINTER_OFFSET,
                                 2 * ARROW_WIDTH,
-                                qAbs(dep.toY - dep.fromY) + 2 * POINTER_OFFSET);
+                                qAbs(toY - fromY) + 2 * POINTER_OFFSET);
 
                 if (arrowRect.intersects(rect))
                 {
@@ -393,20 +393,78 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
                         color = Qt::magenta;
                     }
 
-                    drawArrow(painter, columnOffset + x, fromY, toY,
-                              color, dep.dependency->isBidirectional());
+                    drawArrow(painter, columnOffset + x, fromY, toY, color, dep.dependency->isBidirectional());
                 }
             }
         }
 
         x += GRAPH_SPACING;
+    }
 
-        // Check if we're out of space or out of the view rectangle.
-        if (x + GRAPH_MARGIN >= width || columnOffset + x - ARROW_WIDTH > rect.right())
+    // Draw coverage of the dependencies that are out of sight.
+    painter.setPen(QPen(Qt::red, 2));
+    painter.setRenderHint(QPainter::Antialiasing, false);
+
+    // Left side coverage.
+    x = columnOffset + 2;
+
+    for (int i = 0; i < scrollIndex_; ++i)
+    {
+        GraphColumn const& column = columns_[i];
+
+        foreach (GraphDependency const& dep, column.dependencies)
         {
-            break;
+            // Determine the y coordinates for the dependency.
+            int fromY = 0;
+            int toY = 0;
+
+            if (getCoordinates(dep, fromY, toY))
+            {
+                painter.drawLine(x, fromY, x, toY);
+            }
         }
     }
+
+    // Right side coverage.
+    x = columnOffset + width - 2;
+
+    for (int i = scrollIndex_ + maxVisibleGraphColumns_; i < columns_.size(); ++i)
+    {
+        GraphColumn const& column = columns_[i];
+
+        foreach (GraphDependency const& dep, column.dependencies)
+        {
+            // Determine the y coordinates for the dependency.
+            int fromY = 0;
+            int toY = 0;
+
+            if (getCoordinates(dep, fromY, toY))
+            {
+                painter.drawLine(x, fromY, x, toY);
+            }
+        }
+    }
+
+//     Left side coverage.
+//     int covTop = 0;
+//     int covBottom = 0;
+//     computeGraphCoverage(0, scrollIndex_ - 1, 0, viewport()->height(), covTop, covBottom);
+// 
+//     if (covTop < covBottom)
+//     {
+//         painter.drawLine(columnOffset + 2, covTop, columnOffset + 2, covBottom);
+//     }
+// 
+//     // Right side coverage.
+//     computeGraphCoverage(scrollIndex_ + maxVisibleGraphColumns_, columns_.size() - 1,
+//                          0, viewport()->height(), covTop, covBottom);
+// 
+//     if (covTop < covBottom)
+//     {
+//         painter.drawLine(columnOffset + width - 2, covTop, columnOffset + width - 2, covBottom);
+//     }
+
+    painter.setRenderHint(QPainter::Antialiasing);
 }
 
 //-----------------------------------------------------------------------------
@@ -494,17 +552,11 @@ FileDependency* FileDependencyGraphView::findDependencyAt(QPoint const& pt) cons
             // Go through all dependencies in the column until we find a match.
             foreach (GraphDependency const& dep, column.dependencies)
             {
-                FileDependencyItem* fromItem = model_->findFileItem(dep.dependency->getFile1());
-                FileDependencyItem* toItem = model_->findFileItem(dep.dependency->getFile2());
-                Q_ASSERT(fromItem != 0);
-                Q_ASSERT(toItem != 0);
-
                 // Determine the y coordinates for the dependency.
                 int fromY = 0;
                 int toY = 0;
 
-                if (getVisualRowY(model_->getItemIndex(fromItem, 0), fromY) &&
-                    getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+                if (getCoordinates(dep, fromY, toY))
                 {
                     // Interval intersection test.
                     if (pt.y() >= qMin(fromY, toY) - SELECTION_MARGIN &&
@@ -522,4 +574,85 @@ FileDependency* FileDependencyGraphView::findDependencyAt(QPoint const& pt) cons
     }
 
     return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::computeGraphCoverage()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::computeGraphCoverage(int startColumn, int endColumn, int top, int bottom,
+                                                   int& covTop, int& covBottom) const
+{
+    covTop = INT_MAX;
+    covBottom = INT_MIN;
+
+    for (int i = startColumn; i <= endColumn; ++i)
+    {
+        GraphColumn const& column = columns_[i];
+
+        foreach (GraphDependency const& dep, column.dependencies)
+        {
+            // Determine the visual y coordinates for the dependency and check if the
+            // dependency is visible at all.
+            int fromY = 0;
+            int toY = 0;
+
+            if (getCoordinates(dep, fromY, toY))
+            {
+                // Check if the dependency intersects the query area (top-bottom).
+                int minY = qMin(fromY, toY);
+                int maxY = qMax(fromY, toY);
+
+                if (maxY <= top || minY >= bottom)
+                {
+                    continue;
+                }
+
+                // Update coverage variables.
+                covTop = qMin(covTop, qMax(top, minY));
+                covBottom = qMax(covBottom, qMin(bottom, maxY));
+            }
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::getCoordinates()
+//-----------------------------------------------------------------------------
+bool FileDependencyGraphView::getCoordinates(GraphDependency const &dep, int& fromY, int& toY) const
+{
+    FileDependencyItem* fromItem = dep.dependency->getFileItem1();
+    FileDependencyItem* toItem = dep.dependency->getFileItem2();
+    Q_ASSERT(fromItem != 0);
+    Q_ASSERT(toItem != 0);
+
+    // Determine the y coordinates for the dependency.
+    // If the item is not visible, reroute the dependency to the missing item's parent.
+    if (!getVisualRowY(model_->getItemIndex(fromItem, 0), fromY))
+    {
+        fromItem = fromItem->getParent();
+
+        if (!getVisualRowY(model_->getItemIndex(fromItem, 0), fromY))
+        {
+            return false;
+        }
+    }
+
+    if (!getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+    {
+        toItem = toItem->getParent();
+
+        if (!getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+        {
+            return false;
+        }
+    }
+
+    // The items can be same when both items are not visible and have a same parent.
+    // In that case, the dependency is invisible.
+    if (fromItem == toItem)
+    {
+        return false;
+    }
+
+    return true;
 }

@@ -90,7 +90,6 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     layout->addWidget(&graphWidget_, 1);
     layout->addWidget(&infoWidget_);
     layout->setContentsMargins(0, 0, 0, 0);
-    //layout->setSpacing(1);
 
     // Resolve plugins and save the component's xml path.
     xmlPath_ = QFileInfo(libInterface_->getPath(*component_->getVlnv())).path();
@@ -188,7 +187,7 @@ void FileDependencyEditor::resolveExtensionFileTypes()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::scanFiles(QString const& path)
 {
-    QString relativePath = General::getRelativePath(xmlPath_, path);
+    QString relativePath = General::getRelativePath(xmlPath_, path); // TODO: Remove when dialog is fixed!
     FileDependencyItem* folderItem = model_.addFolder(relativePath);
 
     QFileInfoList list = QDir(path).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);

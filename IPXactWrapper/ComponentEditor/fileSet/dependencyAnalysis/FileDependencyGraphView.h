@@ -171,6 +171,15 @@ private:
     void drawDependencyGraph(QPainter& painter, QRect const& rect);
 
     /*!
+     *  Retrieves the final drawing coordinates and the items for the given dependency.
+     *
+     *      @param [in]  dep    The dependency.
+     *      @param [out] fromY  The resulted from y coordinate.
+     *      @param [out] toY    The resulted to y coordinate.
+     */
+    bool getCoordinates(GraphDependency const& dep, int& fromY, int& toY) const;
+
+    /*!
      *  Draws the temporary manual dependency arrow when the user is creating a manual connection.
      *
      *      @param [in] painter The drawing context.
@@ -213,11 +222,25 @@ private:
      */
     FileDependency* findDependencyAt(QPoint const& pt) const;
 
+    /*!
+     *  Calculates the vertical coverage of the graph columns startColumn-endColumn inside the given query area.
+     *
+     *      @param [in]  startColumn  The start index of which columns to check for.
+     *      @param [in]  endColumn    The end index of which columns to check for (inclusive).
+     *      @param [in]  top          The top y coordinate of the query area.
+     *      @param [in]  bottom       The bottom y coordinate of the query area.
+     *      @param [out] covTop       The top y coordinate of the resulted coverage.
+     *      @param [out] covBottom    The bottom y cooordinate of the resulted coverage.
+     */
+    void computeGraphCoverage(int startColumn, int endColumn, int top, int bottom,
+                              int& covTop, int& covBottom) const;
+
+
     enum
     {
         DOT_RADIUS = 2,       //!< The radius of the "from" dot for the arrows.
         ARROW_WIDTH = 3,      //!< The half width of the arrow head.
-        ARROW_HEIGHT = 5,     //!< The height of the arrow head.
+        ARROW_HEIGHT = 6,     //!< The height of the arrow head.
         POINTER_OFFSET = 2,   //!< Pointer offset for drawing the arrow heads.
         SAFE_MARGIN = 5,      //!< Safe margin for placing the dependencies into the columns.
         GRAPH_MARGIN = 10,    //!< Left & right for the dependency graph in the Dependencies column.

@@ -32,6 +32,7 @@ FileDependencyModel::FileDependencyModel(PluginManager& pluginMgr, QSharedPointe
       component_(component),
       basePath_(basePath),
       root_(new FileDependencyItem()),
+      unlocated_(0),
       timer_(0),
       curFolderIndex_(0),
       curFileIndex_(0),
@@ -51,7 +52,7 @@ FileDependencyModel::~FileDependencyModel()
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::headerData()
 //-----------------------------------------------------------------------------
-QVariant FileDependencyModel::headerData(int section, Qt::Orientation orientation,
+QVariant FileDependencyModel::headerData(int section, Qt::Orientation /*orientation*/,
                                          int role /*= Qt::DisplayRole*/) const
 {
     if (role == Qt::DisplayRole)
@@ -341,6 +342,7 @@ void FileDependencyModel::beginReset()
     beginResetModel();
     delete root_;
     root_ = new FileDependencyItem();
+    dependencies_.clear(); // TODO: Keep saved dependencies but remove everything else?
 }
 
 //-----------------------------------------------------------------------------
@@ -348,6 +350,9 @@ void FileDependencyModel::beginReset()
 //-----------------------------------------------------------------------------
 void FileDependencyModel::endReset()
 {
+    // Add the externals folder.
+    unlocated_ = root_->addFolder(component_.data(), tr("External"));
+
     endResetModel();
 }
 
@@ -390,7 +395,8 @@ void FileDependencyModel::performAnalysisStep()
     }
 
     // Stop the timer when there are no more folders.
-    if (curFolderIndex_ == root_->getChildCount())
+    if (curFolderIndex_ == root_->getChildCount() ||
+        (unlocated_ != 0 && curFolderIndex_ == root_->getChildCount() - 1))
     {
         timer_->stop();
         delete timer_;
@@ -508,13 +514,55 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
 
             foreach (FileDependencyDesc const& desc, dependencyDescs)
             {
-                QSharedPointer<FileDependency> dependency(new FileDependency());
-                dependency->setFile1(fileItem->getPath());
-                dependency->setFile2(QFileInfo(fileItem->getPath()).path() + "/" + desc.filename);
-                dependency->setDescription(desc.description);
+                QString file1 = fileItem->getPath();
+                QString file2 = QFileInfo(fileItem->getPath()).path() + "/" + desc.filename;
 
-                dependencies_.append(dependency);
-                emit dependencyAdded(dependency.data());
+                // Check if the dependency already exists.
+                FileDependency* found = findDependency(file1, file2);
+
+                if (found == 0)
+                {
+                    // Retrieve the item pointers.
+                    FileDependencyItem* fileItem1 = findFileItem(file1);
+                    FileDependencyItem* fileItem2 = findFileItem(file2);
+
+                    // First item should always be valid.
+                    Q_ASSERT(fileItem1 != 0);
+
+                    // Check if the second one is an external (not found).
+                    if (fileItem2 == 0)
+                    {
+                        file2 = "External/" + desc.filename;
+
+                        beginInsertRows(getItemIndex(unlocated_, 0),
+                                        unlocated_->getChildCount(), unlocated_->getChildCount());
+                        fileItem2 = unlocated_->addFile(component_.data(), file2, QList<File*>());
+                        endInsertRows();
+                    }
+
+                    // Create a new dependency if not found.
+                    QSharedPointer<FileDependency> dependency(new FileDependency());
+                    dependency->setFile1(file1);
+                    dependency->setFile2(file2);
+                    dependency->setDescription(desc.description);
+                    dependency->setItemPointers(fileItem1, fileItem2);
+
+                    dependencies_.append(dependency);
+                    emit dependencyAdded(dependency.data());
+                }
+                // Otherwise check if the existing dependency needs updating to a bidirectional one.
+                else if (!found->isBidirectional() && found->getFile1() != file1)
+                {
+                    found->setBidirectional(true);
+
+                    // Combine the descriptions.
+                    found->setDescription(found->getDescription() + "\n" + desc.description);
+                    emit dependencyChanged(found);
+                }
+                else
+                {
+                    // TODO: Update the description even in this case?
+                }
             }
         }
 
@@ -563,6 +611,23 @@ FileDependencyItem* FileDependencyModel::findFileItem(QString const& path)
                     return fileItem;
                 }
             }
+        }
+    }
+
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::findDependency()
+//-----------------------------------------------------------------------------
+FileDependency* FileDependencyModel::findDependency(QString const& file1, QString const& file2) const
+{
+    foreach (QSharedPointer<FileDependency> dependency, dependencies_)
+    {
+        if ((dependency->getFile1() == file1 && dependency->getFile2() == file2) ||
+            (dependency->getFile1() == file2 && dependency->getFile2() == file1))
+        {
+            return dependency.data();
         }
     }
 

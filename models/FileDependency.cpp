@@ -22,7 +22,9 @@ FileDependency::FileDependency()
       desc_(),
       locked_(false),
       bidirectional_(false),
-      manual_(false)
+      manual_(false),
+      fileItem1_(0),
+      fileItem2_(0)
 {
 }
 
@@ -35,7 +37,9 @@ FileDependency::FileDependency(FileDependency const& rhs)
       desc_(rhs.desc_),
       locked_(rhs.locked_),
       bidirectional_(rhs.bidirectional_),
-      manual_(rhs.manual_)
+      manual_(rhs.manual_),
+      fileItem1_(0),
+      fileItem2_(0)
 {
 }
 
@@ -48,7 +52,9 @@ FileDependency::FileDependency(QDomNode& node)
       desc_(),
       locked_(false),
       bidirectional_(false),
-      manual_(false)
+      manual_(false),
+      fileItem1_(0),
+      fileItem2_(0)
 {
     for (int i = 0; i < node.childNodes().count(); ++i)
     {
@@ -212,4 +218,29 @@ FileDependency& FileDependency::operator=(FileDependency const& rhs)
     }
 
     return *this;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::setItemPointers()
+//-----------------------------------------------------------------------------
+void FileDependency::setItemPointers(FileDependencyItem* fileItem1, FileDependencyItem* fileItem2)
+{
+    fileItem1_ = fileItem1;
+    fileItem2_ = fileItem2;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::getFileItem1()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependency::getFileItem1() const
+{
+    return fileItem1_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::getFileItem2()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependency::getFileItem2() const
+{
+    return fileItem2_;
 }
