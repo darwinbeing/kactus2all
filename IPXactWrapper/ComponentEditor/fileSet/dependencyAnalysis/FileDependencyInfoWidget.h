@@ -45,6 +45,12 @@ public:
      */
     FileDependency* getEditedDependency() const;
 
+signals:
+    /*!
+     *  Emitted when the dependency has been changed.
+     */
+    void dependencyChanged(FileDependency* dependency);
+
 public slots:
     /*!
      *  Sets the given file dependency editable in the widget.

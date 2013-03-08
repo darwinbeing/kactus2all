@@ -533,11 +533,15 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                     if (fileItem2 == 0)
                     {
                         file2 = "External/" + desc.filename;
+                        fileItem2 = findFileItem(file2);
 
-                        beginInsertRows(getItemIndex(unlocated_, 0),
-                                        unlocated_->getChildCount(), unlocated_->getChildCount());
-                        fileItem2 = unlocated_->addFile(component_.data(), file2, QList<File*>());
-                        endInsertRows();
+                        if (fileItem2 == 0)
+                        {
+                            beginInsertRows(getItemIndex(unlocated_, 0),
+                                            unlocated_->getChildCount(), unlocated_->getChildCount());
+                            fileItem2 = unlocated_->addFile(component_.data(), file2, QList<File*>());
+                            endInsertRows();
+                        }
                     }
 
                     // Create a new dependency if not found.

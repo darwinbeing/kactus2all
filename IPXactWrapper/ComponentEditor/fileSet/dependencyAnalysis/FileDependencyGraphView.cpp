@@ -68,6 +68,8 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
 
         connect(depModel, SIGNAL(dependencyAdded(FileDependency*)),
                 this, SLOT(onDependencyAdded(FileDependency*)), Qt::UniqueConnection);
+        connect(depModel, SIGNAL(dependencyChanged(FileDependency*)),
+                this, SLOT(onDependencyChanged(FileDependency*)), Qt::UniqueConnection);
         connect(depModel, SIGNAL(modelReset()),
                 this, SLOT(onModelReset()), Qt::UniqueConnection);
         model_ = depModel;
@@ -144,6 +146,15 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
         viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH, qMin(fromY, toY) - POINTER_OFFSET,
                                   2 * ARROW_WIDTH, qAbs(toY - fromY) + 2 * POINTER_OFFSET));
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onDependencyChanged()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onDependencyChanged(FileDependency* dependency)
+{
+    // TODO: Repaint only the area of the dependency.
+    viewport()->repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -402,7 +413,7 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
     }
 
     // Draw coverage of the dependencies that are out of sight.
-    painter.setPen(QPen(Qt::red, 2));
+    painter.setPen(QPen(QColor(0, 158, 255), 2));
     painter.setRenderHint(QPainter::Antialiasing, false);
 
     // Left side coverage.

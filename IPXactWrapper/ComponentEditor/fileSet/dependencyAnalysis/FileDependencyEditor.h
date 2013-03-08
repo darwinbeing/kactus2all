@@ -20,6 +20,7 @@
 #include <QToolBar>
 #include <QTableWidget>
 #include <QProgressBar>
+#include <QStringList>
 
 class Component;
 class PluginManager;
@@ -115,6 +116,9 @@ private:
 
     //! Extension fileset lookup.
     QMap<QString, QString> fileTypeLookup_;
+
+    //! Ignore list for extensions.
+    QStringList ignoreExtList_;
 
     //! The file dependency model.
     FileDependencyModel model_;

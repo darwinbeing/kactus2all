@@ -82,6 +82,9 @@ private:
 
     //! The table view for file types.
     EditableTableView view_;
+
+    //! Line edit for ignored extensions.
+    QLineEdit ignoredExtensionsEdit_;
 };
 
 //-----------------------------------------------------------------------------

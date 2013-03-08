@@ -244,3 +244,12 @@ FileDependencyItem* FileDependency::getFileItem2() const
 {
     return fileItem2_;
 }
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::reverse()
+//-----------------------------------------------------------------------------
+void FileDependency::reverse()
+{
+    qSwap(file1_, file2_);
+    qSwap(fileItem1_, fileItem2_);
+}

@@ -99,6 +99,9 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     connect(&graphWidget_.getView(), SIGNAL(selectionChanged(FileDependency*)),
             &infoWidget_, SLOT(setEditedDependency(FileDependency*)), Qt::UniqueConnection);
 
+    connect(&infoWidget_, SIGNAL(dependencyChanged(FileDependency*)),
+            &model_, SIGNAL(dependencyChanged(FileDependency*)), Qt::UniqueConnection);
+
     //scan();
 }
 
@@ -157,24 +160,29 @@ void FileDependencyEditor::scan()
 void FileDependencyEditor::resolveExtensionFileTypes()
 {
     fileTypeLookup_.clear();
-
+    
     // Retrieve the file types information from the settings.
     QSettings settings;
+    ignoreExtList_ = settings.value("FileTypes/IgnoredExtensions").toString().split(';');
+
     settings.beginGroup("FileTypes");
 
     QStringList fileTypes = settings.childKeys();
 
     foreach (QString const& fileType, fileTypes)
     {
-        // Enumerate all extensions for the currently investigated file type.
-        QStringList extensions = settings.value(fileType).toString().split(';');
-
-        foreach (QString const& ext, extensions)
+        if (fileType != "IgnoredExtensions")
         {
-            // Add to the lookup map only if the extension is not already in use.
-            if (!fileTypeLookup_.contains(ext))
+            // Enumerate all extensions for the currently investigated file type.
+            QStringList extensions = settings.value(fileType).toString().split(';');
+
+            foreach (QString const& ext, extensions)
             {
-                fileTypeLookup_.insert(ext, fileType);
+                // Add to the lookup map only if the extension is not already in use.
+                if (!fileTypeLookup_.contains(ext))
+                {
+                    fileTypeLookup_.insert(ext, fileType);
+                }
             }
         }
     }
@@ -199,7 +207,8 @@ void FileDependencyEditor::scanFiles(QString const& path)
         {
             scanFiles(info.filePath());
         }
-        else
+        // Otherwise add the file if it does not belong to ignored extensions.
+        else if (!ignoreExtList_.contains(info.completeSuffix()))
         {
             // Otherwise the entry is a file.
             // Check which file type corresponds to the extension.

@@ -57,6 +57,11 @@ public:
     void write(QXmlStreamWriter& writer);
 
     /*!
+     *  Reverses the dependency.
+     */
+    void reverse();
+
+    /*!
      *  Sets the 'from' file.
      *
      *      @param [in] filename The name of the file.

@@ -150,6 +150,8 @@ void FileDependencyInfoWidget::directionComboChanged(int index)
         dependency_->setBidirectional(false);
         directionButton_.setEnabled(true);
     }
+
+    emit dependencyChanged(dependency_);
 }
 
 //-----------------------------------------------------------------------------
@@ -173,7 +175,6 @@ void FileDependencyInfoWidget::descEditTextChanged()
 //-----------------------------------------------------------------------------
 void FileDependencyInfoWidget::directionReversed()
 {
-    QString tmpFile = dependency_->getFile1();
-    dependency_->setFile1(dependency_->getFile2());
-    dependency_->setFile2(tmpFile);
+    dependency_->reverse();
+    emit dependencyChanged(dependency_);
 }
