@@ -21,6 +21,7 @@
 #include <QTableWidget>
 #include <QProgressBar>
 #include <QStringList>
+#include <QAction>
 
 class Component;
 class PluginManager;
@@ -55,6 +56,9 @@ public:
 signals:
     //! Emitted when the file sets have been updated.
     void fileSetsUpdated();
+    
+	//! Prints a notification to user.
+	void noticeMessage(const QString& msg) const;
 
 private slots:
     /*!
@@ -74,6 +78,20 @@ private slots:
      *      @param [in] value The value to set to the progress bar.
      */
     void updateProgressBar(int value);
+
+    /*!
+     *  Sends filters to the dependecy graph
+     *
+     *      @param [in] the filter being toggled.
+     */
+    void greenFilter();
+    void yellowFilter();
+    void redFilter();
+    void twoWayFilter();
+    void oneWayFilter();
+    void manualFilter();
+    void automaticFilter();
+    void diffFilter();
 
 private:
     // Disable copying.
@@ -125,6 +143,17 @@ private:
 
     //! The XML base path for the component.
     QString xmlPath_;
+
+    QAction* filterGreen_;
+    QAction* filterYellow_;
+    QAction* filterRed_;
+    QAction* filterTwoWay_;
+    QAction* filterOneWay_;
+    QAction* filterManual_;
+    QAction* filterAutomatic_;
+    QAction* filterDiff_;
+
+    FileDependencyGraphView::DependencyFilters filters_;
 };
 
 //-----------------------------------------------------------------------------

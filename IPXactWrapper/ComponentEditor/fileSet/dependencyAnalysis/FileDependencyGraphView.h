@@ -274,6 +274,9 @@ private:
 
     //! If true, the user is currently drawing a dependency.
     bool drawingDependency_;
+
+    //! Current filters used on the graph.
+    DependencyFilters filters_;
 };
 
 //-----------------------------------------------------------------------------

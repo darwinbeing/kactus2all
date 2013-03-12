@@ -29,6 +29,7 @@
 #include <QSettings>
 #include <QHeaderView>
 #include <QDebug>
+#include <QAction>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyEditor::FileDependencyEditor()
@@ -45,7 +46,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       libInterface_(libInterface),
       fileTypeLookup_(),
       model_(pluginMgr, component, QFileInfo(libInterface_->getPath(*component_->getVlnv())).path() + "/"),
-      xmlPath_()
+      xmlPath_(),
+      filters_(255)
 {
     // Initialize the widgets.
     progressBar_.setStyleSheet("QProgressBar:horizontal { margin: 0px; border: none; background: #cccccc; } "
@@ -69,14 +71,22 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     toolbar_.setFloatable(false);
     toolbar_.setMovable(false);
     toolbar_.setStyleSheet(QString("QToolBar { border: none; }"));
-    toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_green.png"), "Show Green");
-    toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_yellow.png"), "Show Yellow");
-    toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_red.png"), "Show Red");
-    toolbar_.addAction(QIcon(":/icons/graphics/dependency_twoway.png"), "Show Bidirectional");
-    toolbar_.addAction(QIcon(":/icons/graphics/dependency_oneway.png"), "Show Unidirectional");
-    toolbar_.addAction(QIcon(":/icons/graphics/dependency_manual.png"), "Show Manual");
-    toolbar_.addAction(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed");
-    toolbar_.addAction(QIcon(":/icons/graphics/diff.png"), "Show Differences");
+    filterGreen_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_green.png"), "Show Green",
+                                      this, SLOT(greenFilter()));
+    filterYellow_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_yellow.png"), "Show Yellow",
+                                      this, SLOT(yellowFilter()));
+    filterRed_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_red.png"), "Show Red",
+                                      this, SLOT(redFilter()));
+    filterTwoWay_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_twoway.png"), "Show Bidirectional",
+                                      this, SLOT(twoWayFilter()));
+    filterOneWay_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_oneway.png"), "Show Unidirectional",
+                                      this, SLOT(oneWayFilter()));
+    filterManual_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_manual.png"), "Show Manual",
+                                      this, SLOT(manualFilter()));
+    filterAutomatic_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
+                                      this, SLOT(automaticFilter()));
+    filterDiff_= toolbar_.addAction(QIcon(":/icons/graphics/diff.png"), "Show Differences",
+                                      this, SLOT(diffFilter()));
     toolbar_.addSeparator();
     toolbar_.addAction(QIcon(":/icons/graphics/import_folders.png"), "Import Source Directories",
                        this, SLOT(openSourceDialog()));
@@ -249,4 +259,110 @@ void FileDependencyEditor::scanFiles(QString const& path)
 void FileDependencyEditor::updateProgressBar(int value)
 {
     progressBar_.setValue(value);
+}
+
+// Filter slots
+void FileDependencyEditor::greenFilter()
+{
+    if (filters_ & 1)
+    {
+        filterGreen_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterGreen_->setIcon(QIcon(":/icons/graphics/traffic-light_green.png"));
+    }
+    filters_ ^= 1;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::yellowFilter()
+{
+    if (filters_ & 2)
+    {
+        filterYellow_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterYellow_->setIcon(QIcon(":/icons/graphics/traffic-light_yellow.png"));
+    }
+    filters_ ^= 2;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::redFilter()
+{
+    if (filters_ & 4)
+    {
+        filterRed_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterRed_->setIcon(QIcon(":/icons/graphics/traffic-light_red.png"));
+    }
+    filters_ ^= 4;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::twoWayFilter()
+{
+    if (filters_ & 8)
+    {
+        filterTwoWay_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterTwoWay_->setIcon(QIcon(":/icons/graphics/dependency_twoway.png"));
+    }
+    filters_ ^= 8;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::oneWayFilter()
+{
+    if (filters_ & 16)
+    {
+        filterOneWay_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterOneWay_->setIcon(QIcon(":/icons/graphics/dependency_oneway.png"));
+    }
+    filters_ ^= 16;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::manualFilter()
+{
+    if (filters_ & 32)
+    {
+        filterManual_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterManual_->setIcon(QIcon(":/icons/graphics/dependency_manual.png"));
+    }
+    filters_ ^= 32;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::automaticFilter()
+{
+    if (filters_ & 64)
+    {
+        filterAutomatic_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterAutomatic_->setIcon(QIcon(":/icons/graphics/dependency_auto.png"));
+    }
+    filters_ ^= 64;
+    graphWidget_.getView().setFilters(filters_);
+}
+void FileDependencyEditor::diffFilter()
+{
+    if (filters_ & 128)
+    {
+        filterDiff_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+    }
+    else
+    {
+        filterDiff_->setIcon(QIcon(":/icons/graphics/diff.png"));
+    }
+    filters_ ^= 128;
+    graphWidget_.getView().setFilters(filters_);
 }

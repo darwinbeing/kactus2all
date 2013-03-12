@@ -33,7 +33,8 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       maxVisibleGraphColumns_(0),
       scrollIndex_(0),
       selectedDependency_(0),
-      drawingDependency_(false)
+      drawingDependency_(false),
+      filters_(255)
 {
     setUniformRowHeights(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -308,7 +309,8 @@ void FileDependencyGraphView::drawArrow(QPainter& painter, int x, int fromY, int
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::setFilters(DependencyFilters filters)
 {
-    // TODO: Save filters variable before applying.
+    // Save filters and apply.
+    filters_ = filters;
     applyFilters();
 }
 
