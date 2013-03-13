@@ -114,7 +114,7 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
             directionCombo_.setCurrentIndex(1);
             directionButton_.setEnabled(false);
         }
-        else
+        else if(dependency_->isManual())
         {
             directionCombo_.setCurrentIndex(0);
             directionButton_.setEnabled(true);

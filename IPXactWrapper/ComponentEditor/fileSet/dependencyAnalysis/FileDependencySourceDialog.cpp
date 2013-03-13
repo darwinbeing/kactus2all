@@ -58,15 +58,8 @@ FileDependencySourceDialog::FileDependencySourceDialog(QString const& basePath,
     {
         buttonRemove_->setEnabled(true);
     }
-    
 
-    for(int i = 0; i < sourceDirs.count(); ++i )
-    {
-        absolutePaths_.push_back(sourceDirs.at(i));
-    }
-    toRelative();
-
-    directoryListModel_ = new QStringListModel(relativePaths_);
+    directoryListModel_ = new QStringListModel(sourceDirs);
     directoryListView_->setModel(directoryListModel_);
     resize(600, sizeHint().height());
 
@@ -84,7 +77,7 @@ FileDependencySourceDialog::~FileDependencySourceDialog()
 //-----------------------------------------------------------------------------
 QStringList FileDependencySourceDialog::getSourceDirectories() const
 {
-    return absolutePaths_;
+    return directoryListModel_->stringList();   
 }
 
 //-----------------------------------------------------------------------------
@@ -93,20 +86,21 @@ QStringList FileDependencySourceDialog::getSourceDirectories() const
 void FileDependencySourceDialog::addSource()
 {
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"), basePath_);
-    newDirectory = QFileInfo(newDirectory).filePath();
-
     if( newDirectory.size() < 1 )
     {
         return;
     }
+    newDirectory = QFileInfo(newDirectory).filePath();
+    newDirectory = General::getRelativePath(basePath_, newDirectory);
+
     if( !checkIfSelectedDirectoryHasBeenPreviouslyAdded(newDirectory) )
     {
         // Now removing possibly unnecessary directories
         removeUnnecessaryDirectories(newDirectory);
         // Adding the new directory to the list.
-        absolutePaths_.push_back(newDirectory);
-        toRelative();
-        directoryListModel_->setStringList(relativePaths_);
+        QStringList newDirectories = directoryListModel_->stringList();
+        newDirectories.push_back(newDirectory);
+        directoryListModel_->setStringList(newDirectories);
         buttonRemove_->setEnabled(true);
     }
 }
@@ -116,26 +110,30 @@ void FileDependencySourceDialog::addSource()
 //-----------------------------------------------------------------------------------------
 bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory)
 {
-    QStringList oldDirectories = absolutePaths_;
+    QString newDirAbs = toAbsolute(newDirectory);
+    QStringList oldDirectories = directoryListModel_->stringList();
     // Checking if the selected directory has been previously added.
     for(int i = 0; i < oldDirectories.count(); ++i)
     {
+        //QString absoluteOldDir_A = General::getAbsolutePath(basePath_, oldDirectories.at(i));   // Returns ""
+        //QString absoluteOldDir_B = General::getAbsolutePath(oldDirectories.at(i), basePath_ );  // Returns basePath_
+        QString absoluteOldDir = toAbsolute(oldDirectories.at(i));
+        //QString breakPointHere = "BreakpointHere";
         int subDirectory = 0;
-        for(int j = 0; j < newDirectory.count("/"); ++j)
+        for(int j = 0; j < newDirAbs.count("/"); ++j)
         {
-            subDirectory = newDirectory.indexOf("/", subDirectory+1);
+            subDirectory = newDirAbs.indexOf("/", subDirectory+1);
             // Checking whether old directory is a root directory.
-            QString oldDirString = oldDirectories.at(i);
-            if( oldDirString.right(1) == "\\" || oldDirString.right(1) == "/" )
+            QString oldDirString = absoluteOldDir;
+            if( oldDirString.right(1) == "/" )
             {
                 oldDirString = oldDirString.left(oldDirString.size() -1 );
             }
-
-            if( newDirectory.left(subDirectory) == oldDirString )
+            if( newDirAbs.left(subDirectory) == oldDirString )
             {
                 return true;
             }
-            else if( newDirectory == oldDirectories.at(i) )
+            else if( newDirAbs == absoluteOldDir )
             {
                 return true;
             }
@@ -149,26 +147,37 @@ bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(
 //-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirectory)
 {
-    QStringList oldDirectories = absolutePaths_;
+    // First changing everything to absolute paths.
+    QStringList oldDirectoriesAbs;
+    for( int i = 0; i < directoryListModel_->stringList().count(); ++i )
+    {
+        oldDirectoriesAbs.push_back(toAbsolute(directoryListModel_->stringList().at(i)));
+    }
+    QString newDirAbs = toAbsolute(newDirectory);
+
+    // Temporary directory list for holding necessary directories.
     QStringList tempDirectoryList;
     bool necessaryDirectory = true;
 
     // Checking if root directory
-    if( newDirectory.right(1) == "\\" || newDirectory.right(1) == "/" )
+    if( newDirAbs.right(2) == ":/" )
     {
-        newDirectory = newDirectory.left(newDirectory.size() -1 );
+        // Removing unnecessary forward slash.
+        newDirAbs = newDirAbs.left(newDirectory.size() -1 );
     }
 
     // Checking if unnecessary directories exist in the list.
-    for(int i = 0; i < oldDirectories.count(); ++i)
+    for(int i = 0; i < oldDirectoriesAbs.count(); ++i)
     {
         int subDirectory = 0;
         necessaryDirectory = true;
-        for(int j = 0; j < oldDirectories.at(i).count("/"); ++j)
+        QString oldDirectory = oldDirectoriesAbs.at(i);
+        for(int j = 0; j < oldDirectoriesAbs.at(i).count("/"); ++j)
         {
-            subDirectory = oldDirectories.at(i).indexOf("/", subDirectory+1);
+            subDirectory = oldDirectoriesAbs.at(i).indexOf("/", subDirectory+1);
             // Checking to see if old directory is contained in the new directory.
-            if( newDirectory == oldDirectories.at(i).left(subDirectory))
+            
+            if( newDirAbs == oldDirectory.left(subDirectory) )
             {
                 // Unnecessary directory found. Marking it unnecessary.
                 necessaryDirectory = false;
@@ -178,12 +187,12 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
         // Checking to see if directory is needed after the new added directory
         if( necessaryDirectory )
         {
-            tempDirectoryList.push_back(oldDirectories.at(i));
+            QString necessaryDir = General::getRelativePath(basePath_, oldDirectoriesAbs.at(i));
+            tempDirectoryList.push_back(necessaryDir);
         }
     }
     // Updating the source directory model.
-    absolutePaths_.clear();
-    absolutePaths_ = tempDirectoryList;
+    directoryListModel_->setStringList(tempDirectoryList);
 }
 
 //-----------------------------------------------------------------------------
@@ -191,28 +200,41 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
 //-----------------------------------------------------------------------------
 void FileDependencySourceDialog::removeSource()
 {
-    absolutePaths_.removeAt(directoryListView_->selectionModel()->currentIndex().row());
-    toRelative();
-    directoryListModel_->setStringList(relativePaths_);
-    QStringList list = directoryListModel_->stringList();
-    if( list.count() < 1 )
+    directoryListModel_->removeRow(directoryListView_->selectionModel()->currentIndex().row());
+    if( directoryListModel_->stringList().count() < 1 )
     {
         buttonRemove_->setEnabled(false);
     }
 }
 
-void FileDependencySourceDialog::toRelative()
+QString FileDependencySourceDialog::toAbsolute(QString relativePath )
 {
-    relativePaths_.clear();
-    for( int i = 0; i < absolutePaths_.count(); ++i )
+    // Checking to see if relative path is basePath_
+    if( relativePath.size() < 1 )
     {
-        if( absolutePaths_.at(i).at(0) == basePath_.at(0) )
-        {
-            relativePaths_.push_back(General::getRelativePath(basePath_, absolutePaths_.at(i)));
-        }
-        else
-        {
-            relativePaths_.push_back(absolutePaths_.at(i));
-        }
+        return basePath_;
     }
+    // Checking to see if path is relative
+    if( relativePath.left(3) != "../" )
+    {
+        // Already absolute path.
+        return relativePath;
+    }
+    // Transforming relative path into a absolute path.
+    QString absolutePath = relativePath;
+    QString base = basePath_;
+
+    while( absolutePath.left(3) == "../" )
+    {
+        absolutePath = absolutePath.right(absolutePath.size()-3);
+        int lastForwardSlash = base.lastIndexOf("/");
+        base = base.left(lastForwardSlash);
+    }
+
+    if( absolutePath.size() > 0 )
+    {
+        // Add connecting slash
+        base += "/";
+    }
+    return base + absolutePath;
 }
