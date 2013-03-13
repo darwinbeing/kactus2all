@@ -92,7 +92,10 @@ void FileDependencySourceDialog::addSource()
     }
     newDirectory = QFileInfo(newDirectory).filePath();
     newDirectory = General::getRelativePath(basePath_, newDirectory);
-
+    if( newDirectory.size() < 1 )
+    {
+        newDirectory = "./";
+    }
     if( !checkIfSelectedDirectoryHasBeenPreviouslyAdded(newDirectory) )
     {
         // Now removing possibly unnecessary directories
@@ -110,30 +113,30 @@ void FileDependencySourceDialog::addSource()
 //-----------------------------------------------------------------------------------------
 bool FileDependencySourceDialog::checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory)
 {
-    QString newDirAbs = toAbsolute(newDirectory);
-    QStringList oldDirectories = directoryListModel_->stringList();
-    // Checking if the selected directory has been previously added.
-    for(int i = 0; i < oldDirectories.count(); ++i)
+    QStringList oldDirectoriesAbs;
+    for( int i = 0; i < directoryListModel_->stringList().count(); ++i )
     {
-        //QString absoluteOldDir_A = General::getAbsolutePath(basePath_, oldDirectories.at(i));   // Returns ""
-        //QString absoluteOldDir_B = General::getAbsolutePath(oldDirectories.at(i), basePath_ );  // Returns basePath_
-        QString absoluteOldDir = toAbsolute(oldDirectories.at(i));
-        //QString breakPointHere = "BreakpointHere";
+        oldDirectoriesAbs.push_back(General::getAbsolutePath(basePath_ + "/", directoryListModel_->stringList().at(i)));
+    }
+    QString newDirAbs = General::getAbsolutePath(basePath_ + "/", newDirectory);
+    // Checking if the selected directory has been previously added.
+    for(int i = 0; i < oldDirectoriesAbs.count(); ++i)
+    {
         int subDirectory = 0;
         for(int j = 0; j < newDirAbs.count("/"); ++j)
         {
             subDirectory = newDirAbs.indexOf("/", subDirectory+1);
             // Checking whether old directory is a root directory.
-            QString oldDirString = absoluteOldDir;
-            if( oldDirString.right(1) == "/" )
+            QString oldDirString = oldDirectoriesAbs.at(i);
+            if(oldDirString.right(1) == "/")
             {
                 oldDirString = oldDirString.left(oldDirString.size() -1 );
             }
-            if( newDirAbs.left(subDirectory) == oldDirString )
+            if(newDirAbs.left(subDirectory) == oldDirString)
             {
                 return true;
             }
-            else if( newDirAbs == absoluteOldDir )
+            else if(newDirAbs == oldDirectoriesAbs.at(i))
             {
                 return true;
             }
@@ -151,9 +154,9 @@ void FileDependencySourceDialog::removeUnnecessaryDirectories(QString newDirecto
     QStringList oldDirectoriesAbs;
     for( int i = 0; i < directoryListModel_->stringList().count(); ++i )
     {
-        oldDirectoriesAbs.push_back(toAbsolute(directoryListModel_->stringList().at(i)));
+        oldDirectoriesAbs.push_back(General::getAbsolutePath(basePath_ + "/", directoryListModel_->stringList().at(i)));
     }
-    QString newDirAbs = toAbsolute(newDirectory);
+    QString newDirAbs = General::getAbsolutePath(basePath_ + "/", newDirectory);
 
     // Temporary directory list for holding necessary directories.
     QStringList tempDirectoryList;
@@ -205,36 +208,4 @@ void FileDependencySourceDialog::removeSource()
     {
         buttonRemove_->setEnabled(false);
     }
-}
-
-QString FileDependencySourceDialog::toAbsolute(QString relativePath )
-{
-    // Checking to see if relative path is basePath_
-    if( relativePath.size() < 1 )
-    {
-        return basePath_;
-    }
-    // Checking to see if path is relative
-    if( relativePath.left(3) != "../" )
-    {
-        // Already absolute path.
-        return relativePath;
-    }
-    // Transforming relative path into a absolute path.
-    QString absolutePath = relativePath;
-    QString base = basePath_;
-
-    while( absolutePath.left(3) == "../" )
-    {
-        absolutePath = absolutePath.right(absolutePath.size()-3);
-        int lastForwardSlash = base.lastIndexOf("/");
-        base = base.left(lastForwardSlash);
-    }
-
-    if( absolutePath.size() > 0 )
-    {
-        // Add connecting slash
-        base += "/";
-    }
-    return base + absolutePath;
 }

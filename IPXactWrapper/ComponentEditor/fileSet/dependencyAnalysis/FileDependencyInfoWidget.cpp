@@ -16,17 +16,19 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QFileInfo>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyInfoWidget::FileDependencyInfoWidget()
 //-----------------------------------------------------------------------------
-FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
+FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent) 
     : QGroupBox(tr("Dependency Information"), parent),
-      descEdit_(this),
-      directionCombo_(this),
-      lockedCheck_(tr("Locked"), this),
-      directionButton_(tr("Reverse Direction"), this),
-      dependency_(0)
+    fileLabel_(this),
+    descEdit_(this),
+    directionCombo_(this),
+    lockedCheck_(tr("Locked"), this),
+    directionButton_(tr("Reverse Direction"), this),
+    dependency_(0)
 {
     directionCombo_.setFixedWidth(150);
     descEdit_.setMaximumHeight(100);
@@ -34,8 +36,10 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
     
     directionCombo_.addItem(QIcon(":/icons/graphics/dependency_oneway.png"), "One way");
     directionCombo_.addItem(QIcon(":/icons/graphics/dependency_twoway.png"), "Bidirectional");
+    fileLabel_.setText(tr("file1 ---> file2"));
 
     QVBoxLayout* leftLayout = new QVBoxLayout();
+    leftLayout->addWidget(&fileLabel_);
     leftLayout->addWidget(new QLabel(tr("Description:"), this));
     leftLayout->addWidget(&descEdit_, 1);
 
@@ -86,7 +90,9 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
     descEdit_.clear();
     directionCombo_.setCurrentIndex(0);
     lockedCheck_.setChecked(false);
+    fileLabel_.setText(tr("file1 ---> file2"));
     // Disabling the widgets.
+    fileLabel_.setEnabled(false);
     descEdit_.setEnabled(false);
     directionCombo_.setEnabled(false);
     lockedCheck_.setEnabled(false);
@@ -95,6 +101,7 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
     if(dependency_ != 0)
     {
         // Enabling the widgets.
+        fileLabel_.setEnabled(true);
         descEdit_.setEnabled(true);
         
         // Enable editing for direction and locking only for manual dependencies.
@@ -119,6 +126,9 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
             directionCombo_.setCurrentIndex(0);
             directionButton_.setEnabled(true);
         }
+
+        // Set informative file label.
+        updateFileLabel();
     }
 
     connect(&directionCombo_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
@@ -177,4 +187,22 @@ void FileDependencyInfoWidget::directionReversed()
 {
     dependency_->reverse();
     emit dependencyChanged(dependency_);
+}
+
+void FileDependencyInfoWidget::updateFileLabel()
+{
+    QString fileLabelText = "";
+    QFileInfo fromInfo(dependency_->getFile1());
+    QFileInfo toInfo(dependency_->getFile2());
+    fileLabelText = fromInfo.fileName();
+    if(dependency_->isBidirectional())
+    {
+        fileLabelText += " <--> ";
+    }
+    else
+    {
+        fileLabelText += " ---> ";
+    }
+    fileLabelText += toInfo.fileName();
+    fileLabel_.setText(fileLabelText);
 }

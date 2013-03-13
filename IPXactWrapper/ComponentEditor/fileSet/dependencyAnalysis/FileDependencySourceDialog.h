@@ -73,7 +73,6 @@ private:
     // Help functions.
     bool checkIfSelectedDirectoryHasBeenPreviouslyAdded(QString newDirectory);
     void removeUnnecessaryDirectories(QString newDirectory);
-    QString toAbsolute(QString relativePath);
 
     //-----------------------------------------------------------------------------
     // Data.

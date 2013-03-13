@@ -17,6 +17,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QPushButton>
+#include <QLabel>
 
 class FileDependency;
 
@@ -33,7 +34,7 @@ public:
      *
      *      @param [in] parent The parent widget.
      */
-    FileDependencyInfoWidget(QWidget* parent);
+    FileDependencyInfoWidget(QWidget* parent );
 
     /*!
      *  Destructor.
@@ -74,9 +75,14 @@ private:
     FileDependencyInfoWidget(FileDependencyInfoWidget const& rhs);
     FileDependencyInfoWidget& operator=(FileDependencyInfoWidget const& rhs);
 
+    void updateFileLabel();
+
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    //! Label for storing used files
+    QLabel fileLabel_;
 
     //! Editor for description.
     QPlainTextEdit descEdit_;
@@ -92,6 +98,7 @@ private:
 
     //! The currently edited dependency.
     FileDependency* dependency_;
+
 };
 
 //-----------------------------------------------------------------------------
