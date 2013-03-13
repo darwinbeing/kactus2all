@@ -205,10 +205,10 @@ void FileDependencyEditor::resolveExtensionFileTypes()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::scanFiles(QString const& path)
 {
-    QString relativePath = General::getRelativePath(xmlPath_, path); // TODO: Remove when dialog is fixed!
-    FileDependencyItem* folderItem = model_.addFolder(relativePath);
+    //QString relativePath = General::getRelativePath(xmlPath_, path); // TODO: Remove when dialog is fixed!
+    FileDependencyItem* folderItem = model_.addFolder(path);
 
-    QFileInfoList list = QDir(path).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    QFileInfoList list = QDir(General::getAbsolutePath(xmlPath_ + "/", path)).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
 
     foreach (QFileInfo const& info, list)
     {
