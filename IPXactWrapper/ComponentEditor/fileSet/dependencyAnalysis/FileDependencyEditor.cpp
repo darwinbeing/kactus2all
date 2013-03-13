@@ -215,7 +215,7 @@ void FileDependencyEditor::scanFiles(QString const& path)
         // Check if the entry is a directory.
         if (info.isDir())
         {
-            scanFiles(info.filePath());
+            scanFiles(General::getRelativePath(xmlPath_, info.absoluteFilePath()));
         }
         // Otherwise add the file if it does not belong to ignored extensions.
         else if (!ignoreExtList_.contains(info.completeSuffix()))
