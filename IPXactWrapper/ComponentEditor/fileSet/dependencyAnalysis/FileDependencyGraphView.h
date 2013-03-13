@@ -16,6 +16,7 @@
 
 class FileDependency;
 class FileDependencyModel;
+class FileDependencyItem;
 
 //-----------------------------------------------------------------------------
 //! Widget for showing the table-style file dependency graph.
@@ -277,6 +278,11 @@ private:
 
     //! Current filters used on the graph.
     DependencyFilters filters_;
+
+    //! The start item of manual dependency creation
+    FileDependencyItem* manualDependencyStartItem_;
+    FileDependencyItem* manualDependencyEndItem_;
+
 };
 
 //-----------------------------------------------------------------------------

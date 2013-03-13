@@ -34,7 +34,9 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       scrollIndex_(0),
       selectedDependency_(0),
       drawingDependency_(false),
-      filters_(255)
+      filters_(255),
+      manualDependencyStartItem_(0),
+      manualDependencyEndItem_(0)
 {
     setUniformRowHeights(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -209,10 +211,31 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
     // Otherwise check if the user pressed over the manual creation column.
     else if (column == FILE_DEPENDENCY_COLUMN_CREATE)
     {
-        // TODO[Tommi]
-        // Use indexAt() to retrieve the model index.
-        // Use modelIndex.internalPointer() to retrieve the FileDependencyItem* pointer.
-        // Use getRowY(modelIndex) function to retrieve the center y coordinate for the row specified by the model index.
+        if (event->button() == Qt::LeftButton)
+        {
+            // Starting to create manual dependency
+            if( !manualDependencyStartItem_ )
+            {
+                QModelIndex startPoint = indexAt(event->pos());
+                if( startPoint.isValid() )
+                {
+                    manualDependencyStartItem_ = static_cast<FileDependencyItem*>(startPoint.internalPointer());
+                    manualDependencyEndItem_ = manualDependencyStartItem_;
+                    drawingDependency_ = true;
+                    setMouseTracking(true);
+                }
+            }
+            else
+            {
+                // TODO: Add new dependency
+                // TODO: check whether shift was pressed.
+                manualDependencyStartItem_ = 0;
+                manualDependencyEndItem_ = 0;
+                drawingDependency_ = false;
+                viewport()->repaint();
+                setMouseTracking(false);
+            }
+        }
     }
     else
     {
@@ -225,8 +248,24 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 {
-    QTreeView::mousePressEvent(event);
-
+    // If creating manual dependencies
+    if( manualDependencyStartItem_ && drawingDependency_ )
+    {
+        QModelIndex currentPoint = indexAt(event->pos());
+        if( currentPoint.isValid() )
+        {
+            FileDependencyItem* currentDependencyItem = static_cast<FileDependencyItem*>(currentPoint.internalPointer());
+            if( manualDependencyEndItem_ != currentDependencyItem )
+            {
+                viewport()->repaint();
+                manualDependencyEndItem_ = currentDependencyItem;
+            }
+        }
+    }
+    else
+    {
+        QTreeView::mousePressEvent(event);
+    }
     // Same helper functions apply here as well.
 }
 
@@ -515,7 +554,13 @@ void FileDependencyGraphView::onModelReset()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::drawManualCreationArrow(QPainter& painter)
 {
+    int x = GRAPH_MARGIN + columnViewportPosition(FILE_DEPENDENCY_COLUMN_CREATE);
     // TODO[Tommi]: Draw the arrow based on the movements processed in the mouseMoveEvent().
+    int startY = 0;
+    int currentY = 0;
+    getVisualRowY(model_->getItemIndex(manualDependencyStartItem_, 0), startY);
+    getVisualRowY(model_->getItemIndex(manualDependencyEndItem_, 0), currentY);
+    drawArrow(painter, x, startY, currentY, Qt::green, false);
 }
 
 //-----------------------------------------------------------------------------
