@@ -662,3 +662,11 @@ void FileDependencyModel::removeDependency(FileDependency* dependency)
         }
     }
 }
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::getDependencies()
+//-----------------------------------------------------------------------------
+QList< QSharedPointer<FileDependency> > FileDependencyModel::getDependencies() const
+{
+    return dependencies_;
+}

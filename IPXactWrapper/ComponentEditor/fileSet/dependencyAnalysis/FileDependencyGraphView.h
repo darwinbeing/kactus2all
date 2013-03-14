@@ -26,6 +26,22 @@ class FileDependencyGraphView : public QTreeView
     Q_OBJECT
 
 public:
+    //-----------------------------------------------------------------------------
+    //! Filter enumeration.
+    //-----------------------------------------------------------------------------
+    enum DependencyFilter
+    {
+        FILTER_GREEN        = 0x0001,
+        FILTER_YELLOW       = 0x0002,
+        FILTER_RED          = 0x0004,
+        FILTER_TWO_WAY      = 0x0008,
+        FILTER_ONE_WAY      = 0x0010,
+        FILTER_MANUAL       = 0x0020,
+        FILTER_AUTOMATIC    = 0x0040,
+        FILTER_DIFFERENCE   = 0x0080
+    };
+
+    //! Bit field type for the filters.
     typedef unsigned char DependencyFilters;
 
     /*!
@@ -246,6 +262,14 @@ private:
     void computeGraphCoverage(int startColumn, int endColumn, int top, int bottom,
                               int& covTop, int& covBottom) const;
 
+    /*!
+     *  Checks the dependency against the filters.
+     *
+     *      @param [in] dependency The dependency to check.
+     *
+     *      @return False, if the dependency should not be shown. Otherwise true.
+     */
+    bool filterDependency(FileDependency const* dependency) const;
 
     enum
     {

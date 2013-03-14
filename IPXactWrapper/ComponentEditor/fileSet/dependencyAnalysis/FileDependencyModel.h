@@ -193,6 +193,12 @@ public:
      */
     int getTotalFileCount() const;
 
+    /*!
+     *  Returns the list of dependencies.
+     */
+    QList< QSharedPointer<FileDependency> > getDependencies() const;
+
+
 signals:
     /*!
      *  Emitted when the analysis progress has changed.

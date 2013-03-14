@@ -93,7 +93,13 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
 void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
 {
     FileDependencyItem* fromItem = dependency->getFileItem1();
-    FileDependencyItem* toItem = dependency->getFileItem2(); 
+    FileDependencyItem* toItem = dependency->getFileItem2();
+
+    // Check if the dependency should not be visible.
+    if (!filterDependency(dependency))
+    {
+        return;
+    }
 
 //     if (fromItem == 0 || toItem == 0)
 //     {
@@ -148,8 +154,11 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
 
         // Repaint only the region of the new dependency.
         int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
-        viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH, qMin(fromY, toY) - POINTER_OFFSET,
-                                  2 * ARROW_WIDTH, qAbs(toY - fromY) + 2 * POINTER_OFFSET));
+        
+        viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
+                                  qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
+                                  2 * (ARROW_WIDTH + SAFE_MARGIN),
+                                  qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
     }
 }
 
@@ -158,8 +167,33 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onDependencyChanged(FileDependency* dependency)
 {
-    // TODO: Repaint only the area of the dependency.
-    viewport()->repaint();
+    // Repaint only the area of the dependency.
+    int x = GRAPH_MARGIN - scrollIndex_ * GRAPH_SPACING;
+
+    foreach (GraphColumn const& column, columns_)
+    {
+        foreach (GraphDependency const& dep, column.dependencies)
+        {
+            if (dep.dependency == dependency)
+            {
+                int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
+                int fromY = 0;
+                int toY = 0;
+
+                if (getCoordinates(dep, fromY, toY))
+                {
+                    viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
+                                              qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
+                                              2 * (ARROW_WIDTH + SAFE_MARGIN),
+                                              qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
+                }
+
+                break;
+            }
+        }
+
+        x += GRAPH_SPACING;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -368,7 +402,16 @@ FileDependencyGraphView::DependencyFilters FileDependencyGraphView::getFilters()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::applyFilters()
 {
-    // TODO: Possible to make only after the data structure is fully ready.
+    // Recreate the whole graph.
+    columns_.clear();
+    selectedDependency_ = 0;
+
+    foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
+    {
+        onDependencyAdded(dependency.data());
+    }
+
+    viewport()->repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -722,4 +765,18 @@ void FileDependencyGraphView::onDependencyRemoved(FileDependency* dependency)
         }
 
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::filterDependency()
+//-----------------------------------------------------------------------------
+bool FileDependencyGraphView::filterDependency(FileDependency const* dependency) const
+{
+    bool typeFilter = ((filters_ & FILTER_AUTOMATIC) && !dependency->isManual()) ||
+                      ((filters_ & FILTER_MANUAL) && dependency->isManual());
+
+    bool wayFilter = ((filters_ & FILTER_TWO_WAY) && dependency->isBidirectional()) ||
+                     ((filters_ & FILTER_ONE_WAY) && !dependency->isBidirectional());
+
+    return (typeFilter && wayFilter);
 }
