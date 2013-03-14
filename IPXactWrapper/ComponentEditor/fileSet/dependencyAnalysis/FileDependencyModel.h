@@ -62,6 +62,20 @@ public:
     ~FileDependencyModel();
 
     /*!
+     *  Adds a new dependency to the model.
+     *
+     *      @param [in] dependency The file dependency to add.
+     */
+    void addDependency(QSharedPointer<FileDependency> dependency);
+
+    /*!
+     *  Removes a dependency from the model.
+     *
+     *      @param [in] dependency The file dependency to remove.
+     */
+    void removeDependency(FileDependency* dependency);
+
+    /*!
      *  Searches for a file item with the given path.
      *
      *      @param [in] path The path.

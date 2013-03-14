@@ -73,6 +73,8 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
                 this, SLOT(onDependencyAdded(FileDependency*)), Qt::UniqueConnection);
         connect(depModel, SIGNAL(dependencyChanged(FileDependency*)),
                 this, SLOT(onDependencyChanged(FileDependency*)), Qt::UniqueConnection);
+        connect(depModel, SIGNAL(dependencyRemoved(FileDependency*)),
+                this, SLOT(onDependencyRemoved(FileDependency*)), Qt::UniqueConnection);
         connect(depModel, SIGNAL(modelReset()),
                 this, SLOT(onModelReset()), Qt::UniqueConnection);
         model_ = depModel;
@@ -358,7 +360,7 @@ void FileDependencyGraphView::setFilters(DependencyFilters filters)
 //-----------------------------------------------------------------------------
 FileDependencyGraphView::DependencyFilters FileDependencyGraphView::getFilters() const
 {
-    return 0;
+    return filters_;
 }
 
 //-----------------------------------------------------------------------------
@@ -496,25 +498,6 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
             }
         }
     }
-
-//     Left side coverage.
-//     int covTop = 0;
-//     int covBottom = 0;
-//     computeGraphCoverage(0, scrollIndex_ - 1, 0, viewport()->height(), covTop, covBottom);
-// 
-//     if (covTop < covBottom)
-//     {
-//         painter.drawLine(columnOffset + 2, covTop, columnOffset + 2, covBottom);
-//     }
-// 
-//     // Right side coverage.
-//     computeGraphCoverage(scrollIndex_ + maxVisibleGraphColumns_, columns_.size() - 1,
-//                          0, viewport()->height(), covTop, covBottom);
-// 
-//     if (covTop < covBottom)
-//     {
-//         painter.drawLine(columnOffset + width - 2, covTop, columnOffset + width - 2, covBottom);
-//     }
 
     painter.setRenderHint(QPainter::Antialiasing);
 }
@@ -713,4 +696,30 @@ bool FileDependencyGraphView::getCoordinates(GraphDependency const &dep, int& fr
     }
 
     return true;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onDependencyRemoved()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onDependencyRemoved(FileDependency* dependency)
+{
+    for (int i = 0; i < columns_.size(); ++i)
+    {
+        GraphColumn& column = columns_[i];
+
+        for (int j = 0; j < column.dependencies.size(); ++j)
+        {
+            GraphDependency& dep = column.dependencies[j];
+
+            if (dep.dependency == dependency)
+            {
+                column.dependencies.removeAt(j);
+
+                // TODO: Repaint only the area of the dependency.
+                viewport()->repaint();
+                return;
+            }
+        }
+
+    }
 }

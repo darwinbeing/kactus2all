@@ -114,6 +114,11 @@ private slots:
     void onDependencyChanged(FileDependency* dependency);
 
     /*!
+     *  Called when a dependency has been removed.
+     */
+    void onDependencyRemoved(FileDependency* dependency);
+
+    /*!
      *  Called when the model has been reset.
      */
     void onModelReset();

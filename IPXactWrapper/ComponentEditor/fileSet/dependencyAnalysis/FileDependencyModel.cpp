@@ -551,8 +551,7 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                     dependency->setDescription(desc.description);
                     dependency->setItemPointers(fileItem1, fileItem2);
 
-                    dependencies_.append(dependency);
-                    emit dependencyAdded(dependency.data());
+                    addDependency(dependency);
                 }
                 // Otherwise check if the existing dependency needs updating to a bidirectional one.
                 else if (!found->isBidirectional() && found->getFile1() != file1)
@@ -636,4 +635,30 @@ FileDependency* FileDependencyModel::findDependency(QString const& file1, QStrin
     }
 
     return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::addDependency()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::addDependency(QSharedPointer<FileDependency> dependency)
+{
+    // TODO: Check if the dependency already exists.
+    dependencies_.append(dependency);
+    emit dependencyAdded(dependency.data());
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::removeDependency()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::removeDependency(FileDependency* dependency)
+{
+    foreach (QSharedPointer<FileDependency> dep, dependencies_)
+    {
+        if (dep == dependency)
+        {
+            emit dependencyRemoved(dependency);
+            dependencies_.removeOne(dep);
+            break;
+        }
+    }
 }
