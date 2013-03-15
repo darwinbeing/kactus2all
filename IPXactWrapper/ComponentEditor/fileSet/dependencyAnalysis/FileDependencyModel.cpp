@@ -354,7 +354,7 @@ void FileDependencyModel::endReset()
 void FileDependencyModel::performAnalysisStep()
 {
     // Safe-check whether the analysis has already ended.
-    if (curFolderIndex_ == root_->getChildCount())
+    if (progressValue_ == getTotalStepCount())
     {
         return;
     }
@@ -371,7 +371,6 @@ void FileDependencyModel::performAnalysisStep()
         }
 
         ++progressValue_;
-        emit analysisProgressChanged(progressValue_ + 1);
     }
     // Otherwise scan one file on each step.
     else
@@ -403,28 +402,27 @@ void FileDependencyModel::performAnalysisStep()
                 break;
             }
         }
+    }
 
-        // Stop the timer when there are no more folders.
-        if (curFolderIndex_ == root_->getChildCount() ||
-            root_->getChild(curFolderIndex_)->getType() != FileDependencyItem::ITEM_TYPE_FOLDER)
+    // Stop the timer when there are no more folders.
+    if (progressValue_ == getTotalStepCount())
+    {
+        timer_->stop();
+        delete timer_;
+
+        // Reset the progress.
+        emit analysisProgressChanged(0);
+
+        // End analysis for each plugin.
+        foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
         {
-            timer_->stop();
-            delete timer_;
-
-            // Reset the progress.
-            emit analysisProgressChanged(0);
-
-            // End analysis for each plugin.
-            foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
-            {
-                plugin->endAnalysis(component_.data());
-            }
+            plugin->endAnalysis(component_.data());
         }
-        else
-        {
-            // Otherwise notify progress of the next file.
-            emit analysisProgressChanged(progressValue_ + 1);
-        }
+    }
+    else
+    {
+        // Otherwise notify progress of the next file.
+        emit analysisProgressChanged(progressValue_ + 1);
     }
 }
 
