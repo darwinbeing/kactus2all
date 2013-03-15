@@ -92,6 +92,8 @@
       <file>graphics/import_folders.png</file>
       <file>graphics/plugin-generator.png</file>
       <file>graphics/plugin-source_analyzer.png</file>
+      <file>graphics/control-play.png</file>
+      <file>graphics/control-stop.png</file>
   </qresource>
     <qresource prefix="/">        
         <file>graphics/splash.png</file>

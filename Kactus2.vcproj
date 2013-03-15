@@ -44876,6 +44876,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\graphics\control-play.png"
+				>
+			</File>
+			<File
+				RelativePath=".\graphics\control-stop.png"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\dependency_auto.png"
 				>
 			</File>

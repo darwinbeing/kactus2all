@@ -38,11 +38,18 @@ public:
         FILTER_ONE_WAY      = 0x0010,
         FILTER_MANUAL       = 0x0020,
         FILTER_AUTOMATIC    = 0x0040,
-        FILTER_DIFFERENCE   = 0x0080
+        FILTER_INTERNAL     = 0x0080,
+        FILTER_EXTERNAL     = 0x0100,
+        FILTER_DIFFERENCE   = 0x0200,
+
+        FILTER_DEFAULT = FILTER_GREEN | FILTER_YELLOW | FILTER_RED |
+                         FILTER_TWO_WAY | FILTER_ONE_WAY |
+                         FILTER_MANUAL | FILTER_AUTOMATIC |
+                         FILTER_INTERNAL/* | FILTER_EXTERNAL*/
     };
 
     //! Bit field type for the filters.
-    typedef unsigned char DependencyFilters;
+    typedef unsigned int DependencyFilters;
 
     /*!
      *  Constructor.
@@ -118,11 +125,22 @@ protected:
      */
     virtual void mouseMoveEvent(QMouseEvent* event);
 
+    /*!
+     *  Handles auto-expand when rows are inserted.
+     *
+     *      @param [in] parent The parent model index.
+     *      @param [in] start  The start index of the inserted rows.
+     *      @param [in] end    The end index of the inserted rows.
+     */
+    virtual void rowsInserted(QModelIndex const& parent, int start, int end);
+
+    virtual void reset();
+
 private slots:
     /*!
      *  Called when a dependency has been added.
      */
-    void onDependencyAdded(FileDependency* dependency);
+    void onDependencyAdded(FileDependency* dependency, bool immediateRepaint = true);
 
     /*!
      *  Called when a dependency has been changed.

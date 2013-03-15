@@ -47,7 +47,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       fileTypeLookup_(),
       model_(pluginMgr, component, QFileInfo(libInterface_->getPath(*component_->getVlnv())).path() + "/"),
       xmlPath_(),
-      filters_(255)
+      filters_(255),
+      scanning_(false)
 {
     // Initialize the widgets.
     progressBar_.setStyleSheet("QProgressBar:horizontal { margin: 0px; border: none; background: #cccccc; } "
@@ -90,8 +91,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     toolbar_.addSeparator();
     toolbar_.addAction(QIcon(":/icons/graphics/import_folders.png"), "Import Source Directories",
                        this, SLOT(openSourceDialog()));
-    toolbar_.addAction(QIcon(":/icons/graphics/refresh_16x16.png"), "Rescan",
-                       this, SLOT(scan()));
+    runAnalysisAction_ = toolbar_.addAction(QIcon(":/icons/graphics/control-play.png"), "Rescan",
+                                            this, SLOT(scan()));
 
     // Create the layout.
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -143,6 +144,15 @@ void FileDependencyEditor::openSourceDialog()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::scan()
 {
+    if (scanning_)
+    {
+        // TODO: Stop scan.
+        return;
+    }
+
+    runAnalysisAction_->setIcon(QIcon(":/icons/graphics/control-stop.png"));
+    scanning_ = true;
+
     // Preparations. Resolve file types for each extension.
     resolveExtensionFileTypes();
 
@@ -155,10 +165,9 @@ void FileDependencyEditor::scan()
     }
 
     model_.endReset();
-    graphWidget_.getView().expandAll();
 
     // Phase 2. Run the dependency analysis.
-    progressBar_.setMaximum(model_.getTotalFileCount());
+    progressBar_.setMaximum(model_.getTotalStepCount());
     model_.startAnalysis();
 
     emit fileSetsUpdated();
@@ -205,7 +214,6 @@ void FileDependencyEditor::resolveExtensionFileTypes()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::scanFiles(QString const& path)
 {
-    //QString relativePath = General::getRelativePath(xmlPath_, path); // TODO: Remove when dialog is fixed!
     FileDependencyItem* folderItem = model_.addFolder(path);
 
     QFileInfoList list = QDir(General::getAbsolutePath(xmlPath_ + "/", path)).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
@@ -259,6 +267,12 @@ void FileDependencyEditor::scanFiles(QString const& path)
 void FileDependencyEditor::updateProgressBar(int value)
 {
     progressBar_.setValue(value);
+
+    if (value == 0)
+    {
+        runAnalysisAction_->setIcon(QIcon(":/icons/graphics/control-play.png"));
+        scanning_ = false;
+    }
 }
 
 // Filter slots

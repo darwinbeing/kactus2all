@@ -34,7 +34,7 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       scrollIndex_(0),
       selectedDependency_(0),
       drawingDependency_(false),
-      filters_(255),
+      filters_(FILTER_DEFAULT),
       manualDependencyStartItem_(0),
       manualDependencyEndItem_(0)
 {
@@ -75,8 +75,8 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
                 this, SLOT(onDependencyChanged(FileDependency*)), Qt::UniqueConnection);
         connect(depModel, SIGNAL(dependencyRemoved(FileDependency*)),
                 this, SLOT(onDependencyRemoved(FileDependency*)), Qt::UniqueConnection);
-        connect(depModel, SIGNAL(modelReset()),
-                this, SLOT(onModelReset()), Qt::UniqueConnection);
+//         connect(depModel, SIGNAL(modelReset()),
+//                 this, SLOT(onModelReset()), Qt::UniqueConnection);
         model_ = depModel;
     }
     else
@@ -90,23 +90,23 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
 //-----------------------------------------------------------------------------
 // Function: FileDependencyGraphWidget::onDependencyAdded()
 //-----------------------------------------------------------------------------
-void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
+void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency, bool immediateRepaint)
 {
     FileDependencyItem* fromItem = dependency->getFileItem1();
     FileDependencyItem* toItem = dependency->getFileItem2();
+
+    if (fromItem == 0 || toItem == 0)
+    {
+        fromItem = model_->findFileItem(dependency->getFile1());
+        toItem = model_->findFileItem(dependency->getFile2());
+        dependency->setItemPointers(fromItem, toItem);
+    }
 
     // Check if the dependency should not be visible.
     if (!filterDependency(dependency))
     {
         return;
     }
-
-//     if (fromItem == 0 || toItem == 0)
-//     {
-//         fromItem = model_->findFileItem(dependency->getFile1());
-//         toItem = model_->findFileItem(dependency->getFile2());
-//         dependency->setItemPointers(fromItem, toItem);
-//     }
 
     if (fromItem != 0 && toItem != 0)
     {
@@ -155,10 +155,13 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency)
         // Repaint only the region of the new dependency.
         int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
         
-        viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
-                                  qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
-                                  2 * (ARROW_WIDTH + SAFE_MARGIN),
-                                  qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
+        if (immediateRepaint)
+        {
+            viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
+                                      qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
+                                      2 * (ARROW_WIDTH + SAFE_MARGIN),
+                                      qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
+        }
     }
 }
 
@@ -408,7 +411,7 @@ void FileDependencyGraphView::applyFilters()
 
     foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
     {
-        onDependencyAdded(dependency.data());
+        onDependencyAdded(dependency.data(), false);
     }
 
     viewport()->repaint();
@@ -568,11 +571,6 @@ void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem co
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onModelReset()
 {
-    columns_.clear();
-    selectedDependency_ = 0;
-
-    emit graphColumnScollMaximumChanged(0);
-    emit selectionChanged(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -778,5 +776,32 @@ bool FileDependencyGraphView::filterDependency(FileDependency const* dependency)
     bool wayFilter = ((filters_ & FILTER_TWO_WAY) && dependency->isBidirectional()) ||
                      ((filters_ & FILTER_ONE_WAY) && !dependency->isBidirectional());
 
-    return (typeFilter && wayFilter);
+    bool extFilter = ((filters_ & FILTER_INTERNAL) && !dependency->getFileItem2()->isExternal()) ||
+                     ((filters_ & FILTER_EXTERNAL) && dependency->getFileItem2()->isExternal());
+
+    return (typeFilter && wayFilter && extFilter);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::rowsInserted()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::rowsInserted(QModelIndex const& parent, int start, int end)
+{
+    QTreeView::rowsInserted(parent, start, end);
+    setExpanded(parent, true);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::reset()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::reset()
+{
+    columns_.clear();
+    selectedDependency_ = 0;
+
+    emit graphColumnScollMaximumChanged(0);
+    emit selectionChanged(0);
+
+    QTreeView::reset();
+    expandAll();
 }

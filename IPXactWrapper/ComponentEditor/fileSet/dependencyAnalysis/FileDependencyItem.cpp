@@ -37,16 +37,20 @@ FileDependencyItem::FileDependencyItem()
 // Function: FileDependencyItem::FileDependencyItem()
 //-----------------------------------------------------------------------------
 FileDependencyItem::FileDependencyItem(FileDependencyItem* parent,
-                                       Component* component, QString const& path)
+                                       Component* component, QString const& path,
+                                       ItemType type)
     : parent_(parent),
       status_(FILE_DEPENDENCY_STATUS_UNKNOWN),
-      type_(ITEM_TYPE_FOLDER),
+      type_(type),
       component_(component),
       path_(path),
       references_(),
       fileRefs_(),
       children_()
 {
+    // Allow only folder/location items to be added.
+    Q_ASSERT(type != ITEM_TYPE_FILE);
+    Q_ASSERT(type != ITEM_TYPE_ROOT);
 }
 
 //-----------------------------------------------------------------------------
@@ -138,16 +142,30 @@ FileDependencyItem::ItemType FileDependencyItem::getType() const
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::getSimplePath()
 //-----------------------------------------------------------------------------
-QString FileDependencyItem::getSimplePath() const
+QString FileDependencyItem::getDisplayPath() const
 {
-    if (type_ == ITEM_TYPE_FILE)
+    switch (type_)
     {
-        QFileInfo info(path_);
-        return info.fileName();
-    }
-    else
-    {
+    case ITEM_TYPE_FILE:
+        {
+            QFileInfo info(path_);
+            return info.fileName();
+        }
+
+    case ITEM_TYPE_EXTERNAL_LOCATION:
+        {
+            return tr("External: ") + path_;
+        }
+
+    case ITEM_TYPE_UNKNOWN_LOCATION:
+        {
+            return tr("External");
+        }
+
+    default:
+        {
         return path_;
+        }
     }
 }
 
@@ -183,9 +201,9 @@ FileDependencyItem* FileDependencyItem::addFile(Component* component, QString co
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::addFolder()
 //-----------------------------------------------------------------------------
-FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString const& path)
+FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString const& path, ItemType type)
 {
-    FileDependencyItem* item = new FileDependencyItem(this, component, path);
+    FileDependencyItem* item = new FileDependencyItem(this, component, path, type);
     children_.append(item);
     return item;
 }
@@ -280,5 +298,20 @@ void FileDependencyItem::setLastHash(QString const& hash)
     foreach (File* file, fileRefs_)
     {
         file->setLastHash(hash);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::isExternal()
+//-----------------------------------------------------------------------------
+bool FileDependencyItem::isExternal() const
+{
+    if (type_ == ITEM_TYPE_FILE)
+    {
+        return (parent_->type_ != ITEM_TYPE_FOLDER);
+    }
+    else
+    {
+        return (type_ != ITEM_TYPE_FOLDER);
     }
 }

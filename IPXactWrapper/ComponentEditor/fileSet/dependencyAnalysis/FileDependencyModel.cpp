@@ -32,7 +32,7 @@ FileDependencyModel::FileDependencyModel(PluginManager& pluginMgr, QSharedPointe
       component_(component),
       basePath_(basePath),
       root_(new FileDependencyItem()),
-      unlocated_(0),
+      unknownLocation_(0),
       timer_(0),
       curFolderIndex_(0),
       curFileIndex_(0),
@@ -189,7 +189,7 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
         {
         case FILE_DEPENDENCY_COLUMN_PATH:
             {
-                return item->getSimplePath();
+                return item->getDisplayPath();
             }
 
         case FILE_DEPENDENCY_COLUMN_FILESETS:
@@ -306,14 +306,6 @@ Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
 //-----------------------------------------------------------------------------
 void FileDependencyModel::startAnalysis()
 {
-    resolvePlugins();
-
-    // Begin analysis for each plugin.
-    foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
-    {
-        plugin->beginAnalysis(component_.data());
-    }
-
     // Reset state variables.
     curFolderIndex_ = 0;
     curFileIndex_ = 0;
@@ -340,8 +332,11 @@ FileDependencyItem* FileDependencyModel::addFolder(QString const& path)
 void FileDependencyModel::beginReset()
 {
     beginResetModel();
+
+    unknownLocation_ = 0;
     delete root_;
     root_ = new FileDependencyItem();
+
     dependencies_.clear(); // TODO: Keep saved dependencies but remove everything else?
 }
 
@@ -350,9 +345,6 @@ void FileDependencyModel::beginReset()
 //-----------------------------------------------------------------------------
 void FileDependencyModel::endReset()
 {
-    // Add the externals folder.
-    unlocated_ = root_->addFolder(component_.data(), tr("External"));
-
     endResetModel();
 }
 
@@ -367,66 +359,88 @@ void FileDependencyModel::performAnalysisStep()
         return;
     }
 
-    // Run the dependency analysis for the current file.
-    if (curFileIndex_ < root_->getChild(curFolderIndex_)->getChildCount())
+    // On first step begin analysis for each resolved plugin.
+    if (progressValue_ == 0)
     {
-        FileDependencyItem* fileItem = root_->getChild(curFolderIndex_)->getChild(curFileIndex_);
-        analyze(fileItem);
+        resolvePlugins();
 
-        ++curFileIndex_;
-        ++progressValue_;
-    }
-
-    // Check if all files in the current folder have been analyzed.
-    while (curFileIndex_ == root_->getChild(curFolderIndex_)->getChildCount())
-    {
-        // Update the status of the folder and continue to the next folder.
-        FileDependencyItem* folderItem = root_->getChild(curFolderIndex_);
-        folderItem->updateStatus();
-        emit dataChanged(getItemIndex(folderItem, 0), getItemIndex(folderItem, FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
-
-        ++curFolderIndex_;
-        curFileIndex_ = 0;
-
-        if (curFolderIndex_ == root_->getChildCount())
-        {
-            break;
-        }
-    }
-
-    // Stop the timer when there are no more folders.
-    if (curFolderIndex_ == root_->getChildCount() ||
-        (unlocated_ != 0 && curFolderIndex_ == root_->getChildCount() - 1))
-    {
-        timer_->stop();
-        delete timer_;
-
-        // Reset the progress.
-        emit analysisProgressChanged(0);
-
-        // End analysis for each plugin.
+        // Begin analysis for each plugin.
         foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
         {
-            plugin->endAnalysis(component_.data());
+            plugin->beginAnalysis(component_.data());
         }
+
+        ++progressValue_;
+        emit analysisProgressChanged(progressValue_ + 1);
     }
+    // Otherwise scan one file on each step.
     else
     {
-        // Otherwise notify progress of the next file.
-        emit analysisProgressChanged(progressValue_ + 1);
+        // Run the dependency analysis for the current file.
+        if (curFileIndex_ < root_->getChild(curFolderIndex_)->getChildCount())
+        {
+            FileDependencyItem* fileItem = root_->getChild(curFolderIndex_)->getChild(curFileIndex_);
+            analyze(fileItem);
+
+            ++curFileIndex_;
+            ++progressValue_;
+        }
+
+        // Check if all files in the current folder have been analyzed.
+        while (curFileIndex_ == root_->getChild(curFolderIndex_)->getChildCount())
+        {
+            // Update the status of the folder and continue to the next folder.
+            FileDependencyItem* folderItem = root_->getChild(curFolderIndex_);
+            folderItem->updateStatus();
+            emit dataChanged(getItemIndex(folderItem, 0), getItemIndex(folderItem, FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
+
+            ++curFolderIndex_;
+            curFileIndex_ = 0;
+
+            if (curFolderIndex_ == root_->getChildCount() ||
+                root_->getChild(curFolderIndex_)->getType() != FileDependencyItem::ITEM_TYPE_FOLDER)
+            {
+                break;
+            }
+        }
+
+        // Stop the timer when there are no more folders.
+        if (curFolderIndex_ == root_->getChildCount() ||
+            root_->getChild(curFolderIndex_)->getType() != FileDependencyItem::ITEM_TYPE_FOLDER)
+        {
+            timer_->stop();
+            delete timer_;
+
+            // Reset the progress.
+            emit analysisProgressChanged(0);
+
+            // End analysis for each plugin.
+            foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
+            {
+                plugin->endAnalysis(component_.data());
+            }
+        }
+        else
+        {
+            // Otherwise notify progress of the next file.
+            emit analysisProgressChanged(progressValue_ + 1);
+        }
     }
 }
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::getTotalFileCount()
 //-----------------------------------------------------------------------------
-int FileDependencyModel::getTotalFileCount() const
+int FileDependencyModel::getTotalStepCount() const
 {
-    int count = 0;
+    int count = 1;
 
     for (int i = 0; i < root_->getChildCount(); ++i)
     {
-        count += root_->getChild(i)->getChildCount();
+        if (root_->getChild(i)->getType() == FileDependencyItem::ITEM_TYPE_FOLDER)
+        {
+            count += root_->getChild(i)->getChildCount();
+        }
     }
 
     return count;
@@ -537,9 +551,20 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
 
                         if (fileItem2 == 0)
                         {
-                            beginInsertRows(getItemIndex(unlocated_, 0),
-                                            unlocated_->getChildCount(), unlocated_->getChildCount());
-                            fileItem2 = unlocated_->addFile(component_.data(), file2, QList<File*>());
+                            // Create the externals folder if not yet created.
+                            if (unknownLocation_ == 0)
+                            {
+                                beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
+                                                root_->getChildCount());
+
+                                unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
+                                                                    FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
+                                endInsertRows();
+                            }
+
+                            beginInsertRows(getItemIndex(unknownLocation_, 0),
+                                            unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
+                            fileItem2 = unknownLocation_->addFile(component_.data(), file2, QList<File*>());
                             endInsertRows();
                         }
                     }
@@ -643,6 +668,15 @@ FileDependency* FileDependencyModel::findDependency(QString const& file1, QStrin
 void FileDependencyModel::addDependency(QSharedPointer<FileDependency> dependency)
 {
     // TODO: Check if the dependency already exists.
+
+    // Update the file item pointers if not yet up to date.
+    if (dependency->getFileItem1() == 0 || dependency->getFileItem2() == 0)
+    {
+        FileDependencyItem* fileItem1 = findFileItem(dependency->getFile1());
+        FileDependencyItem* fileItem2 = findFileItem(dependency->getFile2());
+        dependency->setItemPointers(fileItem1, fileItem2);
+    }
+
     dependencies_.append(dependency);
     emit dependencyAdded(dependency.data());
 }

@@ -191,7 +191,7 @@ public:
     /*!
      *  Returns the number of files in the model.
      */
-    int getTotalFileCount() const;
+    int getTotalStepCount() const;
 
     /*!
      *  Returns the list of dependencies.
@@ -268,7 +268,7 @@ private:
     FileDependencyItem* root_;
 
     //! The externals item (for fast access).
-    FileDependencyItem* unlocated_;
+    FileDependencyItem* unknownLocation_;
 
     //! The timer for running the analysis.
     QTimer* timer_;

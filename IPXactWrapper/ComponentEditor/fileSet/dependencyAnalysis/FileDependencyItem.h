@@ -42,11 +42,16 @@ class FileDependencyItem : public QObject
     Q_OBJECT
 
 public:
+    //-----------------------------------------------------------------------------
+    //! Item type enumeration.
+    //-----------------------------------------------------------------------------
     enum ItemType
     {
         ITEM_TYPE_ROOT = 0,
-        ITEM_TYPE_FOLDER,
-        ITEM_TYPE_FILE
+        ITEM_TYPE_FOLDER,               //!< For packaged folders.
+        ITEM_TYPE_EXTERNAL_LOCATION,    //!< For external but specified locations.
+        ITEM_TYPE_UNKNOWN_LOCATION,     //!< For files whose location is unknown.
+        ITEM_TYPE_FILE                  //!< For any files.
     };
 
     /*!
@@ -73,11 +78,11 @@ public:
     /*!
      *  Adds a folder item.
      *
-     *      @param [in] type       The item type.
      *      @param [in] component  The component being edited.
      *      @param [in] path       The folder path.
+     *      @param [in] type       The folder item type.
      */
-    FileDependencyItem* addFolder(Component* component, QString const& path);
+    FileDependencyItem* addFolder(Component* component, QString const& path, ItemType type = ITEM_TYPE_FOLDER);
 
     /*!
      *  Sets the status of the item.
@@ -145,7 +150,7 @@ public:
     /*!
      *  Returns a shortened version of the path.
      */
-    QString getSimplePath() const;
+    QString getDisplayPath() const;
 
     /*!
      *  Returns the name of the file (i.e. the packaged relative name).
@@ -156,6 +161,11 @@ public:
      *  Returns the latest calculated hash or an empty string if the file is a new one.
      */
     QString getLastHash() const;
+
+    /*!
+     *  Returns true if the item is considered as external (not packaged).
+     */
+    bool isExternal() const;
 
 private:
     // Disable copying.
@@ -179,8 +189,10 @@ private:
      *      @param [in] parent     The parent item.
      *      @param [in] component  The component being edited.
      *      @param [in] path       The path of the file/folder.
+     *      @param [in] type       The folder item type.
      */
-    FileDependencyItem(FileDependencyItem* parent, Component* component, QString const& path);
+    FileDependencyItem(FileDependencyItem* parent, Component* component, QString const& path,
+                       ItemType type = ITEM_TYPE_FOLDER);
     
     //-----------------------------------------------------------------------------
     // Data.

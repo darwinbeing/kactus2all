@@ -144,6 +144,9 @@ private:
     //! The XML base path for the component.
     QString xmlPath_;
 
+    //! If true, the editor is currently scanning.
+    bool scanning_;
+
     QAction* filterGreen_;
     QAction* filterYellow_;
     QAction* filterRed_;
@@ -152,6 +155,7 @@ private:
     QAction* filterManual_;
     QAction* filterAutomatic_;
     QAction* filterDiff_;
+    QAction* runAnalysisAction_;
 
     FileDependencyGraphView::DependencyFilters filters_;
 };
