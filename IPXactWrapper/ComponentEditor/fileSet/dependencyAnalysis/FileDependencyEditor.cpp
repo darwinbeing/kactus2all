@@ -30,6 +30,7 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QAction>
+#include <QVariant>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyEditor::FileDependencyEditor()
@@ -39,6 +40,7 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
                                            PluginManager& pluginMgr, QWidget* parent)
     : QWidget(parent),
       toolbar_(this),
+      filterActions_(this),
       progressBar_(this),
       graphWidget_(this),
       infoWidget_(this),
@@ -47,7 +49,6 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
       fileTypeLookup_(),
       model_(pluginMgr, component, QFileInfo(libInterface_->getPath(*component_->getVlnv())).path() + "/"),
       xmlPath_(),
-      filters_(255),
       scanning_(false)
 {
     // Initialize the widgets.
@@ -69,25 +70,33 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_STATUS, QHeaderView::Fixed);
     graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_CREATE, QHeaderView::Fixed);
 
+    // Set up the toolbar
     toolbar_.setFloatable(false);
     toolbar_.setMovable(false);
     toolbar_.setStyleSheet(QString("QToolBar { border: none; }"));
-    filterGreen_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_green.png"), "Show Green",
-                                      this, SLOT(greenFilter()));
-    filterYellow_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_yellow.png"), "Show Yellow",
-                                      this, SLOT(yellowFilter()));
-    filterRed_ = toolbar_.addAction(QIcon(":/icons/graphics/traffic-light_red.png"), "Show Red",
-                                      this, SLOT(redFilter()));
-    filterTwoWay_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_twoway.png"), "Show Bidirectional",
-                                      this, SLOT(twoWayFilter()));
-    filterOneWay_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_oneway.png"), "Show Unidirectional",
-                                      this, SLOT(oneWayFilter()));
-    filterManual_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_manual.png"), "Show Manual",
-                                      this, SLOT(manualFilter()));
-    filterAutomatic_ = toolbar_.addAction(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
-                                      this, SLOT(automaticFilter()));
-    filterDiff_= toolbar_.addAction(QIcon(":/icons/graphics/diff.png"), "Show Differences",
-                                      this, SLOT(diffFilter()));
+
+    // Create the filter buttons in the toolbar. The button actions are also added to the separate actiongroup
+    addFilterButton(QIcon(":/icons/graphics/traffic-light_green.png"), "Show Green",
+                    FileDependencyGraphView::DependencyFilter::FILTER_GREEN);
+    addFilterButton(QIcon(":/icons/graphics/traffic-light_yellow.png"), "Show Yellow",
+                    FileDependencyGraphView::DependencyFilter::FILTER_YELLOW);
+    addFilterButton(QIcon(":/icons/graphics/traffic-light_red.png"), "Show Red",
+                    FileDependencyGraphView::DependencyFilter::FILTER_RED);
+    addFilterButton(QIcon(":/icons/graphics/dependency_twoway.png"), "Show Bidirectional",
+                    FileDependencyGraphView::DependencyFilter::FILTER_TWO_WAY);
+    addFilterButton(QIcon(":/icons/graphics/dependency_oneway.png"), "Show Unidirectional",
+                    FileDependencyGraphView::DependencyFilter::FILTER_ONE_WAY);
+    addFilterButton(QIcon(":/icons/graphics/dependency_manual.png"), "Show Manual",
+                    FileDependencyGraphView::DependencyFilter::FILTER_MANUAL);
+    addFilterButton(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
+                    FileDependencyGraphView::DependencyFilter::FILTER_AUTOMATIC);
+    addFilterButton(QIcon(":/icons/graphics/diff.png"), "Show Differences",
+                    FileDependencyGraphView::DependencyFilter::FILTER_DIFFERENCE);
+    addFilterButton(QIcon(":/icons/graphics/exclamation.png"), "Show External",
+                    FileDependencyGraphView::DependencyFilter::FILTER_EXTERNAL);
+    connect(&filterActions_, SIGNAL(triggered(QAction*)), this, SLOT(filterToggle(QAction*)));
+
+
     toolbar_.addSeparator();
     toolbar_.addAction(QIcon(":/icons/graphics/import_folders.png"), "Import Source Directories",
                        this, SLOT(openSourceDialog()));
@@ -275,108 +284,45 @@ void FileDependencyEditor::updateProgressBar(int value)
     }
 }
 
-// Filter slots
-void FileDependencyEditor::greenFilter()
+//-----------------------------------------------------------------------------
+// Function: FileDependencyEditor::filterToggle(QAction* action)
+//-----------------------------------------------------------------------------
+void FileDependencyEditor::filterToggle(QAction* action)
 {
-    if (filters_ & 1)
+    // Get current filters from the graph.
+    FileDependencyGraphView::DependencyFilters filters = graphWidget_.getView().getFilters();
+
+    // Toggle the appropriate filter based on the button that was clicked.
+    if (filters & action->data().toUInt())
     {
-        filterGreen_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
+        // Filter was on, disable it.
+        action->setChecked(false);
+        filters ^= action->data().toUInt();
     }
     else
     {
-        filterGreen_->setIcon(QIcon(":/icons/graphics/traffic-light_green.png"));
+        // Filter was off, enable it.
+        action->setChecked(true);
+        filters ^= action->data().toUInt();
     }
-    filters_ ^= 1;
-    graphWidget_.getView().setFilters(filters_);
+
+    // Apply the new filter setup to the view.
+    graphWidget_.getView().setFilters(filters);
+    toolbar_.repaint();
 }
-void FileDependencyEditor::yellowFilter()
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
+//                                                 FileDependencyGraphView::DependencyFilter filter)
+//-----------------------------------------------------------------------------
+void FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
+                                           FileDependencyGraphView::DependencyFilter filter)
 {
-    if (filters_ & 2)
-    {
-        filterYellow_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterYellow_->setIcon(QIcon(":/icons/graphics/traffic-light_yellow.png"));
-    }
-    filters_ ^= 2;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::redFilter()
-{
-    if (filters_ & 4)
-    {
-        filterRed_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterRed_->setIcon(QIcon(":/icons/graphics/traffic-light_red.png"));
-    }
-    filters_ ^= 4;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::twoWayFilter()
-{
-    if (filters_ & 8)
-    {
-        filterTwoWay_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterTwoWay_->setIcon(QIcon(":/icons/graphics/dependency_twoway.png"));
-    }
-    filters_ ^= 8;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::oneWayFilter()
-{
-    if (filters_ & 16)
-    {
-        filterOneWay_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterOneWay_->setIcon(QIcon(":/icons/graphics/dependency_oneway.png"));
-    }
-    filters_ ^= 16;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::manualFilter()
-{
-    if (filters_ & 32)
-    {
-        filterManual_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterManual_->setIcon(QIcon(":/icons/graphics/dependency_manual.png"));
-    }
-    filters_ ^= 32;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::automaticFilter()
-{
-    if (filters_ & 64)
-    {
-        filterAutomatic_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterAutomatic_->setIcon(QIcon(":/icons/graphics/dependency_auto.png"));
-    }
-    filters_ ^= 64;
-    graphWidget_.getView().setFilters(filters_);
-}
-void FileDependencyEditor::diffFilter()
-{
-    if (filters_ & 128)
-    {
-        filterDiff_->setIcon(QIcon(":/icons/graphics/traffic-light_gray.png"));
-    }
-    else
-    {
-        filterDiff_->setIcon(QIcon(":/icons/graphics/diff.png"));
-    }
-    filters_ ^= 128;
-    graphWidget_.getView().setFilters(filters_);
+    QAction* tmp = 0;
+    FileDependencyGraphView::DependencyFilters filters = graphWidget_.getView().getFilters();
+    tmp = toolbar_.addAction(icon, iconText);
+    tmp->setData(filter);
+    tmp->setCheckable(true);
+    tmp->setChecked(filters & filter);
+    filterActions_.addAction(tmp);
 }

@@ -21,7 +21,7 @@
 #include <QTableWidget>
 #include <QProgressBar>
 #include <QStringList>
-#include <QAction>
+#include <QActionGroup>
 
 class Component;
 class PluginManager;
@@ -84,14 +84,7 @@ private slots:
      *
      *      @param [in] the filter being toggled.
      */
-    void greenFilter();
-    void yellowFilter();
-    void redFilter();
-    void twoWayFilter();
-    void oneWayFilter();
-    void manualFilter();
-    void automaticFilter();
-    void diffFilter();
+    void filterToggle(QAction* action);
 
 private:
     // Disable copying.
@@ -109,6 +102,15 @@ private:
      *      @param [in] path The path to scan.
      */
     void scanFiles(QString const& path);
+
+    /*
+     *  Adds a filter button to the toolbar.
+     *
+     *      @param [in] icon        The icon for the button.
+     *      @param [in] iconText    The text displayed for the icon.
+     *      @param [in] filter      The filter value for the button.
+     */
+    void addFilterButton(QIcon icon, QString iconText, FileDependencyGraphView::DependencyFilter filter);
 
     //-----------------------------------------------------------------------------
     // Data.
@@ -147,17 +149,10 @@ private:
     //! If true, the editor is currently scanning.
     bool scanning_;
 
-    QAction* filterGreen_;
-    QAction* filterYellow_;
-    QAction* filterRed_;
-    QAction* filterTwoWay_;
-    QAction* filterOneWay_;
-    QAction* filterManual_;
-    QAction* filterAutomatic_;
-    QAction* filterDiff_;
-    QAction* runAnalysisAction_;
+    //! Container for the filter button actions.
+    QActionGroup filterActions_;
 
-    FileDependencyGraphView::DependencyFilters filters_;
+    QAction* runAnalysisAction_;
 };
 
 //-----------------------------------------------------------------------------
