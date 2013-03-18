@@ -71,29 +71,33 @@ public:
     /*!
      *  Begins the analysis for the given component.
      *
-     *      @param [in] component The component.
+     *      @param [in] component      The component.
+     *      @param [in] componentPath  The path to the directory where the component is located.
      *
      *      @remarks Any preparations needed for the file dependency analysis should be made here.
      */
-    virtual void beginAnalysis(Component const* component) = 0;
+    virtual void beginAnalysis(Component const* component, QString const& componentPath) = 0;
 
     /*!
      *  Ends the analysis for the given component.
      *
-     *      @param [in] component The component.
+     *      @param [in] component      The component.
+     *      @param [in] componentPath  The path to the directory where the component is located.
      *
      *      @remarks Any cleanups needed should be made here.
      */
-    virtual void endAnalysis(Component const* component) = 0;
+    virtual void endAnalysis(Component const* component, QString const& componentPath) = 0;
 
     /*!
      *  Retrieves all file dependencies the given file has.
      *
-     *      @param [in]  component     The component to which the dependency scan is being run.
-     *      @param [in]  filename      The name of the file to which the analysis is run.
-     *      @param [out] dependencies  The list of found dependencies.
+     *      @param [in]  component      The component to which the dependency scan is being run.
+     *      @param [in]  componentPath  The path to the directory where the component is located.
+     *      @param [in]  filename       The name of the file to which the analysis is run.
+     *      @param [out] dependencies   The list of found dependencies.
      */
     virtual void getFileDependencies(Component const* component,
+                                     QString const& componentPath,
                                      QString const& filename,
                                      QList<FileDependencyDesc>& dependencies) = 0;
 };

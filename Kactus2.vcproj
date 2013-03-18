@@ -49160,10 +49160,6 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\ClassDiagram1.cd"
-			>
-		</File>
-		<File
 			RelativePath=".\Kactus2.pri"
 			>
 			<FileConfiguration

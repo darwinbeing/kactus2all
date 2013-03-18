@@ -108,6 +108,7 @@ QString VHDLSourceAnalyzer::calculateHash(QString const& filename)
 // Function: VHDLSourceAnalyzer::getFileDependencies()
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
+                                             QString const& componentPath,
                                              QString const& filename,
                                              QList<FileDependencyDesc>& dependencies)
 {
@@ -223,7 +224,7 @@ QString VHDLSourceAnalyzer::removeComments(QString& source)
 //-----------------------------------------------------------------------------
 // Function: VHDLSourceAnalyzer::beginAnalysis()
 //-----------------------------------------------------------------------------
-void VHDLSourceAnalyzer::beginAnalysis(Component const* component)
+void VHDLSourceAnalyzer::beginAnalysis(Component const* component, QString const& componentPath)
 {
     scanEntities(component);
 }
@@ -231,14 +232,13 @@ void VHDLSourceAnalyzer::beginAnalysis(Component const* component)
 //-----------------------------------------------------------------------------
 // Function: VHDLSourceAnalyzer::endAnalysis()
 //-----------------------------------------------------------------------------
-void VHDLSourceAnalyzer::endAnalysis(Component const* component)
+void VHDLSourceAnalyzer::endAnalysis(Component const* component, QString const& componentPath)
 {
     cachedEntities_.clear();
 }
 
-
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::scanEntities(Component const* component)
+// Function: VHDLSourceAnalyzer::scanEntities()
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::scanEntities(Component const* component)
 {

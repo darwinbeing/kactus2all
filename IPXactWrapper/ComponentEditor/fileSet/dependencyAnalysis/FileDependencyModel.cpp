@@ -367,7 +367,7 @@ void FileDependencyModel::performAnalysisStep()
         // Begin analysis for each plugin.
         foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
         {
-            plugin->beginAnalysis(component_.data());
+            plugin->beginAnalysis(component_.data(), basePath_);
         }
 
         ++progressValue_;
@@ -416,7 +416,7 @@ void FileDependencyModel::performAnalysisStep()
         // End analysis for each plugin.
         foreach (ISourceAnalyzerPlugin* plugin, usedPlugins_)
         {
-            plugin->endAnalysis(component_.data());
+            plugin->endAnalysis(component_.data(), basePath_);
         }
     }
     else
@@ -522,7 +522,7 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
         if (hash != lastHash)
         {
             QList<FileDependencyDesc> dependencyDescs;
-            plugin->getFileDependencies(component_.data(), absPath, dependencyDescs);
+            plugin->getFileDependencies(component_.data(), basePath_, absPath, dependencyDescs);
 
             foreach (FileDependencyDesc const& desc, dependencyDescs)
             {

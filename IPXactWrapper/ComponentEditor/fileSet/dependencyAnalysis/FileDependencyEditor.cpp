@@ -77,23 +77,23 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
 
     // Create the filter buttons in the toolbar. The button actions are also added to the separate actiongroup
     addFilterButton(QIcon(":/icons/graphics/traffic-light_green.png"), "Show Green",
-                    FileDependencyGraphView::DependencyFilter::FILTER_GREEN);
+                    FileDependencyGraphView::FILTER_GREEN);
     addFilterButton(QIcon(":/icons/graphics/traffic-light_yellow.png"), "Show Yellow",
-                    FileDependencyGraphView::DependencyFilter::FILTER_YELLOW);
+                    FileDependencyGraphView::FILTER_YELLOW);
     addFilterButton(QIcon(":/icons/graphics/traffic-light_red.png"), "Show Red",
-                    FileDependencyGraphView::DependencyFilter::FILTER_RED);
+                    FileDependencyGraphView::FILTER_RED);
     addFilterButton(QIcon(":/icons/graphics/dependency_twoway.png"), "Show Bidirectional",
-                    FileDependencyGraphView::DependencyFilter::FILTER_TWO_WAY);
+                    FileDependencyGraphView::FILTER_TWO_WAY);
     addFilterButton(QIcon(":/icons/graphics/dependency_oneway.png"), "Show Unidirectional",
-                    FileDependencyGraphView::DependencyFilter::FILTER_ONE_WAY);
+                    FileDependencyGraphView::FILTER_ONE_WAY);
     addFilterButton(QIcon(":/icons/graphics/dependency_manual.png"), "Show Manual",
-                    FileDependencyGraphView::DependencyFilter::FILTER_MANUAL);
+                    FileDependencyGraphView::FILTER_MANUAL);
     addFilterButton(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
-                    FileDependencyGraphView::DependencyFilter::FILTER_AUTOMATIC);
+                    FileDependencyGraphView::FILTER_AUTOMATIC);
     addFilterButton(QIcon(":/icons/graphics/diff.png"), "Show Differences",
-                    FileDependencyGraphView::DependencyFilter::FILTER_DIFFERENCE);
+                    FileDependencyGraphView::FILTER_DIFFERENCE);
     addFilterButton(QIcon(":/icons/graphics/exclamation.png"), "Show External",
-                    FileDependencyGraphView::DependencyFilter::FILTER_EXTERNAL);
+                    FileDependencyGraphView::FILTER_EXTERNAL);
     connect(&filterActions_, SIGNAL(triggered(QAction*)), this, SLOT(filterToggle(QAction*)));
 
 

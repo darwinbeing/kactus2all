@@ -108,6 +108,7 @@ QString CppSourceAnalyzer::calculateHash(QString const& filename)
 // Function: CppSourceAnalyzer::getFileDependencies()
 //-----------------------------------------------------------------------------
 void CppSourceAnalyzer::getFileDependencies(Component const* /*component*/,
+                                            QString const& /*componentPath*/,
                                             QString const& filename,
                                             QList<FileDependencyDesc>& dependencies)
 {
@@ -281,14 +282,14 @@ QString CppSourceAnalyzer::removeComments(QString& source)
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::beginAnalysis()
 //-----------------------------------------------------------------------------
-void CppSourceAnalyzer::beginAnalysis(Component const* component)
+void CppSourceAnalyzer::beginAnalysis(Component const* /*component*/, QString const& /*componentPath*/)
 {
 }
 
 //-----------------------------------------------------------------------------
 // Function: CppSourceAnalyzer::endAnalysis()
 //-----------------------------------------------------------------------------
-void CppSourceAnalyzer::endAnalysis(Component const* component)
+void CppSourceAnalyzer::endAnalysis(Component const* component, QString const& /*componentPath*/)
 {
 }
 
