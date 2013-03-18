@@ -135,9 +135,10 @@ private:
      *
      * Scans all the files in the component to find VHDL entities.
      *
-     *      @param [in] component    The component from which files are scanned.
+     *      @param [in] component       The component from which files are scanned.
+     *      @param [in] componentPath   The path of of the component in the file system.
      */
-    void scanEntities(Component const* component);
+    void scanEntities(Component const* component, QString const& componentPath);
 
     //-----------------------------------------------------------------------------
     // Data.

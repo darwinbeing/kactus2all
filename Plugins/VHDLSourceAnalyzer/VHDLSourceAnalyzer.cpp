@@ -10,6 +10,9 @@
 //-----------------------------------------------------------------------------
 
 #include "VHDLSourceAnalyzer.h"
+#include <models/fileset.h>
+#include <models/file.h>
+#include <models/generaldeclarations.h>
 
 #include <QtPlugin>
 #include <QMessageBox>
@@ -18,6 +21,8 @@
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QTextStream>
+#include <QFileInfo>
+#include <QDir>
 
 #include <PluginSystem/IPluginUtility.h>
 
@@ -146,16 +151,30 @@ void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
             {
                 line = line.right(line.length()-index-9);
                 QStringList words = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-                // Now the component name should be the first word of the list
+                // Now the component name should be the first word of the list.
                 QString componentName = words.at(0).toLower();
                 if (cachedEntities_.contains(componentName))
                 {
-                    // Add all existing entities to the 
+                    // Add all existing entities to the return value list.
                     for (int j=0; j<cachedEntities_[componentName].count(); j++)
                     {
                         FileDependencyDesc dependency;
                         dependency.description = "Component instantiation.";
-                        dependency.filename = cachedEntities_[componentName].at(j);
+
+	                    // create file info instance to make sure that only the directory of the
+	                    // from parameter is used
+	                    QFileInfo fromInfo(filename);
+                        QString fromPath = fromInfo.absolutePath();
+                        if (fromInfo.isDir())
+                        {
+                            fromPath = fromInfo.absoluteFilePath();
+                        }
+
+	                    // if the directory does not exist
+	                    QDir ipXactDir(fromPath);
+
+                        //dependency.filename = cachedEntities_[componentName].at(j);
+                        dependency.filename = ipXactDir.relativeFilePath(cachedEntities_[componentName].at(j));
                         dependencies.append(dependency);
                     }
                 }
@@ -164,6 +183,9 @@ void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
     }
 }
 
+//-----------------------------------------------------------------------------
+// Function: VHDLSourceAnalyzer::getSourceData(QFile& file)
+//-----------------------------------------------------------------------------
 QString VHDLSourceAnalyzer::getSourceData(QFile& file)
 {
     // Read the file data
@@ -226,7 +248,7 @@ QString VHDLSourceAnalyzer::removeComments(QString& source)
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::beginAnalysis(Component const* component, QString const& componentPath)
 {
-    scanEntities(component);
+    scanEntities(component, componentPath);
 }
 
 //-----------------------------------------------------------------------------
@@ -238,53 +260,65 @@ void VHDLSourceAnalyzer::endAnalysis(Component const* component, QString const& 
 }
 
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::scanEntities()
+// Function: VHDLSourceAnalyzer::scanEntities(Component const* component, QString const& componentPath)
 //-----------------------------------------------------------------------------
-void VHDLSourceAnalyzer::scanEntities(Component const* component)
+void VHDLSourceAnalyzer::scanEntities(Component const* component, QString const& componentPath)
 {
-    // Get all the files from component
-    QStringList files = component->getFiles();
+    // Get all the filesets from the component.
+    QList<QSharedPointer<FileSet>> fileSets = component->getFileSets();
     
-    // Go through all the files
-    for (int i=0; i<files.size(); i++)
+    // Scan all the filesets.
+    for( int j=0; j<fileSets.size(); j++)
     {
-        // Try to open the file
-        QFile file(files.at(i));
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+        QList<QSharedPointer<File>> files = fileSets.at(j)->getFiles();
+        // Go through all the files in the fileset.
+        for (int i=0; i<files.size(); i++)
         {
-            // File could not be opened, skip
-            continue;
-        }
-
-        QString line;
-        // Read the data line by line
-        while (!file.atEnd())
-        {
-            line = file.readLine();
-
-            // Check if there's an entity specification
-            if (line.contains("entity", Qt::CaseInsensitive))
+            // Skip the file if it's not a VHDL source file.
+            if (!files.at(i)->getAllFileTypes().contains("vhdlSource"))
             {
-                int index = line.indexOf("entity", Qt::CaseInsensitive);
-                // This is an entity end, ignore
-                if (line.contains("end", Qt::CaseInsensitive) && 
-                    line.indexOf("end", Qt::CaseInsensitive) < line.indexOf("entity", Qt::CaseInsensitive))
+                continue;
+            }
+
+            // Try to open the file
+            // TODO: We need a way to open the file here...
+            QFile file(componentPath + files.at(i)->getName());
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text) )
+            {
+                // File could not be opened, skip
+                continue;
+            }
+
+            QString line;
+            // Read the data line by line
+            while (!file.atEnd())
+            {
+                line = file.readLine();
+
+                // Check if there's an entity specification
+                if (line.contains("entity", Qt::CaseInsensitive))
                 {
-                    continue;
-                }
-                // Commented, ignore
-                else if (line.contains("--") && line.indexOf("--") < line.indexOf("entity", Qt::CaseInsensitive))
-                {
-                    continue;
-                }
-                // Get the entity name
-                else
-                {
-                    line = line.right(line.length()-index-6);
-                    QStringList words = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-                    // Now the entity name should be the first word of the list
-                    QString entityName = words.at(0).toLower();
-                    cachedEntities_[entityName].append(files.at(i).toLower());
+                    int index = line.indexOf("entity", Qt::CaseInsensitive);
+                    // This is an entity end, ignore
+                    if (line.contains("end", Qt::CaseInsensitive) && 
+                        line.indexOf("end", Qt::CaseInsensitive) < line.indexOf("entity", Qt::CaseInsensitive))
+                    {
+                        continue;
+                    }
+                    // Commented, ignore
+                    else if (line.contains("--") && line.indexOf("--") < line.indexOf("entity", Qt::CaseInsensitive))
+                    {
+                        continue;
+                    }
+                    // Get the entity name
+                    else
+                    {
+                        line = line.right(line.length()-index-6);
+                        QStringList words = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+                        // Now the entity name should be the first word of the list
+                        QString entityName = words.at(0).toLower();
+                        cachedEntities_[entityName].append(file.fileName());
+                    }
                 }
             }
         }
