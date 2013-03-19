@@ -128,6 +128,11 @@ protected:
     /*!
      *  Handles key presses.
      */
+    virtual void keyPressEvent(QKeyEvent* event);
+
+    /*!
+     *  Handles key presses.
+     */
     virtual void keyReleaseEvent(QKeyEvent* event);
 
     /*!
@@ -333,8 +338,12 @@ private:
 
     //! The start item of manual dependency creation
     FileDependencyItem* manualDependencyStartItem_;
+    
+    //! The end item of manual dependency creation
     FileDependencyItem* manualDependencyEndItem_;
 
+    //! If true, the shift key is pressed.
+    bool multiManualCreation_;
 };
 
 //-----------------------------------------------------------------------------

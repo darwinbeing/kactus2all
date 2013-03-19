@@ -162,6 +162,7 @@ void FileDependencyInfoWidget::directionComboChanged(int index)
     }
 
     emit dependencyChanged(dependency_);
+    updateFileLabel();
 }
 
 //-----------------------------------------------------------------------------
@@ -187,6 +188,7 @@ void FileDependencyInfoWidget::directionReversed()
 {
     dependency_->reverse();
     emit dependencyChanged(dependency_);
+    updateFileLabel();
 }
 
 void FileDependencyInfoWidget::updateFileLabel()

@@ -36,7 +36,8 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       drawingDependency_(false),
       filters_(FILTER_DEFAULT),
       manualDependencyStartItem_(0),
-      manualDependencyEndItem_(0)
+      manualDependencyEndItem_(0),
+      multiManualCreation_(false)
 {
     setUniformRowHeights(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -259,20 +260,41 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                 if( startPoint.isValid() )
                 {
                     manualDependencyStartItem_ = static_cast<FileDependencyItem*>(startPoint.internalPointer());
-                    manualDependencyEndItem_ = manualDependencyStartItem_;
-                    drawingDependency_ = true;
-                    setMouseTracking(true);
+                    if( manualDependencyStartItem_->getType() != FileDependencyItem::ITEM_TYPE_FILE )
+                    {
+                        manualDependencyStartItem_ = 0;
+                    }
+                    else
+                    {
+                        manualDependencyEndItem_ = manualDependencyStartItem_;
+                        drawingDependency_ = true;
+                        setMouseTracking(true);
+                    }
                 }
             }
             else
             {
-                // TODO: Add new dependency
-                // TODO: check whether shift was pressed.
-                manualDependencyStartItem_ = 0;
-                manualDependencyEndItem_ = 0;
-                drawingDependency_ = false;
-                viewport()->repaint();
-                setMouseTracking(false);
+                if( manualDependencyEndItem_ && manualDependencyStartItem_ && manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE )
+                {
+                    FileDependency* createdDependency = new FileDependency;
+                    createdDependency->setFile1(manualDependencyStartItem_->getPath());
+                    createdDependency->setFile2(manualDependencyEndItem_->getPath());
+                    createdDependency->setManual(true);
+                    model_->addDependency(QSharedPointer<FileDependency>(createdDependency));
+                    if( multiManualCreation_ )
+                    {
+                        manualDependencyEndItem_ = manualDependencyStartItem_;
+                        viewport()->repaint();
+                    }
+                    else
+                    {
+                        manualDependencyStartItem_ = 0;
+                        manualDependencyEndItem_ = 0;
+                        drawingDependency_ = false;
+                        viewport()->repaint();
+                        setMouseTracking(false);
+                    }
+                }
             }
         }
     }
@@ -309,6 +331,16 @@ void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 }
 
 //-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::keyPressEvent()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Shift)
+    {
+        multiManualCreation_ = true;
+    }
+}
+//-----------------------------------------------------------------------------
 // Function: FileDependencyGraphView::keyReleaseEvent()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
@@ -323,6 +355,15 @@ void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
             selectedDependency_ = 0;
             emit selectionChanged(0);
         }
+    }
+    else if (event->key() == Qt::Key_Shift)
+    {
+        multiManualCreation_ = false;
+        manualDependencyStartItem_ = 0;
+        manualDependencyEndItem_ = 0;
+        drawingDependency_ = false;
+        viewport()->repaint();
+        setMouseTracking(false);
     }
     // If keypress isn't handled here, send to parent class.
     else
