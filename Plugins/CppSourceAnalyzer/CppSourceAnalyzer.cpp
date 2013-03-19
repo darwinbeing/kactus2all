@@ -154,6 +154,9 @@ void CppSourceAnalyzer::getFileDependencies(Component const* /*component*/,
     }
 }
 
+//-----------------------------------------------------------------------------
+// Function: CppSourceAnalyzer::getSourceData()
+//-----------------------------------------------------------------------------
 QString CppSourceAnalyzer::getSourceData(QFile& file)
 {
     // Read the file data
@@ -184,6 +187,9 @@ QString CppSourceAnalyzer::getSourceData(QFile& file)
     return finalData;
 }
 
+//-----------------------------------------------------------------------------
+// Function: CppSourceAnalyzer::removeComments()
+//-----------------------------------------------------------------------------
 QString CppSourceAnalyzer::removeComments(QString& source)
 {
     QTextStream sourceStream(&source);

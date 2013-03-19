@@ -124,6 +124,11 @@ protected:
      *  Handles mouse move events and manual connection creation.
      */
     virtual void mouseMoveEvent(QMouseEvent* event);
+    
+    /*!
+     *  Handles key presses.
+     */
+    virtual void keyReleaseEvent(QKeyEvent* event);
 
     /*!
      *  Handles auto-expand when rows are inserted.

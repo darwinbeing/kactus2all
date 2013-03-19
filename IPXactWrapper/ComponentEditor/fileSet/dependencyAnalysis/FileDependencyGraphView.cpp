@@ -283,7 +283,7 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyGraphWidget::mouseMoveEvent()
+// Function: FileDependencyGraphView::mouseMoveEvent()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 {
@@ -306,6 +306,29 @@ void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
         QTreeView::mousePressEvent(event);
     }
     // Same helper functions apply here as well.
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::keyReleaseEvent()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
+{
+    // When delete is pressed, attempt to delete the selected dependency.
+    if (event->matches(QKeySequence::Delete) && selectedDependency_)
+    {
+        // Check that the selected dependency is a manual one and that it's not locked.
+        if (selectedDependency_->isManual() && !selectedDependency_->isLocked())
+        {
+            model_->removeDependency(selectedDependency_);
+            selectedDependency_ = 0;
+            emit selectionChanged(0);
+        }
+    }
+    // If keypress isn't handled here, send to parent class.
+    else
+    {
+        QTreeView::keyReleaseEvent(event);
+    }
 }
 
 //-----------------------------------------------------------------------------

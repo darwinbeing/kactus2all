@@ -184,7 +184,7 @@ void VHDLSourceAnalyzer::getFileDependencies(Component const* component,
 }
 
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::getSourceData(QFile& file)
+// Function: VHDLSourceAnalyzer::getSourceData()
 //-----------------------------------------------------------------------------
 QString VHDLSourceAnalyzer::getSourceData(QFile& file)
 {
@@ -210,7 +210,7 @@ QString VHDLSourceAnalyzer::getSourceData(QFile& file)
 
 
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::removeComments(QString& source)
+// Function: VHDLSourceAnalyzer::removeComments()
 //-----------------------------------------------------------------------------
 QString VHDLSourceAnalyzer::removeComments(QString& source)
 {
@@ -260,7 +260,7 @@ void VHDLSourceAnalyzer::endAnalysis(Component const* component, QString const& 
 }
 
 //-----------------------------------------------------------------------------
-// Function: VHDLSourceAnalyzer::scanEntities(Component const* component, QString const& componentPath)
+// Function: VHDLSourceAnalyzer::scanEntities()
 //-----------------------------------------------------------------------------
 void VHDLSourceAnalyzer::scanEntities(Component const* component, QString const& componentPath)
 {

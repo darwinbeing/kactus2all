@@ -285,7 +285,7 @@ void FileDependencyEditor::updateProgressBar(int value)
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyEditor::filterToggle(QAction* action)
+// Function: FileDependencyEditor::filterToggle()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::filterToggle(QAction* action)
 {
@@ -312,8 +312,7 @@ void FileDependencyEditor::filterToggle(QAction* action)
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
-//                                                 FileDependencyGraphView::DependencyFilter filter)
+// Function: FileDependencyEditor::addFilterButton()
 //-----------------------------------------------------------------------------
 void FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
                                            FileDependencyGraphView::DependencyFilter filter)
