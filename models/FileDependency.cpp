@@ -23,6 +23,7 @@ FileDependency::FileDependency()
       locked_(false),
       bidirectional_(false),
       manual_(false),
+      status_(STATUS_UNCHANGED),
       fileItem1_(0),
       fileItem2_(0)
 {
@@ -38,6 +39,7 @@ FileDependency::FileDependency(FileDependency const& rhs)
       locked_(rhs.locked_),
       bidirectional_(rhs.bidirectional_),
       manual_(rhs.manual_),
+      status_(rhs.status_),
       fileItem1_(0),
       fileItem2_(0)
 {
@@ -53,6 +55,7 @@ FileDependency::FileDependency(QDomNode& node)
       locked_(false),
       bidirectional_(false),
       manual_(false),
+      status_(STATUS_UNCHANGED),
       fileItem1_(0),
       fileItem2_(0)
 {
@@ -215,6 +218,7 @@ FileDependency& FileDependency::operator=(FileDependency const& rhs)
         locked_ = rhs.locked_;
         bidirectional_ = rhs.bidirectional_;
         manual_ = rhs.manual_;
+        status_ = rhs.status_;
     }
 
     return *this;
@@ -252,4 +256,20 @@ void FileDependency::reverse()
 {
     qSwap(file1_, file2_);
     qSwap(fileItem1_, fileItem2_);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::setStatus()
+//-----------------------------------------------------------------------------
+void FileDependency::setStatus(Status status)
+{
+    status_ = status;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependency::getStatus()
+//-----------------------------------------------------------------------------
+FileDependency::Status FileDependency::getStatus() const
+{
+    return status_;
 }

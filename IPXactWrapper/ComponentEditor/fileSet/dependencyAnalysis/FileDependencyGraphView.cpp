@@ -32,6 +32,7 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
       columns_(),
       maxVisibleGraphColumns_(0),
       scrollIndex_(0),
+      hoveredDependency_(0),
       selectedDependency_(0),
       drawingDependency_(false),
       filters_(FILTER_DEFAULT),
@@ -42,6 +43,7 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
     setUniformRowHeights(true);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setItemDelegate(new FileDependencyDelegate(this));
+    setMouseTracking(true);
 
     connect(header(), SIGNAL(sectionResized(int, int, int)),
             this, SLOT(onSectionResized()), Qt::UniqueConnection);
@@ -171,28 +173,44 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency, bool
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onDependencyChanged(FileDependency* dependency)
 {
-    // Repaint only the area of the dependency.
+    repaintDependency(dependency);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onDependencyRemoved()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onDependencyRemoved(FileDependency* dependency)
+{
     int x = GRAPH_MARGIN - scrollIndex_ * GRAPH_SPACING;
 
-    foreach (GraphColumn const& column, columns_)
+    for (int i = 0; i < columns_.size(); ++i)
     {
-        foreach (GraphDependency const& dep, column.dependencies)
+        GraphColumn& column = columns_[i];
+
+        for (int j = 0; j < column.dependencies.size(); ++j)
         {
+            GraphDependency& dep = column.dependencies[j];
+
             if (dep.dependency == dependency)
             {
+                // Repaint only the area of the dependency.
                 int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
                 int fromY = 0;
                 int toY = 0;
+                bool visible = getCoordinates(dep, fromY, toY);
 
-                if (getCoordinates(dep, fromY, toY))
+                column.dependencies.removeAt(j);
+
+                if (visible)
                 {
                     viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
-                                              qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
-                                              2 * (ARROW_WIDTH + SAFE_MARGIN),
-                                              qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
+                                        qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
+                                        2 * (ARROW_WIDTH + SAFE_MARGIN),
+                                        qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
                 }
 
-                break;
+
+                return;
             }
         }
 
@@ -241,8 +259,11 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 
             if (dependency != selectedDependency_)
             {
+                FileDependency* oldDependency = selectedDependency_;
                 selectedDependency_ = dependency;
-                viewport()->repaint();
+
+                repaintDependency(oldDependency);
+                repaintDependency(selectedDependency_);                
 
                 emit selectionChanged(selectedDependency_);
             }
@@ -268,20 +289,23 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
                         drawingDependency_ = true;
-                        setMouseTracking(true);
                     }
                 }
             }
             else
             {
-                if( manualDependencyEndItem_ && manualDependencyStartItem_ && manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE )
+                if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
+                    manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE)
                 {
-                    FileDependency* createdDependency = new FileDependency;
+                    FileDependency* createdDependency = new FileDependency();
                     createdDependency->setFile1(manualDependencyStartItem_->getPath());
                     createdDependency->setFile2(manualDependencyEndItem_->getPath());
                     createdDependency->setManual(true);
+                    createdDependency->setStatus(FileDependency::STATUS_ADDED);
+
                     model_->addDependency(QSharedPointer<FileDependency>(createdDependency));
-                    if( multiManualCreation_ )
+
+                    if (multiManualCreation_)
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
                         viewport()->repaint();
@@ -292,7 +316,6 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         manualDependencyEndItem_ = 0;
                         drawingDependency_ = false;
                         viewport()->repaint();
-                        setMouseTracking(false);
                     }
                 }
             }
@@ -316,18 +339,16 @@ void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
         if( currentPoint.isValid() )
         {
             FileDependencyItem* currentDependencyItem = static_cast<FileDependencyItem*>(currentPoint.internalPointer());
-            if( manualDependencyEndItem_ != currentDependencyItem )
-            {
-                viewport()->repaint();
-                manualDependencyEndItem_ = currentDependencyItem;
-            }
+            manualDependencyEndItem_ = currentDependencyItem;
+            viewport()->repaint();
         }
     }
     else
     {
-        QTreeView::mousePressEvent(event);
+        QTreeView::mouseMoveEvent(event);
+        //hoveredDependency_ = findDependencyAt(event->pos()); Disable for now since does not offer better usability.
+        viewport()->repaint();
     }
-    // Same helper functions apply here as well.
 }
 
 //-----------------------------------------------------------------------------
@@ -363,7 +384,6 @@ void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
         manualDependencyEndItem_ = 0;
         drawingDependency_ = false;
         viewport()->repaint();
-        setMouseTracking(false);
     }
     // If keypress isn't handled here, send to parent class.
     else
@@ -552,6 +572,21 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
                     {
                         color = Qt::blue;
                     }
+                    else if (dep.dependency == hoveredDependency_)
+                    {
+                        color = QColor(0, 158, 255);
+                    }
+                    else if (filters_ & FILTER_DIFFERENCE)
+                    {
+                        if (dep.dependency->getStatus() == FileDependency::STATUS_ADDED)
+                        {
+                            color = Qt::green;
+                        }
+                        else if (dep.dependency->getStatus() == FileDependency::STATUS_REMOVED)
+                        {
+                            color = Qt::red;
+                        }
+                    }
                     else if (dep.dependency->isManual())
                     {
                         color = Qt::magenta;
@@ -642,8 +677,7 @@ void FileDependencyGraphView::onModelReset()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::drawManualCreationArrow(QPainter& painter)
 {
-    int x = GRAPH_MARGIN + columnViewportPosition(FILE_DEPENDENCY_COLUMN_CREATE);
-    // TODO[Tommi]: Draw the arrow based on the movements processed in the mouseMoveEvent().
+    int x = columnViewportPosition(FILE_DEPENDENCY_COLUMN_CREATE) + columnWidth(FILE_DEPENDENCY_COLUMN_CREATE) / 2;
     int startY = 0;
     int currentY = 0;
     getVisualRowY(model_->getItemIndex(manualDependencyStartItem_, 0), startY);
@@ -804,32 +838,6 @@ bool FileDependencyGraphView::getCoordinates(GraphDependency const &dep, int& fr
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyGraphView::onDependencyRemoved()
-//-----------------------------------------------------------------------------
-void FileDependencyGraphView::onDependencyRemoved(FileDependency* dependency)
-{
-    for (int i = 0; i < columns_.size(); ++i)
-    {
-        GraphColumn& column = columns_[i];
-
-        for (int j = 0; j < column.dependencies.size(); ++j)
-        {
-            GraphDependency& dep = column.dependencies[j];
-
-            if (dep.dependency == dependency)
-            {
-                column.dependencies.removeAt(j);
-
-                // TODO: Repaint only the area of the dependency.
-                viewport()->repaint();
-                return;
-            }
-        }
-
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Function: FileDependencyGraphView::filterDependency()
 //-----------------------------------------------------------------------------
 bool FileDependencyGraphView::filterDependency(FileDependency const* dependency) const
@@ -868,4 +876,38 @@ void FileDependencyGraphView::reset()
 
     QTreeView::reset();
     expandAll();
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::repaintDependency()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::repaintDependency(FileDependency const* dependency)
+{
+    // Repaint only the area of the dependency.
+    int x = GRAPH_MARGIN - scrollIndex_ * GRAPH_SPACING;
+
+    foreach (GraphColumn const& column, columns_)
+    {
+        foreach (GraphDependency const& dep, column.dependencies)
+        {
+            if (dep.dependency == dependency)
+            {
+                int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
+                int fromY = 0;
+                int toY = 0;
+
+                if (getCoordinates(dep, fromY, toY))
+                {
+                    viewport()->repaint(QRect(columnOffset + x - ARROW_WIDTH - SAFE_MARGIN,
+                        qMin(fromY, toY) - POINTER_OFFSET - SAFE_MARGIN,
+                        2 * (ARROW_WIDTH + SAFE_MARGIN),
+                        qAbs(toY - fromY) + 2 * (POINTER_OFFSET + SAFE_MARGIN)));
+                }
+
+                break;
+            }
+        }
+
+        x += GRAPH_SPACING;
+    }
 }

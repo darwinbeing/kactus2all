@@ -251,7 +251,9 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
     }
     else if (role == Qt::BackgroundRole)
     {
-        if (item->getType() == FileDependencyItem::ITEM_TYPE_FOLDER)
+        if (item->getType() == FileDependencyItem::ITEM_TYPE_FOLDER ||
+            item->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
+            item->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
         {
             return QColor(230, 230, 230);
         }
@@ -337,7 +339,15 @@ void FileDependencyModel::beginReset()
     delete root_;
     root_ = new FileDependencyItem();
 
-    dependencies_.clear(); // TODO: Keep saved dependencies but remove everything else?
+    // Add the existing dependencies to the model and mark them as removed.
+    // The scan will mark preserved dependencies as normal.
+    dependencies_.clear();
+
+    foreach (QSharedPointer<FileDependency> dependency, component_->getFileDependencies())
+    {
+        QSharedPointer<FileDependency> copy(new FileDependency(*dependency));
+        copy->setStatus(FileDependency::STATUS_REMOVED);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -527,7 +537,7 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
             foreach (FileDependencyDesc const& desc, dependencyDescs)
             {
                 QString file1 = fileItem->getPath();
-                QString file2 = QFileInfo(fileItem->getPath()).path() + "/" + desc.filename;
+                QString file2 = QFileInfo(fileItem->getPath()).path() + "/" + desc.filename;// TODO: Fix to use canonical file path!
 
                 // Check if the dependency already exists.
                 FileDependency* found = findDependency(file1, file2);
@@ -573,12 +583,14 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                     dependency->setFile2(file2);
                     dependency->setDescription(desc.description);
                     dependency->setItemPointers(fileItem1, fileItem2);
+                    dependency->setStatus(FileDependency::STATUS_ADDED);
 
                     addDependency(dependency);
                 }
                 // Otherwise check if the existing dependency needs updating to a bidirectional one.
                 else if (!found->isBidirectional() && found->getFile1() != file1)
                 {
+                    found->setStatus(FileDependency::STATUS_UNCHANGED);
                     found->setBidirectional(true);
 
                     // Combine the descriptions.
@@ -587,6 +599,8 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                 }
                 else
                 {
+                    found->setStatus(FileDependency::STATUS_UNCHANGED);
+
                     // TODO: Update the description even in this case?
                 }
             }
@@ -665,7 +679,16 @@ FileDependency* FileDependencyModel::findDependency(QString const& file1, QStrin
 //-----------------------------------------------------------------------------
 void FileDependencyModel::addDependency(QSharedPointer<FileDependency> dependency)
 {
-    // TODO: Check if the dependency already exists.
+    foreach (QSharedPointer<FileDependency> dep, dependencies_)
+    {
+        if ((dep->getFile1() == dependency->getFile1() && dep->getFile2() == dependency->getFile2()) ||
+            (dep->isBidirectional() && dep->getFile2() == dependency->getFile1() &&
+             dep->getFile1() == dependency->getFile2()))
+        {
+            // TODO: Print information for the user to the output.
+            return;
+        }
+    }
 
     // Update the file item pointers if not yet up to date.
     if (dependency->getFileItem1() == 0 || dependency->getFileItem2() == 0)
@@ -701,4 +724,12 @@ void FileDependencyModel::removeDependency(FileDependency* dependency)
 QList< QSharedPointer<FileDependency> > FileDependencyModel::getDependencies() const
 {
     return dependencies_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::apply()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::apply()
+{
+    component_->setFileDependencies(dependencies_);
 }

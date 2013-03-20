@@ -299,6 +299,13 @@ private:
      */
     bool filterDependency(FileDependency const* dependency) const;
 
+    /*!
+     *  Repaints the given dependency.
+     *
+     *      @param [in] dependency The dependency to repaint.
+     */
+    void repaintDependency(FileDependency const* dependency);
+
     enum
     {
         DOT_RADIUS = 2,       //!< The radius of the "from" dot for the arrows.
@@ -326,6 +333,9 @@ private:
 
     //! The current scroll value of the dependency graph column.
     int scrollIndex_;
+
+    //! The currently hovered dependency.
+    FileDependency* hoveredDependency_;
 
     //! The currently selected dependency.
     FileDependency* selectedDependency_;

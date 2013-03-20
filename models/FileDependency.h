@@ -27,6 +27,16 @@ class FileDependencyItem;
 class KACTUS2_API FileDependency : public QObject
 {
 public:
+    //-----------------------------------------------------------------------------
+    //! Status enumeration.
+    //-----------------------------------------------------------------------------
+    enum Status
+    {
+        STATUS_UNCHANGED = 0,
+        STATUS_ADDED,
+        STATUS_REMOVED
+    };
+
     /*!
      *  Constructor.
      */
@@ -106,6 +116,13 @@ public:
     void setManual(bool manual);
 
     /*!
+     *  Sets the status of the dependency.
+     *
+     *      @param [in] status The status to set.
+     */
+    void setStatus(Status status);
+
+    /*!
      *  Returns the name of the 'from' file.
      */
     QString const& getFile1() const;
@@ -134,6 +151,11 @@ public:
      *  Returns true if the dependency is manual.
      */
     bool isManual() const;
+
+    /*!
+     *  Returns the status.
+     */
+    Status getStatus() const;
 
     /*!
      *  Assignment operator.
@@ -184,6 +206,9 @@ private:
 
     //! If true, the dependency is a manually created one.
     bool manual_;
+
+    //! The status of the dependency.
+    Status status_;
 
     //! The file item pointers.
     FileDependencyItem* fileItem1_;

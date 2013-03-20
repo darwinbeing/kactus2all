@@ -70,6 +70,8 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
     graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_STATUS, QHeaderView::Fixed);
     graphWidget_.getView().header()->setResizeMode(FILE_DEPENDENCY_COLUMN_CREATE, QHeaderView::Fixed);
 
+    filterActions_.setExclusive(false);
+
     // Set up the toolbar
     toolbar_.setFloatable(false);
     toolbar_.setMovable(false);
@@ -90,10 +92,10 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
                     FileDependencyGraphView::FILTER_MANUAL);
     addFilterButton(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
                     FileDependencyGraphView::FILTER_AUTOMATIC);
-    addFilterButton(QIcon(":/icons/graphics/diff.png"), "Show Differences",
-                    FileDependencyGraphView::FILTER_DIFFERENCE);
     addFilterButton(QIcon(":/icons/graphics/exclamation.png"), "Show External",
                     FileDependencyGraphView::FILTER_EXTERNAL);
+    addFilterButton(QIcon(":/icons/graphics/diff.png"), "Show Differences",
+                    FileDependencyGraphView::FILTER_DIFFERENCE);
     connect(&filterActions_, SIGNAL(triggered(QAction*)), this, SLOT(filterToggle(QAction*)));
 
 
@@ -308,7 +310,6 @@ void FileDependencyEditor::filterToggle(QAction* action)
 
     // Apply the new filter setup to the view.
     graphWidget_.getView().setFilters(filters);
-    toolbar_.repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -324,4 +325,12 @@ void FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
     tmp->setCheckable(true);
     tmp->setChecked(filters & filter);
     filterActions_.addAction(tmp);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyEditor::apply()
+//-----------------------------------------------------------------------------
+void FileDependencyEditor::apply()
+{
+    model_.apply();
 }

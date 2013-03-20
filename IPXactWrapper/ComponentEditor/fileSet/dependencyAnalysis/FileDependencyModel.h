@@ -62,6 +62,11 @@ public:
     ~FileDependencyModel();
 
     /*!
+     *  Applies the models to the component metadata.
+     */
+    void apply();
+
+    /*!
      *  Adds a new dependency to the model.
      *
      *      @param [in] dependency The file dependency to add.
