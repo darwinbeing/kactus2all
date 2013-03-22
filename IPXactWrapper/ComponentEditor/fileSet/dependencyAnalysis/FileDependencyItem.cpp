@@ -148,8 +148,15 @@ QString FileDependencyItem::getDisplayPath() const
     {
     case ITEM_TYPE_FILE:
         {
-            QFileInfo info(path_);
-            return info.fileName();
+            if (isExternal())
+            {
+                return path_.mid(path_.indexOf('/') + 1);
+            }
+            else
+            {
+                QFileInfo info(path_);
+                return info.fileName();
+            }
         }
 
     case ITEM_TYPE_EXTERNAL_LOCATION:
@@ -297,7 +304,7 @@ void FileDependencyItem::setLastHash(QString const& hash)
 {
     foreach (File* file, fileRefs_)
     {
-        file->setLastHash(hash);
+        file->setPendingHash(hash);
     }
 }
 

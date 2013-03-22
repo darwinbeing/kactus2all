@@ -70,15 +70,15 @@ FileDependency::FileDependency(QDomNode& node)
 
         if (childNode.nodeName() == "kactus2:fileRef1")
         {
-            file1_ = childNode.nodeValue();
+            file1_ = childNode.childNodes().at(0).nodeValue();
         }
         else if (childNode.nodeName() == "kactus2:fileRef2")
         {
-            file2_ = childNode.nodeValue();
+            file2_ = childNode.childNodes().at(0).nodeValue();
         }
         else if (childNode.nodeName() == "spirit:description")
         {
-            desc_ = childNode.nodeValue();
+            desc_ = childNode.childNodes().at(0).nodeValue();
         }
     }
 
@@ -107,6 +107,8 @@ void FileDependency::write(QXmlStreamWriter& writer)
     writer.writeTextElement("kactus2:fileRef1", file1_);
     writer.writeTextElement("kactus2:fileRef2", file2_);
     writer.writeTextElement("spirit:description", desc_);
+
+    writer.writeEndElement(); // kactus2:fileDependency
 }
 
 //-----------------------------------------------------------------------------

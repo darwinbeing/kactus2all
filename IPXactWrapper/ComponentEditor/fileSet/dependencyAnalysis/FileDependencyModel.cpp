@@ -342,12 +342,6 @@ void FileDependencyModel::beginReset()
     // Add the existing dependencies to the model and mark them as removed.
     // The scan will mark preserved dependencies as normal.
     dependencies_.clear();
-
-    foreach (QSharedPointer<FileDependency> dependency, component_->getFileDependencies())
-    {
-        QSharedPointer<FileDependency> copy(new FileDependency(*dependency));
-        copy->setStatus(FileDependency::STATUS_REMOVED);
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -356,6 +350,43 @@ void FileDependencyModel::beginReset()
 void FileDependencyModel::endReset()
 {
     endResetModel();
+
+    foreach (QSharedPointer<FileDependency> dependency, component_->getFileDependencies())
+    {
+        QSharedPointer<FileDependency> copy(new FileDependency(*dependency));
+        copy->setStatus(FileDependency::STATUS_UNCHANGED);
+
+        FileDependencyItem* fileItem1 = findFileItem(copy->getFile1());
+        FileDependencyItem* fileItem2 = findFileItem(copy->getFile2());
+
+        // First item should always be valid.
+        Q_ASSERT(fileItem1 != 0);
+
+        // Check if the second one is an external (not found).
+        if (fileItem2 == 0)
+        {
+            // Create the externals folder if not yet created.
+            if (unknownLocation_ == 0)
+            {
+                beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
+                    root_->getChildCount());
+
+                unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
+                    FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
+                endInsertRows();
+            }
+
+            beginInsertRows(getItemIndex(unknownLocation_, 0),
+                unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
+            fileItem2 = unknownLocation_->addFile(component_.data(), copy->getFile2(), QList<File*>());
+            endInsertRows();
+        }
+
+        copy->setItemPointers(fileItem1, fileItem2);
+        dependencies_.append(copy);
+    }
+
+    emit dependenciesReset();
 }
 
 //-----------------------------------------------------------------------------
@@ -428,6 +459,9 @@ void FileDependencyModel::performAnalysisStep()
         {
             plugin->endAnalysis(component_.data(), basePath_);
         }
+
+        // Set the dependencies as pending.
+        component_->setPendingFileDependencies(dependencies_);
     }
     else
     {
@@ -527,54 +561,63 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
         QString absPath = General::getAbsolutePath(basePath_, fileItem->getPath());
         QString hash = plugin->calculateHash(absPath);
         QString lastHash = fileItem->getLastHash();
+        bool dependenciesChanged = false;
 
         // If the hash has changed, resolve dependencies.
         if (hash != lastHash)
         {
+            // Retrieve the old dependencies.
+            QList<FileDependency*> oldDependencies;
+            findDependencies(fileItem->getPath(), oldDependencies);
+
+            // Scan the current dependencies.
             QList<FileDependencyDesc> dependencyDescs;
             plugin->getFileDependencies(component_.data(), basePath_, absPath, dependencyDescs);
 
+            // Go through all current dependencies.
             foreach (FileDependencyDesc const& desc, dependencyDescs)
             {
                 QString file1 = fileItem->getPath();
-                QString file2 = QFileInfo(fileItem->getPath()).path() + "/" + desc.filename;// TODO: Fix to use canonical file path!
+                QString file2 = General::getRelativePath(basePath_,
+                    QFileInfo(QFileInfo(absPath).path() + "/" + desc.filename).canonicalFilePath());
+
+                // Retrieve the item pointers.
+                FileDependencyItem* fileItem1 = findFileItem(file1);
+                FileDependencyItem* fileItem2 = findFileItem(file2);
+
+                // First item should always be valid.
+                Q_ASSERT(fileItem1 != 0);
+
+                // Check if the second file was an external (not found).
+                if (fileItem2 == 0)
+                {
+                    file2 = "External/" + desc.filename;
+                    fileItem2 = findFileItem(file2);
+                }
 
                 // Check if the dependency already exists.
-                FileDependency* found = findDependency(file1, file2);
+                FileDependency* found = findDependency(oldDependencies, file1, file2);
 
                 if (found == 0)
                 {
-                    // Retrieve the item pointers.
-                    FileDependencyItem* fileItem1 = findFileItem(file1);
-                    FileDependencyItem* fileItem2 = findFileItem(file2);
-
-                    // First item should always be valid.
-                    Q_ASSERT(fileItem1 != 0);
-
-                    // Check if the second one is an external (not found).
+                    // Create the item for external file if not found.
                     if (fileItem2 == 0)
                     {
-                        file2 = "External/" + desc.filename;
-                        fileItem2 = findFileItem(file2);
-
-                        if (fileItem2 == 0)
+                        // Create the externals folder if not yet created.
+                        if (unknownLocation_ == 0)
                         {
-                            // Create the externals folder if not yet created.
-                            if (unknownLocation_ == 0)
-                            {
-                                beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
-                                                root_->getChildCount());
+                            beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
+                                root_->getChildCount());
 
-                                unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
-                                                                    FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
-                                endInsertRows();
-                            }
-
-                            beginInsertRows(getItemIndex(unknownLocation_, 0),
-                                            unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
-                            fileItem2 = unknownLocation_->addFile(component_.data(), file2, QList<File*>());
+                            unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
+                                FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
                             endInsertRows();
                         }
+
+                        beginInsertRows(getItemIndex(unknownLocation_, 0),
+                            unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
+                        fileItem2 = unknownLocation_->addFile(component_.data(), file2, QList<File*>());
+                        endInsertRows();
                     }
 
                     // Create a new dependency if not found.
@@ -586,36 +629,55 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                     dependency->setStatus(FileDependency::STATUS_ADDED);
 
                     addDependency(dependency);
-                }
-                // Otherwise check if the existing dependency needs updating to a bidirectional one.
-                else if (!found->isBidirectional() && found->getFile1() != file1)
-                {
-                    found->setStatus(FileDependency::STATUS_UNCHANGED);
-                    found->setBidirectional(true);
-
-                    // Combine the descriptions.
-                    found->setDescription(found->getDescription() + "\n" + desc.description);
-                    emit dependencyChanged(found);
+                    dependenciesChanged = true;
                 }
                 else
                 {
-                    found->setStatus(FileDependency::STATUS_UNCHANGED);
+                    // Remove the dependency from the temporary list.
+                    oldDependencies.removeOne(found);
 
-                    // TODO: Update the description even in this case?
+                    // Check if the existing dependency needs updating to a bidirectional one.
+                    if (!found->isBidirectional() && found->getFile1() != file1)
+                    {
+                        found->setBidirectional(true);
+
+                        // Combine the descriptions.
+                        found->setDescription(found->getDescription() + "\n" + desc.description);
+                        emit dependencyChanged(found);
+                    }
+                    else
+                    {
+                        // TODO: Update the description even in this case?
+                    }
                 }
+            }
+
+            // Mark all existing old dependencies as removed.
+            foreach (FileDependency* dependency, oldDependencies)
+            {
+                dependency->setStatus(FileDependency::STATUS_REMOVED);
+                dependenciesChanged = true;
+                emit dependencyChanged(dependency);
             }
         }
 
         if (!lastHash.isEmpty() && hash != lastHash)
         {
-            fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED);
+            if (dependenciesChanged)
+            {
+                fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED2);
+            }
+            else
+            {
+                fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED);
+            }
         }
         else
         {
             fileItem->setStatus(FILE_DEPENDENCY_STATUS_OK);
         }
 
-        //fileItem->setLastHash(hash);
+        fileItem->setLastHash(hash);
     }
     else
     {
@@ -660,14 +722,15 @@ FileDependencyItem* FileDependencyModel::findFileItem(QString const& path)
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::findDependency()
 //-----------------------------------------------------------------------------
-FileDependency* FileDependencyModel::findDependency(QString const& file1, QString const& file2) const
+FileDependency* FileDependencyModel::findDependency(QList<FileDependency*> const& dependencies,
+                                                    QString const& file1, QString const& file2) const
 {
-    foreach (QSharedPointer<FileDependency> dependency, dependencies_)
+    foreach (FileDependency* dependency, dependencies)
     {
         if ((dependency->getFile1() == file1 && dependency->getFile2() == file2) ||
             (dependency->getFile1() == file2 && dependency->getFile2() == file1))
         {
-            return dependency.data();
+            return dependency;
         }
     }
 
@@ -727,9 +790,18 @@ QList< QSharedPointer<FileDependency> > FileDependencyModel::getDependencies() c
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyModel::apply()
+// Function: FileDependencyModel::findDependencies()
 //-----------------------------------------------------------------------------
-void FileDependencyModel::apply()
+void FileDependencyModel::findDependencies(QString const& file, QList<FileDependency*>& dependencies) const
 {
-    component_->setFileDependencies(dependencies_);
+    dependencies.clear();
+
+    foreach (QSharedPointer<FileDependency> dep, dependencies_)
+    {
+        if (dep->getFile1() == file || (dep->isBidirectional() && dep->getFile2() == file))
+        {
+            dependencies.append(dep.data());
+        }
+    }
 }
+

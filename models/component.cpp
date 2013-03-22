@@ -60,6 +60,7 @@ compGenerators_(),
 choices_(), 
 fileSets_(),
 fileDependencies_(),
+pendingFileDependencies_(),
 sourceDirs_(),
 cpus_(),
 otherClockDrivers_(),
@@ -356,6 +357,7 @@ compGenerators_(),
 choices_(),
 fileSets_(),
 fileDependencies_(),
+pendingFileDependencies_(),
 sourceDirs_(),
 cpus_(),
 otherClockDrivers_(),
@@ -384,6 +386,7 @@ compGenerators_(),
 choices_(),
 fileSets_(), 
 fileDependencies_(),
+pendingFileDependencies_(),
 sourceDirs_(),
 cpus_(), 
 otherClockDrivers_(), 
@@ -410,6 +413,7 @@ compGenerators_(),
 choices_(),
 fileSets_(),
 fileDependencies_(),
+pendingFileDependencies_(),
 sourceDirs_(other.sourceDirs_),
 cpus_(),
 otherClockDrivers_(),
@@ -724,6 +728,7 @@ Component::~Component() {
 	choices_.clear();
 	fileSets_.clear();
     fileDependencies_.clear();
+    pendingFileDependencies_.clear();
 	cpus_.clear();
 	otherClockDrivers_.clear();
 	parameters_.clear();
@@ -960,6 +965,13 @@ void Component::write(QFile& file) {
             }
 
             writer.writeEndElement(); // kactus2:apiInterfaces
+        }
+
+        // Commit pending dependencies if found.
+        if (!pendingFileDependencies_.empty())
+        {
+            fileDependencies_ = pendingFileDependencies_;
+            pendingFileDependencies_.clear();
         }
 
         if (!fileDependencies_.empty())
@@ -3469,4 +3481,12 @@ void Component::parseSourceDirectories(QDomNode& node)
             sourceDirs_.append(childNode.childNodes().at(0).nodeValue());
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: Component::setPendingFileDependencies()
+//-----------------------------------------------------------------------------
+void Component::setPendingFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies)
+{
+    pendingFileDependencies_ = fileDependencies;
 }

@@ -326,11 +326,3 @@ void FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
     tmp->setChecked(filters & filter);
     filterActions_.addAction(tmp);
 }
-
-//-----------------------------------------------------------------------------
-// Function: FileDependencyEditor::apply()
-//-----------------------------------------------------------------------------
-void FileDependencyEditor::apply()
-{
-    model_.apply();
-}

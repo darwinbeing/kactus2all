@@ -53,11 +53,6 @@ public:
      */
     ~FileDependencyEditor();
 
-    /*!
-     *  Applies the changes to the component metadata.
-     */
-    void apply();
-
 signals:
     //! Emitted when the file sets have been updated.
     void fileSetsUpdated();

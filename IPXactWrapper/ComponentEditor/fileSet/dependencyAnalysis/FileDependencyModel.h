@@ -62,11 +62,6 @@ public:
     ~FileDependencyModel();
 
     /*!
-     *  Applies the models to the component metadata.
-     */
-    void apply();
-
-    /*!
      *  Adds a new dependency to the model.
      *
      *      @param [in] dependency The file dependency to add.
@@ -225,6 +220,11 @@ signals:
      */
     void dependencyChanged(FileDependency* dependency);
 
+    /*!
+     *  Emitted when the dependencies have been reset.
+     */
+    void dependenciesReset();
+
 private slots:
     /*!
      *  Performs one step of the dependency analysis.
@@ -249,12 +249,22 @@ private:
     void analyze(FileDependencyItem* fileItem);
 
     /*!
-     *  Searches for a dependency between the given files.
+     *  Searches for a dependency between the given files in the given container.
      *
-     *      @param [in] file1  File path of the first file.
-     *      @param [in] file2  File path of the second file.
+     *      @param [in] dependencies  The list of dependencies.
+     *      @param [in] file1         File path of the first file.
+     *      @param [in] file2         File path of the second file.
      */
-    FileDependency* findDependency(QString const& file1, QString const& file2) const;
+    FileDependency* findDependency(QList<FileDependency*> const& dependencies,
+                                   QString const& file1, QString const& file2) const;
+
+    /*!
+     *  Searches for all dependencies that reference the given file.
+     *
+     *      @param [in]  file          File path of the file.
+     *      @param [out] dependencies  The found dependencies.
+     */
+    void findDependencies(QString const& file, QList<FileDependency*>& dependencies) const;
 
     //-----------------------------------------------------------------------------
     // Data.

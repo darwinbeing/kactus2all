@@ -17,6 +17,7 @@
 class FileDependency;
 class FileDependencyModel;
 class FileDependencyItem;
+class FileDependencySortFilter;
 
 //-----------------------------------------------------------------------------
 //! Widget for showing the table-style file dependency graph.
@@ -165,7 +166,7 @@ private slots:
     /*!
      *  Called when the model has been reset.
      */
-    void onModelReset();
+    void onDependenciesReset();
 
     /*!
      *  Called when any header section has been resized.
@@ -321,6 +322,9 @@ private:
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
+
+    //! The sort filter.
+    FileDependencySortFilter* sortFilter_;
 
     //! The data model.
     FileDependencyModel* model_;

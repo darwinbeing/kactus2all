@@ -96,6 +96,7 @@ imageTypes_(),
 description_(),
 buildcommand_(),
 defines_(), 
+pendingHash_(),
 parent_(parent) {
 
 	// get the attributes for the file element
@@ -271,6 +272,8 @@ imageTypes_(),
 description_(),
 buildcommand_(), 
 defines_(), 
+lastHash_(),
+pendingHash_(),
 parent_(parent)  {
 }
 
@@ -291,6 +294,8 @@ imageTypes_(other.imageTypes_),
 description_(other.description_),
 buildcommand_(),
 defines_(other.defines_),
+lastHash_(other.lastHash_),
+pendingHash_(),
 parent_(parent) {
 
 	if (other.buildcommand_) {
@@ -317,6 +322,8 @@ File & File::operator=( const File &other) {
 		imageTypes_ = other.imageTypes_;
 		description_ = other.description_;
 		defines_ = other.defines_;
+        lastHash_ = other.lastHash_;
+        pendingHash_ = QString();
 		parent_ = other.parent_;
 
 		if (other.buildcommand_) {
@@ -431,6 +438,11 @@ void File::write(QXmlStreamWriter& writer) {
 	if (!description_.isEmpty()) {
 		writer.writeTextElement("spirit:description", description_);
 	}
+
+    if (!pendingHash_.isEmpty())
+    {
+        lastHash_ = pendingHash_;
+    }
 
     if (!lastHash_.isEmpty())
     {
@@ -848,9 +860,9 @@ QString const& File::getLastHash() const
 //-----------------------------------------------------------------------------
 // Function: File::setLastHash()
 //-----------------------------------------------------------------------------
-void File::setLastHash(QString const& hash)
+void File::setPendingHash(QString const& hash)
 {
-    lastHash_ = hash;
+    pendingHash_ = hash;
 }
 
 //-----------------------------------------------------------------------------

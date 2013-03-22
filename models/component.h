@@ -942,6 +942,15 @@ public:
 	void setFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies);
 
     /*!
+     *  Set this component's pending file dependencies.
+	*
+	*       @param [in] fileDependencies QList containing the file dependencies to be set
+    *
+    *       @remarks The pending file dependencies are committed when the component is saved.
+	*/
+	void setPendingFileDependencies(const QList<QSharedPointer<FileDependency> >& fileDependencies);
+
+    /*!
      *  Sets the source directories where to automatically scan files to file sets.
      *
      *      @param [in] sourceDirs The source directories to set.
@@ -1616,6 +1625,7 @@ private:
     //! The list of file dependencies.
     //! OPTIONAL kactus2:fileDependencies
     QList< QSharedPointer<FileDependency> > fileDependencies_;
+    QList< QSharedPointer<FileDependency> > pendingFileDependencies_;
 
     //! The list of source directories.
     //! OPTIONAL kactus2:sourceDirectories

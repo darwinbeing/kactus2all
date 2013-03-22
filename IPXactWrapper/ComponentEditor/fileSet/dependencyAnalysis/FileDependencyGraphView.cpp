@@ -14,6 +14,7 @@
 #include "FileDependencyModel.h"
 #include "FileDependencyDelegate.h"
 #include "FileDependencyItem.h"
+#include "FileDependencySortFilter.h"
 
 #include <models/FileDependency.h>
 
@@ -28,6 +29,7 @@
 //-----------------------------------------------------------------------------
 FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
     : QTreeView(parent),
+      sortFilter_(new FileDependencySortFilter(this)),
       model_(0),
       columns_(),
       maxVisibleGraphColumns_(0),
@@ -78,8 +80,8 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
                 this, SLOT(onDependencyChanged(FileDependency*)), Qt::UniqueConnection);
         connect(depModel, SIGNAL(dependencyRemoved(FileDependency*)),
                 this, SLOT(onDependencyRemoved(FileDependency*)), Qt::UniqueConnection);
-//         connect(depModel, SIGNAL(modelReset()),
-//                 this, SLOT(onModelReset()), Qt::UniqueConnection);
+        connect(depModel, SIGNAL(dependenciesReset()),
+                this, SLOT(onDependenciesReset()), Qt::UniqueConnection);
         model_ = depModel;
     }
     else
@@ -87,7 +89,8 @@ void FileDependencyGraphView::setModel(QAbstractItemModel* model)
         model_ = 0;
     }
 
-    QTreeView::setModel(model);
+    sortFilter_->setSourceModel(model_);
+    QTreeView::setModel(sortFilter_);
 }
 
 //-----------------------------------------------------------------------------
@@ -105,6 +108,9 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency, bool
         dependency->setItemPointers(fromItem, toItem);
     }
 
+    Q_ASSERT(fromItem != 0);
+    Q_ASSERT(toItem != 0);
+
     // Check if the dependency should not be visible.
     if (!filterDependency(dependency))
     {
@@ -117,8 +123,8 @@ void FileDependencyGraphView::onDependencyAdded(FileDependency* dependency, bool
         int fromY = 0;
         int toY = 0;
 
-        getVisualRowY(model_->getItemIndex(fromItem, 0), fromY);
-        getVisualRowY(model_->getItemIndex(toItem, 0), toY);
+        getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(fromItem, 0)), fromY);
+        getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(toItem, 0)), toY);
 
         // The user may be scrolling the view so scroll bar position must be taken into account.
         int vOffset = verticalOffset();
@@ -473,6 +479,7 @@ void FileDependencyGraphView::setFilters(DependencyFilters filters)
 {
     // Save filters and apply.
     filters_ = filters;
+    sortFilter_->setFilters(filters_);
     applyFilters();
 }
 
@@ -554,7 +561,8 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
             int fromY = 0;
             int toY = 0;
             
-            if (getCoordinates(dep, fromY, toY))
+            if (getCoordinates(dep, fromY, toY) &&
+                ((filters_ & FILTER_DIFFERENCE) || dep.dependency->getStatus() != FileDependency::STATUS_REMOVED))
             {
                 // Cull arrows that are not inside the view rectangle.
                 QRect arrowRect(columnOffset + x - ARROW_WIDTH,
@@ -666,10 +674,16 @@ void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem co
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyGraphWidget::onModelReset()
+// Function: FileDependencyGraphWidget::onDependenciesReset()
 //-----------------------------------------------------------------------------
-void FileDependencyGraphView::onModelReset()
+void FileDependencyGraphView::onDependenciesReset()
 {
+    foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
+    {
+        onDependencyAdded(dependency.data(), false);
+    }
+
+    viewport()->repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -680,8 +694,8 @@ void FileDependencyGraphView::drawManualCreationArrow(QPainter& painter)
     int x = columnViewportPosition(FILE_DEPENDENCY_COLUMN_CREATE) + columnWidth(FILE_DEPENDENCY_COLUMN_CREATE) / 2;
     int startY = 0;
     int currentY = 0;
-    getVisualRowY(model_->getItemIndex(manualDependencyStartItem_, 0), startY);
-    getVisualRowY(model_->getItemIndex(manualDependencyEndItem_, 0), currentY);
+    getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(manualDependencyStartItem_, 0)), startY);
+    getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(manualDependencyEndItem_, 0)), currentY);
     drawArrow(painter, x, startY, currentY, Qt::green, false);
 }
 
@@ -807,21 +821,21 @@ bool FileDependencyGraphView::getCoordinates(GraphDependency const &dep, int& fr
 
     // Determine the y coordinates for the dependency.
     // If the item is not visible, reroute the dependency to the missing item's parent.
-    if (!getVisualRowY(model_->getItemIndex(fromItem, 0), fromY))
+    if (!getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(fromItem, 0)), fromY))
     {
         fromItem = fromItem->getParent();
 
-        if (!getVisualRowY(model_->getItemIndex(fromItem, 0), fromY))
+        if (!getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(fromItem, 0)), fromY))
         {
             return false;
         }
     }
 
-    if (!getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+    if (!getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(toItem, 0)), toY))
     {
         toItem = toItem->getParent();
 
-        if (!getVisualRowY(model_->getItemIndex(toItem, 0), toY))
+        if (!getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(toItem, 0)), toY))
         {
             return false;
         }
@@ -851,7 +865,9 @@ bool FileDependencyGraphView::filterDependency(FileDependency const* dependency)
     bool extFilter = ((filters_ & FILTER_INTERNAL) && !dependency->getFileItem2()->isExternal()) ||
                      ((filters_ & FILTER_EXTERNAL) && dependency->getFileItem2()->isExternal());
 
-    return (typeFilter && wayFilter && extFilter);
+    //bool existFilter = (filters_ & FILTER_DIFFERENCE) || dependency->getStatus() != FileDependency::STATUS_REMOVED;
+
+    return (typeFilter && wayFilter && extFilter /*&& existFilter*/);
 }
 
 //-----------------------------------------------------------------------------

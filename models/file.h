@@ -412,11 +412,11 @@ public:
 	void setNameAttributes(const QMap<QString, QString> &nameAttributes);
 
     /*!
-     *  Sets the last calculated hash.
+     *  Sets the newest calculated hash pending for commit.
      *
      *      @param [in] hash The calculated hash value.
      */
-    void setLastHash(QString const& hash);
+    void setPendingHash(QString const& hash);
 
 	/*! \brief Set the userFileTypes for this file
 	 *
@@ -617,6 +617,9 @@ private:
 
     //! The last calculated hash (from the file contents).
     QString lastHash_;
+
+    //! The current hash that is pending for writing to disk.
+    QString pendingHash_;
 
 	//! \brief Pointer to the FileSet that contains this file.
 	FileSet* parent_;
