@@ -307,6 +307,13 @@ private:
      */
     void repaintDependency(FileDependency const* dependency);
 
+    /*!
+     *  Creates a context menu for the currently selected dependency.
+     *
+     *      @param [in] position    The global position for the context menu.
+     */
+    void createContextMenu(const QPoint& position);
+
     enum
     {
         DOT_RADIUS = 2,       //!< The radius of the "from" dot for the arrows.

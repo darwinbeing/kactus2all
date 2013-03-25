@@ -23,6 +23,7 @@
 #include <QPaintEvent>
 #include <QScrollBar>
 #include <QDebug>
+#include <QMenu>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyGraphWidget::FileDependencyGraphWidget()
@@ -258,7 +259,7 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
     // Check if the user pressed over the dependencies column.
     if (column == FILE_DEPENDENCY_COLUMN_DEPENDENCIES)
     {
-        if (event->button() == Qt::LeftButton)
+        if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton)
         {
             // Search for a dependency under the cursor.
             FileDependency* dependency = findDependencyAt(event->pos());
@@ -272,6 +273,12 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                 repaintDependency(selectedDependency_);                
 
                 emit selectionChanged(selectedDependency_);
+            }
+            
+            // Handle context menu opening.
+            if (event->button() == Qt::RightButton && selectedDependency_ != 0)
+            {
+                createContextMenu(event->globalPos());
             }
         }
     }
@@ -362,18 +369,8 @@ void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Shift)
-    {
-        multiManualCreation_ = true;
-    }
-}
-//-----------------------------------------------------------------------------
-// Function: FileDependencyGraphView::keyReleaseEvent()
-//-----------------------------------------------------------------------------
-void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
-{
     // When delete is pressed, attempt to delete the selected dependency.
-    if (event->matches(QKeySequence::Delete) && selectedDependency_)
+    if (event->key() == Qt::Key_Delete && selectedDependency_)
     {
         // Check that the selected dependency is a manual one and that it's not locked.
         if (selectedDependency_->isManual() && !selectedDependency_->isLocked())
@@ -385,18 +382,34 @@ void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
     }
     else if (event->key() == Qt::Key_Shift)
     {
+        multiManualCreation_ = true;
+    }
+    else
+    {
+        QTreeView::keyPressEvent(event);
+    }
+}
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::keyReleaseEvent()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
+{
+    // Stop creating multiple dependencies when shift is released.
+    if (event->key() == Qt::Key_Shift)
+    {
         multiManualCreation_ = false;
         manualDependencyStartItem_ = 0;
         manualDependencyEndItem_ = 0;
         drawingDependency_ = false;
         viewport()->repaint();
     }
-    // If keypress isn't handled here, send to parent class.
+    // If key release isn't handled here, send to parent class.
     else
     {
         QTreeView::keyReleaseEvent(event);
     }
 }
+
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyGraphWidget::drawArrow()
@@ -926,4 +939,49 @@ void FileDependencyGraphView::repaintDependency(FileDependency const* dependency
 
         x += GRAPH_SPACING;
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::createContextMenu()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::createContextMenu(const QPoint& position)
+{
+    if (!selectedDependency_->isManual())
+    {
+        return;
+    }
+
+    QMenu contextMenu;
+    QAction* addedAction;
+    if (selectedDependency_->isLocked())
+    {
+        addedAction = contextMenu.addAction("Unlock");
+    }
+    else
+    {
+        addedAction = contextMenu.addAction("Lock");
+    }
+
+    addedAction = contextMenu.addAction("Delete");
+    if (selectedDependency_->isLocked())
+    {
+        addedAction->setEnabled(false);
+    }
+
+    addedAction = contextMenu.addAction("Reverse");
+    if (selectedDependency_->isLocked())
+    {
+        addedAction->setEnabled(false);
+    }
+
+    addedAction = contextMenu.addAction("Bidirectional");
+    if (selectedDependency_->isLocked())
+    {
+        addedAction->setEnabled(false);
+        addedAction->setCheckable(true);
+        addedAction->setChecked(selectedDependency_->isBidirectional());
+    }
+    
+    // Open the context menu.
+    contextMenu.exec(position);
 }
