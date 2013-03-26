@@ -65,7 +65,7 @@ public slots:
 
 private slots:
 
-    void directionComboChanged(int index);
+    void directionCheckBoxChanged(int state);
     void lockedCheckChanged(int state);
     void descEditTextChanged();
     void directionReversed();
@@ -87,8 +87,8 @@ private:
     //! Editor for description.
     QPlainTextEdit descEdit_;
 
-    //! Combo box for changing whether direction is bidirectional.
-    QComboBox directionCombo_;
+    //! Check box for changing whether direction is bidirectional.
+    QCheckBox directionCheck_;
     
     //! Check box for locked state.
     QCheckBox lockedCheck_;

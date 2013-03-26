@@ -254,12 +254,23 @@ void FileDependencyGraphView::paintEvent(QPaintEvent* event)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 {
+    if (event->button() == Qt::RightButton)
+    {
+        if (manualDependencyStartItem_)
+        {
+            manualDependencyStartItem_ = 0;
+            manualDependencyEndItem_ = 0;
+            drawingDependency_ = false;
+            viewport()->repaint();
+        }
+    }
+
     int column = columnAt(event->x());
 
     // Check if the user pressed over the dependencies column.
     if (column == FILE_DEPENDENCY_COLUMN_DEPENDENCIES)
     {
-        if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton)
+        if ((event->button() == Qt::LeftButton || event->button() == Qt::RightButton) && !manualDependencyStartItem_)
         {
             // Search for a dependency under the cursor.
             FileDependency* dependency = findDependencyAt(event->pos());
@@ -288,13 +299,24 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
         if (event->button() == Qt::LeftButton)
         {
             // Starting to create manual dependency
-            if( !manualDependencyStartItem_ )
+            if (!manualDependencyStartItem_)
             {
+                // Remove possible selection
+                if (selectedDependency_)
+                {
+                    FileDependency* oldDependency = selectedDependency_;
+                    selectedDependency_ = 0;
+                    emit selectionChanged(selectedDependency_);
+                    repaintDependency(oldDependency);
+                }
                 QModelIndex startPoint = indexAt(event->pos());
-                if( startPoint.isValid() )
+                if (startPoint.isValid())
                 {
                     manualDependencyStartItem_ = static_cast<FileDependencyItem*>(startPoint.internalPointer());
-                    if( manualDependencyStartItem_->getType() != FileDependencyItem::ITEM_TYPE_FILE )
+                    // TESTI
+                    //FileDependencyItem::ItemType typeTest = manualDependencyStartItem_->getType();
+                    // Palauttaa jotakin ihan muuta kuin FileDependency::ItemType enumissa määriteltyjä.
+                    if (manualDependencyStartItem_->getType() != FileDependencyItem::ITEM_TYPE_FILE)
                     {
                         manualDependencyStartItem_ = 0;
                     }
@@ -305,11 +327,13 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     }
                 }
             }
+            // Ending manual dependency creation.
             else
             {
                 if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
                     manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE)
                 {
+                    // Adding newly created manual dependency to model.
                     FileDependency* createdDependency = new FileDependency();
                     createdDependency->setFile1(manualDependencyStartItem_->getPath());
                     createdDependency->setFile2(manualDependencyEndItem_->getPath());
@@ -318,11 +342,13 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 
                     model_->addDependency(QSharedPointer<FileDependency>(createdDependency));
 
+                    // If shift-key is hold down not ending manual creation yet.
                     if (multiManualCreation_)
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
                         viewport()->repaint();
                     }
+                    // Else ending manual dependency creation.
                     else
                     {
                         manualDependencyStartItem_ = 0;
@@ -330,6 +356,13 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         drawingDependency_ = false;
                         viewport()->repaint();
                     }
+                    // Selecting created manual dependency.
+                    FileDependency* oldDependency = selectedDependency_;
+                    selectedDependency_ = createdDependency;
+                    emit selectionChanged(selectedDependency_);
+                    repaintDependency(oldDependency);
+                    repaintDependency(selectedDependency_);
+                    
                 }
             }
         }
@@ -398,6 +431,13 @@ void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Shift)
     {
         multiManualCreation_ = false;
+        manualDependencyStartItem_ = 0;
+        manualDependencyEndItem_ = 0;
+        drawingDependency_ = false;
+        viewport()->repaint();
+    }
+    else if (event->key() == Qt::Key_Escape)
+    {
         manualDependencyStartItem_ = 0;
         manualDependencyEndItem_ = 0;
         drawingDependency_ = false;
