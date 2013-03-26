@@ -45248,6 +45248,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\graphics\external.png"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\file-new.png"
 				>
 				<FileConfiguration

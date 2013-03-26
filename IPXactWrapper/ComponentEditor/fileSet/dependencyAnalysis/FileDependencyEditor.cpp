@@ -92,7 +92,7 @@ FileDependencyEditor::FileDependencyEditor(QSharedPointer<Component> component,
                     FileDependencyGraphView::FILTER_MANUAL);
     addFilterButton(QIcon(":/icons/graphics/dependency_auto.png"), "Show Analyzed",
                     FileDependencyGraphView::FILTER_AUTOMATIC);
-    addFilterButton(QIcon(":/icons/graphics/exclamation.png"), "Show External",
+    addFilterButton(QIcon(":/icons/graphics/external.png"), "Show External",
                     FileDependencyGraphView::FILTER_EXTERNAL);
     addFilterButton(QIcon(":/icons/graphics/diff.png"), "Show Differences",
                     FileDependencyGraphView::FILTER_DIFFERENCE);

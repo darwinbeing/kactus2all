@@ -199,9 +199,9 @@ parent_(parent) {
                     {
                         QDomNode childNode = extensionNode.childNodes().at(k);
 
-                        if (childNode.nodeValue() == "kactus2:hash")
+                        if (childNode.nodeName() == "kactus2:hash")
                         {
-                            lastHash_ = childNode.nodeValue();
+                            lastHash_ = childNode.childNodes().at(0).nodeValue();
                         }
                     }
                 }

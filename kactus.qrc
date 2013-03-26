@@ -89,6 +89,7 @@
       <file>graphics/dependency_manual.png</file>
       <file>graphics/dependency_auto.png</file>
       <file>graphics/diff.png</file>
+      <file>graphics/external.png</file>
       <file>graphics/import_folders.png</file>
       <file>graphics/plugin-generator.png</file>
       <file>graphics/plugin-source_analyzer.png</file>

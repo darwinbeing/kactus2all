@@ -22,6 +22,7 @@
 
 #include <QIcon>
 #include <QDir>
+#include <QCryptographicHash>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyModel::FileDependencyModel()
@@ -555,13 +556,16 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
         }
     }
 
+    // Check the file for modifications by calculating its hash and comparing to the saved value.
+    QString absPath = General::getAbsolutePath(basePath_, fileItem->getPath());
+    QString lastHash = fileItem->getLastHash();
+    QString hash = "";
+    bool dependenciesChanged = false;
+
+    // If a corresponding plugin was found, let it calculate the hash.
     if (plugin != 0)
     {
-        // Check the file for modifications by calculating its hash and comparing to the saved value.
-        QString absPath = General::getAbsolutePath(basePath_, fileItem->getPath());
-        QString hash = plugin->calculateHash(absPath);
-        QString lastHash = fileItem->getLastHash();
-        bool dependenciesChanged = false;
+        hash = plugin->calculateHash(absPath);
 
         // If the hash has changed, resolve dependencies.
         if (hash != lastHash)
@@ -660,29 +664,38 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                 emit dependencyChanged(dependency);
             }
         }
+    }
+    else
+    {
+        // Calculate SHA-1 from the whole file.
+        QFile file(absPath);
 
-        if (!lastHash.isEmpty() && hash != lastHash)
+        if (file.open(QIODevice::ReadOnly))
         {
-            if (dependenciesChanged)
-            {
-                fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED2);
-            }
-            else
-            {
-                fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED);
-            }
+            QByteArray fileData = file.readAll();
+            QCryptographicHash cryptoHash(QCryptographicHash::Sha1);
+            cryptoHash.addData(fileData);
+            hash = cryptoHash.result().toHex();
+        }
+    }
+
+    if (!lastHash.isEmpty() && hash != lastHash)
+    {
+        if (dependenciesChanged)
+        {
+            fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED2);
         }
         else
         {
-            fileItem->setStatus(FILE_DEPENDENCY_STATUS_OK);
+            fileItem->setStatus(FILE_DEPENDENCY_STATUS_CHANGED);
         }
-
-        fileItem->setLastHash(hash);
     }
     else
     {
         fileItem->setStatus(FILE_DEPENDENCY_STATUS_OK);
     }
+
+    fileItem->setLastHash(hash);
 
     emit dataChanged(getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_STATUS),
                      getItemIndex(fileItem, FILE_DEPENDENCY_COLUMN_STATUS));
