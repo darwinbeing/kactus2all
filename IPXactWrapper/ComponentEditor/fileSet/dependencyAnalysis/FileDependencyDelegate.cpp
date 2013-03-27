@@ -20,6 +20,7 @@
 // Function: FileDependencyDelegate::FileDependencyDelegate()
 //-----------------------------------------------------------------------------
 FileDependencyDelegate::FileDependencyDelegate(QObject* parent /*= 0*/)
+    : QItemDelegate(parent)
 {
 
 }

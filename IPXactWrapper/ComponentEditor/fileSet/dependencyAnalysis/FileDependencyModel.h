@@ -75,6 +75,21 @@ public:
     void removeDependency(FileDependency* dependency);
 
     /*!
+     *  Defines the location for the given item.
+     *
+     *      @param [in] item  The item whose location to define.
+     *      @param [in] path  The path where the file resides.
+     */
+    void defineLocation(FileDependencyItem* item, QString const& path);
+
+    /*!
+     *  Resets the location of the given item.
+     *
+     *      @param [in] item  The item whose location to reset.
+     */
+    void resetLocation(FileDependencyItem* item);
+
+    /*!
      *  Searches for a file item with the given path.
      *
      *      @param [in] path The path.
@@ -82,6 +97,24 @@ public:
      *      @return The corresponding item of null if not found in the model.
      */
     FileDependencyItem* findFileItem(QString const& path);
+
+    /*!
+     *  Searches for an external file item with the given path.
+     *
+     *      @param [in,out] path The base path as an input. The found path if the item was found.
+     *
+     *      @return The corresponding item of null if not found in the model.
+     */
+    FileDependencyItem* findExternalFileItem(QString& path);
+
+    /*!
+     *  Searches for a folder item with the given path.
+     *
+     *      @param [in] path The path.
+     *
+     *      @return The corresponding item of null if not found in the model.
+     */
+    FileDependencyItem* findFolderItem(QString const& path);
 
     /*!
      *  Returns the model index of the given file dependency item.
@@ -265,6 +298,19 @@ private:
      */
     void findDependencies(QString const& file, QList<FileDependency*>& dependencies) const;
 
+    /*!
+     *  Moves the item to the new parent.
+     *
+     *      @param [in] item    The item to move.
+     *      @param [in] parent  The new parent for the item.
+     */
+    void moveItem(FileDependencyItem* item, FileDependencyItem* parent);
+
+    /*!
+     *  Updates dependencies due to file relocation.
+     */
+    void onExternalRelocated(FileDependencyItem* item, QString const& oldPath);
+
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
@@ -282,7 +328,7 @@ private:
     FileDependencyItem* root_;
 
     //! The externals item (for fast access).
-    FileDependencyItem* unknownLocation_;
+    FileDependencyItem* unspecifiedLocation_;
 
     //! The timer for running the analysis.
     QTimer* timer_;

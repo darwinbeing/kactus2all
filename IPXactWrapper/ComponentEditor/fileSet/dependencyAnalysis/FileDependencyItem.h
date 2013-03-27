@@ -81,8 +81,25 @@ public:
      *      @param [in] component  The component being edited.
      *      @param [in] path       The folder path.
      *      @param [in] type       The folder item type.
+     *      @param [in] index      Specifies the child insertion index for the folder.
+     *                             If -1, the folder is appended at the end of the children.
      */
-    FileDependencyItem* addFolder(Component* component, QString const& path, ItemType type = ITEM_TYPE_FOLDER);
+    FileDependencyItem* addFolder(Component* component, QString const& path, ItemType type = ITEM_TYPE_FOLDER,
+                                  int index = -1);
+
+    /*!
+     *  Inserts an item.
+     *
+     *      @param [in] item The item to insert.
+     */
+    void insertItem(FileDependencyItem* item);
+
+    /*!
+     *  Removes an item.
+     *
+     *      @param [in] item The item to remove.
+     */
+    void removeItem(FileDependencyItem* item);
 
     /*!
      *  Sets the status of the item.

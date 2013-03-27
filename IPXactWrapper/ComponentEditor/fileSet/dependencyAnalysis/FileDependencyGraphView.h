@@ -214,11 +214,6 @@ private:
     FileDependencyGraphView& operator=(FileDependencyGraphView const& rhs);
 
     /*!
-     *  Reorganizes the graph based on the currently set filters.
-     */
-    void applyFilters();
-
-    /*!
      *  Draws the dependency graph into the dependencies column.
      *
      *      @param [in] painter  The drawing context.
@@ -279,19 +274,6 @@ private:
     FileDependency* findDependencyAt(QPoint const& pt) const;
 
     /*!
-     *  Calculates the vertical coverage of the graph columns startColumn-endColumn inside the given query area.
-     *
-     *      @param [in]  startColumn  The start index of which columns to check for.
-     *      @param [in]  endColumn    The end index of which columns to check for (inclusive).
-     *      @param [in]  top          The top y coordinate of the query area.
-     *      @param [in]  bottom       The bottom y coordinate of the query area.
-     *      @param [out] covTop       The top y coordinate of the resulted coverage.
-     *      @param [out] covBottom    The bottom y cooordinate of the resulted coverage.
-     */
-    void computeGraphCoverage(int startColumn, int endColumn, int top, int bottom,
-                              int& covTop, int& covBottom) const;
-
-    /*!
      *  Checks the dependency against the filters.
      *
      *      @param [in] dependency The dependency to check.
@@ -313,7 +295,7 @@ private:
      *      @param [in] position    The global position for the context menu.
      */
     void createContextMenu(const QPoint& position);
-
+    
     enum
     {
         DOT_RADIUS = 2,       //!< The radius of the "from" dot for the arrows.

@@ -33,7 +33,6 @@ FileDependencyModel::FileDependencyModel(PluginManager& pluginMgr, QSharedPointe
       component_(component),
       basePath_(basePath),
       root_(new FileDependencyItem()),
-      unknownLocation_(0),
       timer_(0),
       curFolderIndex_(0),
       curFileIndex_(0),
@@ -340,12 +339,9 @@ void FileDependencyModel::beginReset()
 {
     beginResetModel();
 
-    unknownLocation_ = 0;
     delete root_;
     root_ = new FileDependencyItem();
 
-    // Add the existing dependencies to the model and mark them as removed.
-    // The scan will mark preserved dependencies as normal.
     dependencies_.clear();
 }
 
@@ -356,6 +352,7 @@ void FileDependencyModel::endReset()
 {
     endResetModel();
 
+    // Add the existing dependencies to the model.
     foreach (QSharedPointer<FileDependency> dependency, component_->getFileDependencies())
     {
         QSharedPointer<FileDependency> copy(new FileDependency(*dependency));
@@ -370,20 +367,42 @@ void FileDependencyModel::endReset()
         // Check if the second one is an external (not found).
         if (fileItem2 == 0)
         {
-            // Create the externals folder if not yet created.
-            if (unknownLocation_ == 0)
-            {
-                beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
-                    root_->getChildCount());
+            // Extract the name of the external folder.
+            int endIndex = copy->getFile2().indexOf('$', 1);
 
-                unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
-                    FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
+            if (copy->getFile2().at(0) != '$' || endIndex == -1)
+            {
+                continue;
+            }
+
+            // Search for a corresponding folder item.
+            QString folderName = copy->getFile2().mid(0, endIndex + 1);
+            FileDependencyItem* parent = findFolderItem(folderName);
+
+            // Create the folder item if not found.
+            if (parent == 0)
+            {
+                int index = root_->getChildCount();
+                FileDependencyItem::ItemType type = FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION;
+                
+                // Special case for the unspecified external folder.
+                if (folderName == "$External$")
+                {
+                    type = FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION;
+                }
+                else if (root_->getChildCount() > 0 &&
+                         root_->getChild(root_->getChildCount() - 1)->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
+                {
+                    index = root_->getChildCount() - 1;
+                }
+
+                beginInsertRows(getItemIndex(root_, 0), index, index);
+                parent = root_->addFolder(component_.data(), folderName, type, index);
                 endInsertRows();
             }
 
-            beginInsertRows(getItemIndex(unknownLocation_, 0),
-                unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
-            fileItem2 = unknownLocation_->addFile(component_.data(), copy->getFile2(), QList<File*>());
+            beginInsertRows(getItemIndex(parent, 0), parent->getChildCount(), parent->getChildCount());
+            fileItem2 = parent->addFile(component_.data(), copy->getFile2(), QList<File*>());
             endInsertRows();
         }
 
@@ -599,8 +618,8 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                 // Check if the second file was an external (not found).
                 if (fileItem2 == 0)
                 {
-                    file2 = "External/" + desc.filename;
-                    fileItem2 = findFileItem(file2);
+                    file2 = desc.filename;
+                    fileItem2 = findExternalFileItem(file2);
                 }
 
                 // Check if the dependency already exists.
@@ -611,20 +630,23 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
                     // Create the item for external file if not found.
                     if (fileItem2 == 0)
                     {
-                        // Create the externals folder if not yet created.
-                        if (unknownLocation_ == 0)
+                        // Create the unspecified folder if not yet created.
+                        FileDependencyItem* folderItem = findFolderItem("$External$");
+
+                        if (folderItem == 0)
                         {
                             beginInsertRows(getItemIndex(root_, 0), root_->getChildCount(),
-                                root_->getChildCount());
+                                            root_->getChildCount());
 
-                            unknownLocation_ = root_->addFolder(component_.data(), tr("External"),
-                                FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
+                            folderItem = root_->addFolder(component_.data(), "$External$",
+                                                          FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION);
                             endInsertRows();
                         }
 
-                        beginInsertRows(getItemIndex(unknownLocation_, 0),
-                            unknownLocation_->getChildCount(), unknownLocation_->getChildCount());
-                        fileItem2 = unknownLocation_->addFile(component_.data(), file2, QList<File*>());
+                        beginInsertRows(getItemIndex(folderItem, 0),
+                                        folderItem->getChildCount(), folderItem->getChildCount());
+                        fileItem2 = folderItem->addFile(component_.data(), "$External$/" + desc.filename,
+                                                        QList<File*>());
                         endInsertRows();
                     }
 
@@ -714,6 +736,12 @@ FileDependencyItem* FileDependencyModel::findFileItem(QString const& path)
     QFileInfo info(path);
     QString folderPath = info.path();
 
+    // External folders need a special treatment.
+    if (path.startsWith('$'))
+    {
+        folderPath = path.left(path.indexOf('$', 1) + 1);
+    }
+
     // Search for a matching folder.
     for (int i = 0; i < root_->getChildCount(); ++i)
     {
@@ -730,6 +758,55 @@ FileDependencyItem* FileDependencyModel::findFileItem(QString const& path)
                     return fileItem;
                 }
             }
+        }
+    }
+
+    return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::findExternalFileItem()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyModel::findExternalFileItem(QString& path)
+{
+    // Search for the file from all external locations.
+    for (int i = 0; i < root_->getChildCount(); ++i)
+    {
+        FileDependencyItem* folderItem = root_->getChild(i);
+
+        if (folderItem->isExternal())
+        {
+            for (int j = 0; j < folderItem->getChildCount(); ++j)
+            {
+                FileDependencyItem* fileItem = folderItem->getChild(j);
+
+                // Check if the file's path ends with the path we're searching for.
+                if (fileItem->getPath().endsWith(path))
+                {
+                    // TODO: Verify that it is fully correct?
+                    path = fileItem->getPath();                   
+                    return fileItem;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::findFolderItem()
+//-----------------------------------------------------------------------------
+FileDependencyItem* FileDependencyModel::findFolderItem(QString const& path)
+{
+    // Search for a matching folder.
+    for (int i = 0; i < root_->getChildCount(); ++i)
+    {
+        if (root_->getChild(i)->getPath() == path)
+        {
+            return root_->getChild(i);
         }
     }
 
@@ -820,5 +897,98 @@ void FileDependencyModel::findDependencies(QString const& file, QList<FileDepend
             dependencies.append(dep.data());
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::defineLocation()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::defineLocation(FileDependencyItem* item, QString const& path)
+{
+    // Only the location of externals files can be changed.
+    if (!item->isExternal() || item->getType() != FileDependencyItem::ITEM_TYPE_FILE)
+    {
+        return;
+    }
+
+    // Search for a matching external folder.
+    QString fullPath = "$" + path + "$";
+    FileDependencyItem* parent = findFolderItem(fullPath);
+
+    // Check if a new external folder needs to be created.
+    if (parent == 0)
+    {
+        int index = root_->getChildCount() - 1;
+
+        beginInsertRows(getItemIndex(root_, 0), index, index);
+
+        parent = root_->addFolder(component_.data(), fullPath,
+                                  FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION, index);
+        endInsertRows();
+    }
+
+    moveItem(item, parent);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::resetLocation()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::resetLocation(FileDependencyItem* item)
+{
+    // Only the location of externals files can be changed.
+    if (!item->isExternal() || item->getType() != FileDependencyItem::ITEM_TYPE_FILE)
+    {
+        return;
+    }
+
+    if (item->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION)
+    {
+        moveItem(item, root_->getChild(root_->getChildCount() - 1));
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::moveItem()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::moveItem(FileDependencyItem* item, FileDependencyItem* parent)
+{
+    FileDependencyItem* oldParent = item->getParent();
+    QString oldPath = item->getPath();
+
+    // Move the item into its new parent.
+    beginRemoveRows(getItemIndex(oldParent, 0), item->getIndex(), item->getIndex());
+    oldParent->removeItem(item);
+    endRemoveRows();
+
+    beginInsertColumns(getItemIndex(parent, 0), parent->getChildCount(), parent->getChildCount());
+    parent->insertItem(item);
+    endInsertRows();
+
+    // Remove the old parent if it got empty and is an external location.
+    if (oldParent->getChildCount() == 0 &&
+        oldParent->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION)
+    {
+        beginRemoveRows(getItemIndex(root_, 0), oldParent->getIndex(), oldParent->getIndex());
+        root_->removeItem(oldParent);
+        delete oldParent;
+        endRemoveRows();
+    }
+
+    onExternalRelocated(item, oldPath);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyModel::onFileRelocated()
+//-----------------------------------------------------------------------------
+void FileDependencyModel::onExternalRelocated(FileDependencyItem* item, QString const& oldPath)
+{
+    foreach (QSharedPointer<FileDependency> dependency, dependencies_)
+    {
+        if (dependency->getFile2() == oldPath)
+        {
+            dependency->setFile2(item->getPath());
+        }
+    }
+
+    emit dependenciesReset();
 }
 

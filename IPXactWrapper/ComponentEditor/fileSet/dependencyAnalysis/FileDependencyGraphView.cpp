@@ -365,6 +365,21 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             }
         }
     }
+    // TODO: Only for testing purposes. Remove when done!
+//     else if (column == FILE_DEPENDENCY_COLUMN_PATH)
+//     {
+//         QModelIndex index = sortFilter_->mapToSource(indexAt(event->pos()));
+//         FileDependencyItem* item = static_cast<FileDependencyItem*>(index.internalPointer());
+// 
+//         if (event->button() == Qt::LeftButton)
+//         {
+//             model_->defineLocation(item, "D:/user/maattaj");
+//         }
+//         else
+//         {
+//             model_->resetLocation(item);
+//         }
+//     }
     else
     {
         QTreeView::mousePressEvent(event);
@@ -531,7 +546,7 @@ void FileDependencyGraphView::setFilters(DependencyFilters filters)
     // Save filters and apply.
     filters_ = filters;
     sortFilter_->setFilters(filters_);
-    applyFilters();
+    onDependenciesReset();
 }
 
 //-----------------------------------------------------------------------------
@@ -540,23 +555,6 @@ void FileDependencyGraphView::setFilters(DependencyFilters filters)
 FileDependencyGraphView::DependencyFilters FileDependencyGraphView::getFilters() const
 {
     return filters_;
-}
-
-//-----------------------------------------------------------------------------
-// Function: FileDependencyGraphWidget::applyFilters()
-//-----------------------------------------------------------------------------
-void FileDependencyGraphView::applyFilters()
-{
-    // Recreate the whole graph.
-    columns_.clear();
-    selectedDependency_ = 0;
-
-    foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
-    {
-        onDependencyAdded(dependency.data(), false);
-    }
-
-    viewport()->repaint();
 }
 
 //-----------------------------------------------------------------------------
@@ -729,6 +727,9 @@ void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem co
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onDependenciesReset()
 {
+    columns_.clear();
+    selectedDependency_ = 0;
+
     foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
     {
         onDependencyAdded(dependency.data(), false);
@@ -822,45 +823,6 @@ FileDependency* FileDependencyGraphView::findDependencyAt(QPoint const& pt) cons
 }
 
 //-----------------------------------------------------------------------------
-// Function: FileDependencyGraphView::computeGraphCoverage()
-//-----------------------------------------------------------------------------
-void FileDependencyGraphView::computeGraphCoverage(int startColumn, int endColumn, int top, int bottom,
-                                                   int& covTop, int& covBottom) const
-{
-    covTop = INT_MAX;
-    covBottom = INT_MIN;
-
-    for (int i = startColumn; i <= endColumn; ++i)
-    {
-        GraphColumn const& column = columns_[i];
-
-        foreach (GraphDependency const& dep, column.dependencies)
-        {
-            // Determine the visual y coordinates for the dependency and check if the
-            // dependency is visible at all.
-            int fromY = 0;
-            int toY = 0;
-
-            if (getCoordinates(dep, fromY, toY))
-            {
-                // Check if the dependency intersects the query area (top-bottom).
-                int minY = qMin(fromY, toY);
-                int maxY = qMax(fromY, toY);
-
-                if (maxY <= top || minY >= bottom)
-                {
-                    continue;
-                }
-
-                // Update coverage variables.
-                covTop = qMin(covTop, qMax(top, minY));
-                covBottom = qMax(covBottom, qMin(bottom, maxY));
-            }
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------
 // Function: FileDependencyGraphView::getCoordinates()
 //-----------------------------------------------------------------------------
 bool FileDependencyGraphView::getCoordinates(GraphDependency const &dep, int& fromY, int& toY) const
@@ -935,9 +897,6 @@ void FileDependencyGraphView::rowsInserted(QModelIndex const& parent, int start,
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::reset()
 {
-    columns_.clear();
-    selectedDependency_ = 0;
-
     emit graphColumnScollMaximumChanged(0);
     emit selectionChanged(0);
 

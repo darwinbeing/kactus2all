@@ -150,7 +150,8 @@ QString FileDependencyItem::getDisplayPath() const
         {
             if (isExternal())
             {
-                return path_.mid(path_.indexOf('/') + 1);
+                QString filename = path_.mid(path_.indexOf('$', 1) + 2);
+                return filename;
             }
             else
             {
@@ -161,17 +162,17 @@ QString FileDependencyItem::getDisplayPath() const
 
     case ITEM_TYPE_EXTERNAL_LOCATION:
         {
-            return tr("External: ") + path_;
+            return tr("External: ") + path_.mid(1, path_.length() - 2);
         }
 
     case ITEM_TYPE_UNKNOWN_LOCATION:
         {
-            return tr("External");
+            return tr("Unspecified");
         }
 
     default:
         {
-        return path_;
+            return path_;
         }
     }
 }
@@ -208,10 +209,20 @@ FileDependencyItem* FileDependencyItem::addFile(Component* component, QString co
 //-----------------------------------------------------------------------------
 // Function: FileDependencyItem::addFolder()
 //-----------------------------------------------------------------------------
-FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString const& path, ItemType type)
+FileDependencyItem* FileDependencyItem::addFolder(Component* component, QString const& path, ItemType type,
+                                                  int index)
 {
     FileDependencyItem* item = new FileDependencyItem(this, component, path, type);
-    children_.append(item);
+
+    if (index == -1)
+    {
+        children_.append(item);
+    }
+    else
+    {
+        children_.insert(index, item);
+    }
+
     return item;
 }
 
@@ -321,4 +332,28 @@ bool FileDependencyItem::isExternal() const
     {
         return (type_ != ITEM_TYPE_FOLDER);
     }
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::insertItem()
+//-----------------------------------------------------------------------------
+void FileDependencyItem::insertItem(FileDependencyItem* item)
+{
+    Q_ASSERT(item->parent_ == 0);
+
+    children_.append(item);
+    item->parent_ = this;
+    item->path_ = path_ + "/" + item->path_;
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyItem::removeItem()
+//-----------------------------------------------------------------------------
+void FileDependencyItem::removeItem(FileDependencyItem* item)
+{
+    Q_ASSERT(item->parent_ != 0);
+
+    children_.removeOne(item);
+    item->parent_ = 0;
+    item->path_ = item->path_.mid(item->path_.indexOf('$', 1) + 2);
 }
