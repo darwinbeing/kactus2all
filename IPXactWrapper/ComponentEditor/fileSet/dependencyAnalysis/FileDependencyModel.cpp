@@ -84,11 +84,6 @@ QVariant FileDependencyModel::headerData(int section, Qt::Orientation /*orientat
             {
                 return tr("Dependencies");
             }
-
-        case FILE_DEPENDENCY_COLUMN_REFERENCES:
-            {
-                return tr("References");
-            }
         }
     }
     else if (role == Qt::TextAlignmentRole)
@@ -197,7 +192,11 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
             {
                 QList<FileSet*> fileSets = item->getFileSets();
 
-                if (fileSets.empty())
+                if (item->isExternal())
+                {
+                    return QVariant();
+                }
+                else if (fileSets.empty())
                 {
                     return tr("[none]");
                 }
@@ -219,6 +218,11 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
     {
         if (index.column() == FILE_DEPENDENCY_COLUMN_STATUS)
         {
+            if (item->isExternal())
+            {
+                return QVariant();
+            }
+
             switch (item->getStatus())
             {
             case FILE_DEPENDENCY_STATUS_UNKNOWN:
