@@ -309,13 +309,11 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     emit selectionChanged(selectedDependency_);
                     repaintDependency(oldDependency);
                 }
-                QModelIndex startPoint = indexAt(event->pos());
+                QModelIndex startPoint = sortFilter_->mapToSource(indexAt(event->pos()));
                 if (startPoint.isValid())
                 {
                     manualDependencyStartItem_ = static_cast<FileDependencyItem*>(startPoint.internalPointer());
-                    // TESTI
-                    //FileDependencyItem::ItemType typeTest = manualDependencyStartItem_->getType();
-                    // Palauttaa jotakin ihan muuta kuin FileDependency::ItemType enumissa määriteltyjä.
+                    
                     if (manualDependencyStartItem_->getType() != FileDependencyItem::ITEM_TYPE_FILE)
                     {
                         manualDependencyStartItem_ = 0;
@@ -381,7 +379,7 @@ void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
     // If creating manual dependencies
     if( manualDependencyStartItem_ && drawingDependency_ )
     {
-        QModelIndex currentPoint = indexAt(event->pos());
+        QModelIndex currentPoint = sortFilter_->mapToSource(indexAt(event->pos()));
         if( currentPoint.isValid() )
         {
             FileDependencyItem* currentDependencyItem = static_cast<FileDependencyItem*>(currentPoint.internalPointer());
