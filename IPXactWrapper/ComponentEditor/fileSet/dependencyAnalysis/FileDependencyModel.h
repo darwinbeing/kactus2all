@@ -117,6 +117,11 @@ public:
     FileDependencyItem* findFolderItem(QString const& path);
 
     /*!
+     *  Searches for a dependency between the given files.
+     */
+    FileDependency* findDependency(QString const& file1, QString const& file2) const;
+
+    /*!
      *  Returns the model index of the given file dependency item.
      *
      *      @param [in] item The file dependency item.

@@ -15,6 +15,7 @@
 #include <common/views/EditableTableView/editabletableview.h>
 
 #include <QSortFilterProxyModel>
+#include <QSplitter>
 
 class PluginManager;
 class LibraryInterface;
@@ -76,6 +77,9 @@ private:
 
 	//! \brief No assignment
 	FileSetsEditor& operator=(const FileSetsEditor& other);
+
+    //! Splitter for the fileset table and dependency graph.
+    QSplitter splitter_;
     
 	//! \brief The view to display the file sets.
 	EditableTableView view_;

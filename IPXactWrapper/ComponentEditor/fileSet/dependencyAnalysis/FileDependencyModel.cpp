@@ -261,6 +261,10 @@ QVariant FileDependencyModel::data(const QModelIndex& index, int role /*= Qt::Di
         {
             return QColor(230, 230, 230);
         }
+        else if (index.column() == FILE_DEPENDENCY_COLUMN_CREATE)
+        {
+            return QColor(240, 240, 240);
+        }
 //         else
 //         {
 //             return QColor(Qt::white);
@@ -297,7 +301,6 @@ Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
 
     switch (index.column())
     {
-    case FILE_DEPENDENCY_COLUMN_STATUS:
     case FILE_DEPENDENCY_COLUMN_CREATE:
     case FILE_DEPENDENCY_COLUMN_DEPENDENCIES:
         return Qt::NoItemFlags;
@@ -832,21 +835,29 @@ FileDependency* FileDependencyModel::findDependency(QList<FileDependency*> const
 }
 
 //-----------------------------------------------------------------------------
+// Function: FileDependencyModel::findDependency()
+//-----------------------------------------------------------------------------
+FileDependency* FileDependencyModel::findDependency(QString const& file1, QString const& file2) const
+{
+    foreach (QSharedPointer<FileDependency> dependency, dependencies_)
+    {
+        if ((dependency->getFile1() == file1 && dependency->getFile2() == file2) ||
+            (dependency->getFile1() == file2 && dependency->getFile2() == file1))
+        {
+            return dependency.data();
+        }
+    }
+
+    return 0;
+}
+
+//-----------------------------------------------------------------------------
 // Function: FileDependencyModel::addDependency()
 //-----------------------------------------------------------------------------
 void FileDependencyModel::addDependency(QSharedPointer<FileDependency> dependency)
 {
-    foreach (QSharedPointer<FileDependency> dep, dependencies_)
-    {
-        if ((dep->getFile1() == dependency->getFile1() && dep->getFile2() == dependency->getFile2()) ||
-            (dep->isBidirectional() && dep->getFile2() == dependency->getFile1() &&
-             dep->getFile1() == dependency->getFile2()))
-        {
-            // TODO: Print information for the user to the output.
-            return;
-        }
-    }
-
+    Q_ASSERT(findDependency(dependency->getFile1(), dependency->getFile2()) == 0);
+    
     // Update the file item pointers if not yet up to date.
     if (dependency->getFileItem1() == 0 || dependency->getFileItem2() == 0)
     {

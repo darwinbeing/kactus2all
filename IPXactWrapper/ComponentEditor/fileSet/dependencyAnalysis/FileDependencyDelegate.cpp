@@ -20,7 +20,7 @@
 // Function: FileDependencyDelegate::FileDependencyDelegate()
 //-----------------------------------------------------------------------------
 FileDependencyDelegate::FileDependencyDelegate(QObject* parent /*= 0*/)
-    : QItemDelegate(parent)
+    : QStyledItemDelegate(parent)
 {
 
 }
@@ -41,28 +41,28 @@ void FileDependencyDelegate::paint(QPainter *painter, QStyleOptionViewItem const
 {
     QStyleOptionViewItemV4 viewItemOption(option);
 
-    if (index.column() == FILE_DEPENDENCY_COLUMN_STATUS)
+//     if (index.column() == FILE_DEPENDENCY_COLUMN_STATUS)
+//     {
+//         // Draw the background as usual.
+//         drawBackground(painter, option, index);
+// 
+//         // Draw the icon centered.
+//         QIcon icon = qvariant_cast<QIcon>(index.model()->data(index, Qt::DecorationRole));
+//         const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
+// 
+//         QRect newRect = QStyle::alignedRect(option.direction, Qt::AlignCenter,
+//                                             QSize(option.decorationSize.width() + 5, option.decorationSize.height()),
+//                                             QRect(option.rect.x() + textMargin, option.rect.y(),
+//                                             option.rect.width() - (2 * textMargin), option.rect.height()));
+// 
+//         drawDecoration(painter, viewItemOption, viewItemOption.rect, icon.pixmap(option.decorationSize));
+// 
+//         // Draw the focus.
+//         drawFocus(painter, option, option.rect);
+//     }
+//     else
     {
-        // Draw the background as usual.
-        drawBackground(painter, option, index);
-
-        // Draw the icon centered.
-        QIcon icon = qvariant_cast<QIcon>(index.model()->data(index, Qt::DecorationRole));
-        const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
-
-        QRect newRect = QStyle::alignedRect(option.direction, Qt::AlignCenter,
-                                            QSize(option.decorationSize.width() + 5, option.decorationSize.height()),
-                                            QRect(option.rect.x() + textMargin, option.rect.y(),
-                                            option.rect.width() - (2 * textMargin), option.rect.height()));
-
-        drawDecoration(painter, viewItemOption, viewItemOption.rect, icon.pixmap(option.decorationSize));
-
-        // Draw the focus.
-        drawFocus(painter, option, option.rect);
-    }
-    else
-    {
-        QItemDelegate::paint(painter, viewItemOption, index);
+        QStyledItemDelegate::paint(painter, option, index);
     }
 }
 
@@ -72,5 +72,5 @@ void FileDependencyDelegate::paint(QPainter *painter, QStyleOptionViewItem const
 QSize FileDependencyDelegate::sizeHint(QStyleOptionViewItem const& option,
                                        QModelIndex const& index) const
 {
-    return QItemDelegate::sizeHint(option, index) + QSize(0, 4);
+    return QStyledItemDelegate::sizeHint(option, index) + QSize(0, 4);
 }

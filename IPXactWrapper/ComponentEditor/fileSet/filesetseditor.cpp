@@ -15,18 +15,21 @@
 FileSetsEditor::FileSetsEditor(QSharedPointer<Component> component,
                                LibraryInterface* libInterface, PluginManager& pluginMgr):
 ItemEditor(component),
-view_(this),
+splitter_(Qt::Vertical, this),
+view_(&splitter_),
 model_(component, this),
 proxy_(this),
-dependencyEditor_(component, libInterface, pluginMgr, this) {
+dependencyEditor_(component, libInterface, pluginMgr, &splitter_) {
+
+    splitter_.addWidget(&view_);
+    splitter_.addWidget(&dependencyEditor_);
 
 	// display a label on top the table
 	SummaryLabel* summaryLabel = new SummaryLabel(tr("File sets summary"), this);
 
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	layout->addWidget(summaryLabel, 0, Qt::AlignCenter);
-	layout->addWidget(&view_);
-    layout->addWidget(&dependencyEditor_, 1);
+	layout->addWidget(&splitter_, 1);
 	layout->setContentsMargins(0, 0, 0, 0);
 
 	proxy_.setSourceModel(&model_);

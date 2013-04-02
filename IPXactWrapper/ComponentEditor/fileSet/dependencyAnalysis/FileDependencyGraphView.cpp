@@ -50,6 +50,9 @@ FileDependencyGraphView::FileDependencyGraphView(QWidget* parent)
 
     connect(header(), SIGNAL(sectionResized(int, int, int)),
             this, SLOT(onSectionResized()), Qt::UniqueConnection);
+
+    connect(this, SIGNAL(collapsed(QModelIndex const&)), this, SLOT(onDependenciesReset()), Qt::UniqueConnection);
+    connect(this, SIGNAL(expanded(QModelIndex const&)), this, SLOT(onDependenciesReset()), Qt::UniqueConnection);
 }
 
 //-----------------------------------------------------------------------------
@@ -331,20 +334,34 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                 if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
                     manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE)
                 {
-                    // Adding newly created manual dependency to model.
-                    FileDependency* createdDependency = new FileDependency();
-                    createdDependency->setFile1(manualDependencyStartItem_->getPath());
-                    createdDependency->setFile2(manualDependencyEndItem_->getPath());
-                    createdDependency->setManual(true);
-                    createdDependency->setStatus(FileDependency::STATUS_ADDED);
+                    // Adding newly created manual dependency to model if it does not exist yet.
+                    if (model_->findDependency(manualDependencyStartItem_->getPath(),
+                                               manualDependencyEndItem_->getPath()) == 0)
+                    {
+                        FileDependency* createdDependency = new FileDependency();
+                        createdDependency->setFile1(manualDependencyStartItem_->getPath());
+                        createdDependency->setFile2(manualDependencyEndItem_->getPath());
+                        createdDependency->setManual(true);
+                        createdDependency->setStatus(FileDependency::STATUS_ADDED);
 
-                    model_->addDependency(QSharedPointer<FileDependency>(createdDependency));
+                        model_->addDependency(QSharedPointer<FileDependency>(createdDependency));
+
+                        // Selecting created manual dependency.
+                        FileDependency* oldDependency = selectedDependency_;
+                        selectedDependency_ = createdDependency;
+                        emit selectionChanged(selectedDependency_);
+                        repaintDependency(oldDependency);
+                        repaintDependency(selectedDependency_);
+                    }
+                    else
+                    {
+                        // TODO Joni-Matti: Print information about an existing duplicate dependency.
+                    }
 
                     // If shift-key is hold down not ending manual creation yet.
                     if (multiManualCreation_)
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
-                        viewport()->repaint();
                     }
                     // Else ending manual dependency creation.
                     else
@@ -352,15 +369,9 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         manualDependencyStartItem_ = 0;
                         manualDependencyEndItem_ = 0;
                         drawingDependency_ = false;
-                        viewport()->repaint();
                     }
-                    // Selecting created manual dependency.
-                    FileDependency* oldDependency = selectedDependency_;
-                    selectedDependency_ = createdDependency;
-                    emit selectionChanged(selectedDependency_);
-                    repaintDependency(oldDependency);
-                    repaintDependency(selectedDependency_);
-                    
+
+                    viewport()->repaint();
                 }
             }
         }
@@ -597,6 +608,8 @@ bool FileDependencyGraphView::hasSpace(GraphColumn const& column, GraphDependenc
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const& rect)
 {
+    onSectionResized();
+
     int columnOffset = columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
     int width = columnWidth(FILE_DEPENDENCY_COLUMN_DEPENDENCIES);
     int x = GRAPH_MARGIN;
@@ -727,8 +740,11 @@ void FileDependencyGraphView::drawRow(QPainter* painter, QStyleOptionViewItem co
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::onDependenciesReset()
 {
-    columns_.clear();
     selectedDependency_ = 0;
+    emit selectionChanged(0);
+
+    columns_.clear();
+    emit graphColumnScollMaximumChanged(0);
 
     foreach (QSharedPointer<FileDependency> dependency, model_->getDependencies())
     {
@@ -889,7 +905,10 @@ bool FileDependencyGraphView::filterDependency(FileDependency const* dependency)
 void FileDependencyGraphView::rowsInserted(QModelIndex const& parent, int start, int end)
 {
     QTreeView::rowsInserted(parent, start, end);
+
+    disconnect(this, SIGNAL(expanded(QModelIndex const&)), this, SLOT(onDependenciesReset()));
     setExpanded(parent, true);
+    connect(this, SIGNAL(expanded(QModelIndex const&)), this, SLOT(onDependenciesReset()), Qt::UniqueConnection);
 }
 
 //-----------------------------------------------------------------------------
@@ -901,7 +920,10 @@ void FileDependencyGraphView::reset()
     emit selectionChanged(0);
 
     QTreeView::reset();
+
+    disconnect(this, SIGNAL(expanded(QModelIndex const&)), this, SLOT(onDependenciesReset()));
     expandAll();
+    connect(this, SIGNAL(expanded(QModelIndex const&)), this, SLOT(onDependenciesReset()), Qt::UniqueConnection);
 }
 
 //-----------------------------------------------------------------------------

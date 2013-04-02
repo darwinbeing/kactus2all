@@ -18,7 +18,7 @@
 //-----------------------------------------------------------------------------
 //! Delegate used in visualizing the file dependency model.
 //-----------------------------------------------------------------------------
-class FileDependencyDelegate : public QItemDelegate
+class FileDependencyDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
