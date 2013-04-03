@@ -173,6 +173,16 @@ private slots:
      */
     void onSectionResized();
 
+    /*!
+     *  Called when adding a location to external dependency.
+     */
+    void onAddLocation();
+
+    /*!
+     *  Called when resetting location of external dependency.
+     */
+    void onLocationReset();
+
 private:
     //-----------------------------------------------------------------------------
     //! Graph dependency structure.
@@ -344,6 +354,12 @@ private:
     
     //! The end item of manual dependency creation
     FileDependencyItem* manualDependencyEndItem_;
+
+    //! The file dependency item context menu was opened on
+    FileDependencyItem* contextMenuItem_;
+
+    //! The file dependency (arrow) context menu was opened on
+    FileDependency* contextMenuDependency_;
 
     //! If true, the shift key is pressed.
     bool multiManualCreation_;

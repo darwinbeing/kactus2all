@@ -24,6 +24,7 @@
 #include <QScrollBar>
 #include <QDebug>
 #include <QMenu>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 // Function: FileDependencyGraphWidget::FileDependencyGraphWidget()
@@ -293,6 +294,38 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             if (event->button() == Qt::RightButton && selectedDependency_ != 0)
             {
                 createContextMenu(event->globalPos());
+            }
+        }
+    }
+    // Check if click is on the path.
+    else if (column == FILE_DEPENDENCY_COLUMN_PATH)
+    {
+        // Handle context menu opening.
+        if (event->button() == Qt::RightButton)
+        {
+            // Get the item the menu was opened for.
+            QModelIndex startPoint = sortFilter_->mapToSource(indexAt(event->pos()));
+            if (startPoint.isValid())
+            {
+                FileDependencyItem* item = 0;
+                item = static_cast<FileDependencyItem*>(startPoint.internalPointer());
+                
+                if (item && item->getType() == FileDependencyItem::ITEM_TYPE_FILE && item->isExternal())
+                {
+                    contextMenuItem_ = item;
+
+                    QMenu contextMenu;
+                    QAction* addedAction;
+
+                    addedAction = contextMenu.addAction("Add location...");
+                    connect(addedAction, SIGNAL(triggered()), this, SLOT(onAddLocation()));
+
+                    addedAction = contextMenu.addAction("Reset");
+                    connect(addedAction, SIGNAL(triggered()), this, SLOT(onLocationReset()));
+                    
+                    // Open the context menu.
+                    contextMenu.exec(event->globalPos());
+                }
             }
         }
     }
@@ -795,6 +828,30 @@ void FileDependencyGraphView::onSectionResized()
 
     emit graphColumnScollMaximumChanged(qMax<int>(0, columns_.size() - maxVisibleGraphColumns_));
     emit dependencyColumnPositionChanged(columnViewportPosition(FILE_DEPENDENCY_COLUMN_DEPENDENCIES));
+}
+
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onAddLocation()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onAddLocation()
+{
+    // Open a file dialog to define the location.
+    QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
+    if( newDirectory.size() < 1 )
+    {
+        return;
+    }
+    newDirectory = QFileInfo(newDirectory).filePath();
+    model_->defineLocation(contextMenuItem_, newDirectory);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onLocationReset()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onLocationReset()
+{
+    model_->resetLocation(contextMenuItem_);
 }
 
 //-----------------------------------------------------------------------------
