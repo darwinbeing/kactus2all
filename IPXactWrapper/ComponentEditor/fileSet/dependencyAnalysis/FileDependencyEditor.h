@@ -56,9 +56,6 @@ public:
 signals:
     //! Emitted when the file sets have been updated.
     void fileSetsUpdated();
-    
-	//! Prints a notification to user.
-	void noticeMessage(const QString& msg) const;
 
 private slots:
     /*!
@@ -80,7 +77,7 @@ private slots:
     void updateProgressBar(int value);
 
     /*!
-     *  Sends filters to the dependecy graph
+     *  Sends filters to the dependency graph.
      *
      *      @param [in] the filter being toggled.
      */
@@ -111,7 +108,7 @@ private:
      *      @param [in] filter      The filter value for the button.
      */
     void addFilterButton(QIcon icon, QString iconText, FileDependencyGraphView::DependencyFilter filter);
-
+    
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------

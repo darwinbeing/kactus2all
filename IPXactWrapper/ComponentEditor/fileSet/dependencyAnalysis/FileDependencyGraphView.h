@@ -97,6 +97,11 @@ signals:
      */
     void dependencyColumnPositionChanged(int pos);
 
+    /*!
+     *  Prints a warning message to the information display.
+     */
+    void warningMessage(const QString& msg) const;
+
 public slots:
     /*!
      *  Sets the graph column scroll index.

@@ -358,6 +358,7 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
                         drawingDependency_ = true;
+                        emit warningMessage("");
                     }
                 }
             }
@@ -385,10 +386,13 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         emit selectionChanged(selectedDependency_);
                         repaintDependency(oldDependency);
                         repaintDependency(selectedDependency_);
+
+                        emit warningMessage("");
                     }
                     else
                     {
-                        // TODO Joni-Matti: Print information about an existing duplicate dependency.
+                        // Print information about an existing duplicate dependency.
+                        emit warningMessage(tr("Manually created dependency was discarded because it already exists."));
                     }
 
                     // If shift-key is hold down not ending manual creation yet.

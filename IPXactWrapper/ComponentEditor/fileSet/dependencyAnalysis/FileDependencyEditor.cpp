@@ -326,3 +326,4 @@ void FileDependencyEditor::addFilterButton(QIcon icon, QString iconText,
     tmp->setChecked(filters & filter);
     filterActions_.addAction(tmp);
 }
+

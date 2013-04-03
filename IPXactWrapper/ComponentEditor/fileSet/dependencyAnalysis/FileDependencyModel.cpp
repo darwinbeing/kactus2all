@@ -303,10 +303,10 @@ Qt::ItemFlags FileDependencyModel::flags(const QModelIndex& index) const
     {
     case FILE_DEPENDENCY_COLUMN_CREATE:
     case FILE_DEPENDENCY_COLUMN_DEPENDENCIES:
-        return Qt::NoItemFlags;
+        return Qt::ItemIsSelectable;
 
     default:
-        return Qt::ItemIsEnabled;
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     }
 }
 

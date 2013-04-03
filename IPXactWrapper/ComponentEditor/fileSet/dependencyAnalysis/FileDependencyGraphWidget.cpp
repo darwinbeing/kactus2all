@@ -21,13 +21,15 @@ FileDependencyGraphWidget::FileDependencyGraphWidget(QWidget* parent)
     : QWidget(parent),
       view_(this),
       scrollBar_(Qt::Horizontal, parent),
-      barLayout_(0)
+      barLayout_(0),
+      infoLabel_(this)
 {
     view_.setContentsMargins(0, 0, 0, 0);
     scrollBar_.setContentsMargins(0, 0, 0, 0);
 
     barLayout_ = new QHBoxLayout();
-    barLayout_->addStretch(1);
+    //barLayout_->addStretch(1);
+    barLayout_->addWidget(&infoLabel_);
     barLayout_->addWidget(&scrollBar_);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
@@ -39,9 +41,13 @@ FileDependencyGraphWidget::FileDependencyGraphWidget(QWidget* parent)
             this, SLOT(onGraphColumnScrollMaximumChanged(int)), Qt::UniqueConnection);
     connect(&view_, SIGNAL(dependencyColumnPositionChanged(int)),
             this, SLOT(onDependencyColumnPositionChanged(int)), Qt::UniqueConnection);
+    connect(&view_, SIGNAL(warningMessage(const QString&)),
+            this, SLOT(showWarningMessage(const QString&)), Qt::UniqueConnection);
 
     connect(&scrollBar_, SIGNAL(valueChanged(int)),
             &view_, SLOT(setGraphColumnScrollIndex(int)), Qt::UniqueConnection);
+
+    infoLabel_.setTextFormat(Qt::RichText);
 }
 
 //-----------------------------------------------------------------------------
@@ -74,7 +80,23 @@ void FileDependencyGraphWidget::onGraphColumnScrollMaximumChanged(int maximum)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphWidget::onDependencyColumnPositionChanged(int pos)
 {
-    QLayoutItem* item = barLayout_->takeAt(0);
-    delete item;
-    barLayout_->insertSpacing(0, pos);
+    infoLabel_.setFixedWidth(pos);
+//     QLayoutItem* item = barLayout_->takeAt(0);
+//     delete item;
+//     barLayout_->insertSpacing(0, pos);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphWidget::showWarningMessage()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphWidget::showWarningMessage(QString const& message)
+{
+    QString prefix = "";
+
+    if (message != "")
+    {
+        prefix += "<img src=\":/icons/graphics/exclamation.png\">";
+    }
+    
+    infoLabel_.setText(message);
 }

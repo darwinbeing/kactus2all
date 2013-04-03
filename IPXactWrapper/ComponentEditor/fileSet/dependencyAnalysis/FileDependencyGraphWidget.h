@@ -18,6 +18,7 @@
 #include <QWidget>
 #include <QScrollBar>
 #include <QHBoxLayout>
+#include <QLabel>
 
 //-----------------------------------------------------------------------------
 //! File dependency graph widget.
@@ -53,6 +54,13 @@ private slots:
      */
     void onDependencyColumnPositionChanged(int width);
 
+    /*!
+     *  Shows a warning message on the information display.
+     *
+     *      @param [in] message The message to show.
+     */
+    void showWarningMessage(QString const& message);
+
 private:
     // Disable copying.
     FileDependencyGraphWidget(FileDependencyGraphWidget const& rhs);
@@ -70,6 +78,9 @@ private:
 
     //! The scroll bar layout.
     QHBoxLayout* barLayout_;
+
+    //! The information label.
+    QLabel infoLabel_;
 };
 
 #endif // FILEDEPENDENCYGRAPHWIDGET_H

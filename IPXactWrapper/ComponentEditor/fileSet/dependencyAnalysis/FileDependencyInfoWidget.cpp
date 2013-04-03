@@ -78,7 +78,7 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
 {
     dependency_ = dependency;
 
-    disconnect(&directionCheck_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionCheckBoxChanged(int)));
+    disconnect(&directionCheck_, SIGNAL(stateChanged(int)), this, SLOT(directionCheckBoxChanged(int)));
     disconnect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
     disconnect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
     disconnect(&directionButton_, SIGNAL(clicked()), this, SLOT(directionReversed()));
@@ -128,7 +128,7 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
         updateFileLabel();
     }
 
-    connect(&directionCheck_, SIGNAL(currentIndexChanged(int)), this, SLOT(directionComboChanged(int)));
+    connect(&directionCheck_, SIGNAL(stateChanged(int)), this, SLOT(directionCheckBoxChanged(int)));
     connect(&lockedCheck_, SIGNAL(stateChanged(int)), this, SLOT(lockedCheckChanged(int)));
     connect(&descEdit_, SIGNAL(textChanged()), this, SLOT(descEditTextChanged()));
     connect(&directionButton_, SIGNAL(clicked()), this, SLOT(directionReversed()));
