@@ -183,6 +183,26 @@ private slots:
      */
     void onLocationReset();
 
+    /*!
+     *  Called when a dependency is reversed from context menu.
+     */
+    void onMenuReverse();
+
+    /*!
+     *  Called when a dependency is made uni-/bidirectional from context menu.
+     */
+    void onMenuBidirectional();
+
+    /*!
+     *  Called when a dependency is locked/unlocked from context menu.
+     */
+    void onMenuLock();
+
+    /*!
+     *  Called when a dependency is deleted from context menu.
+     */
+    void onMenuDelete();
+
 private:
     //-----------------------------------------------------------------------------
     //! Graph dependency structure.
@@ -357,9 +377,6 @@ private:
 
     //! The file dependency item context menu was opened on
     FileDependencyItem* contextMenuItem_;
-
-    //! The file dependency (arrow) context menu was opened on
-    FileDependency* contextMenuDependency_;
 
     //! If true, the shift key is pressed.
     bool multiManualCreation_;

@@ -480,7 +480,7 @@ void FileDependencyGraphView::keyPressEvent(QKeyEvent* event)
     }
 }
 //-----------------------------------------------------------------------------
-// Function: FileDependencyGraphView::keyReleaseEvent()
+// Functi: FileDependencyGraphView::keyReleaseEvent()
 //-----------------------------------------------------------------------------
 void FileDependencyGraphView::keyReleaseEvent(QKeyEvent* event)
 {
@@ -855,6 +855,43 @@ void FileDependencyGraphView::onLocationReset()
 }
 
 //-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onMenuReverse()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onMenuReverse()
+{
+    selectedDependency_->reverse();
+    emit selectionChanged(selectedDependency_);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onMenuBidirectional()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onMenuBidirectional()
+{
+    selectedDependency_->setBidirectional(!selectedDependency_->isBidirectional());
+    emit selectionChanged(selectedDependency_);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onMenuLock()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onMenuLock()
+{
+    selectedDependency_->setLocked(!selectedDependency_->isLocked());
+    emit selectionChanged(selectedDependency_);
+}
+
+//-----------------------------------------------------------------------------
+// Function: FileDependencyGraphView::onMenuDelete()
+//-----------------------------------------------------------------------------
+void FileDependencyGraphView::onMenuDelete()
+{
+    model_->removeDependency(selectedDependency_);
+    selectedDependency_ = 0;
+    emit selectionChanged(0);
+}
+
+//-----------------------------------------------------------------------------
 // Function: FileDependencyGraphView::findDependencyAt()
 //-----------------------------------------------------------------------------
 FileDependency* FileDependencyGraphView::findDependencyAt(QPoint const& pt) const
@@ -1029,6 +1066,31 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
 
     QMenu contextMenu;
     QAction* addedAction;
+
+    addedAction = contextMenu.addAction("Reverse");
+    if (selectedDependency_->isLocked() || selectedDependency_->isBidirectional())
+    {
+        addedAction->setEnabled(false);
+    }
+    connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuReverse()));
+
+    if (selectedDependency_->isBidirectional())
+    {
+        addedAction = contextMenu.addAction("Make unidirectional");
+    }
+    else
+    {
+        addedAction = contextMenu.addAction("Make bidirectional");
+    }
+    if (selectedDependency_->isLocked())
+    {
+        addedAction->setEnabled(false);
+        addedAction->setCheckable(true);
+        addedAction->setChecked(selectedDependency_->isBidirectional());
+    }
+    connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuBidirectional()));
+
+    contextMenu.addSeparator();
     if (selectedDependency_->isLocked())
     {
         addedAction = contextMenu.addAction("Unlock");
@@ -1037,26 +1099,15 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
     {
         addedAction = contextMenu.addAction("Lock");
     }
+    connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuLock()));
 
+    contextMenu.addSeparator();
     addedAction = contextMenu.addAction("Delete");
     if (selectedDependency_->isLocked())
     {
         addedAction->setEnabled(false);
     }
-
-    addedAction = contextMenu.addAction("Reverse");
-    if (selectedDependency_->isLocked())
-    {
-        addedAction->setEnabled(false);
-    }
-
-    addedAction = contextMenu.addAction("Bidirectional");
-    if (selectedDependency_->isLocked())
-    {
-        addedAction->setEnabled(false);
-        addedAction->setCheckable(true);
-        addedAction->setChecked(selectedDependency_->isBidirectional());
-    }
+    connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuDelete()));
     
     // Open the context menu.
     contextMenu.exec(position);
