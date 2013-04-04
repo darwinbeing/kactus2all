@@ -23,7 +23,6 @@
 //-----------------------------------------------------------------------------
 FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent) 
     : QGroupBox(tr("Dependency Information"), parent),
-    fileLabel_(this),
     descEdit_(this),
     directionCheck_(tr("Bidirectional"), this),
     lockedCheck_(tr("Locked"), this),
@@ -33,12 +32,11 @@ FileDependencyInfoWidget::FileDependencyInfoWidget(QWidget* parent)
     directionCheck_.setFixedWidth(150);
     descEdit_.setMaximumHeight(100);
     
-    fileLabel_.setText(tr("file1 ---> file2"));
+    this->setTitle(tr("Dependency Information"));
 
     QVBoxLayout* leftLayout = new QVBoxLayout();
     leftLayout->addWidget(new QLabel(tr("Description:"), this));
     leftLayout->addWidget(&descEdit_, 1);
-    leftLayout->addWidget(&fileLabel_);
 
     QVBoxLayout* rightLayout = new QVBoxLayout();
     rightLayout->addWidget(new QLabel(tr("Direction:"), this));
@@ -87,9 +85,8 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
     descEdit_.clear();
     directionCheck_.setChecked(false);
     lockedCheck_.setChecked(false);
-    fileLabel_.setText(tr("file1 ---> file2"));
+    this->setTitle(tr("Dependency Information"));
     // Disabling the widgets.
-    fileLabel_.setEnabled(false);
     descEdit_.setEnabled(false);
     directionCheck_.setEnabled(false);
     lockedCheck_.setEnabled(false);
@@ -98,11 +95,10 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
     if(dependency_ != 0)
     {
         // Enabling the widgets.
-        fileLabel_.setEnabled(true);
         descEdit_.setEnabled(true);
         
         // Enable editing for direction and locking only for manual dependencies.
-        if(dependency_->isManual())
+        if (dependency_->isManual())
         {
             directionCheck_.setEnabled(true);
             lockedCheck_.setEnabled(true);
@@ -113,15 +109,20 @@ void FileDependencyInfoWidget::setEditedDependency(FileDependency* dependency)
         // Set previous text.
         descEdit_.setPlainText(dependency_->getDescription());
         // Set direction checkbox and direction button.
-        if(dependency_->isBidirectional())
+        if (dependency_->isBidirectional())
         {
             directionCheck_.setChecked(true);
             directionButton_.setEnabled(false);
         }
-        else if(dependency_->isManual())
+        else if (dependency_->isManual())
         {
             directionCheck_.setChecked(false);
             directionButton_.setEnabled(true);
+        }
+
+        if (dependency_->isManual())
+        {
+            lockEverything(lockedCheck_.isChecked());
         }
 
         // Set informative file label.
@@ -172,6 +173,7 @@ void FileDependencyInfoWidget::directionCheckBoxChanged(int state)
 void FileDependencyInfoWidget::lockedCheckChanged(int state)
 {
     dependency_->setLocked(lockedCheck_.isChecked());
+    lockEverything(lockedCheck_.isChecked());
 }
 
 //-----------------------------------------------------------------------------
@@ -204,10 +206,10 @@ void FileDependencyInfoWidget::directionReversed()
 //-----------------------------------------------------------------------------
 void FileDependencyInfoWidget::updateFileLabel()
 {
-    QString fileLabelText = "";
+    QString fileLabelText = tr("Dependency Information: ");
     QFileInfo fromInfo(dependency_->getFile1());
     QFileInfo toInfo(dependency_->getFile2());
-    fileLabelText = fromInfo.fileName();
+    fileLabelText += fromInfo.fileName();
     if(dependency_->isBidirectional())
     {
         fileLabelText += " <--> ";
@@ -217,5 +219,28 @@ void FileDependencyInfoWidget::updateFileLabel()
         fileLabelText += " ---> ";
     }
     fileLabelText += toInfo.fileName();
-    fileLabel_.setText(fileLabelText);
+    this->setTitle(fileLabelText);
+}
+
+void FileDependencyInfoWidget::lockEverything(bool isLocked)
+{
+    if (isLocked)
+    {
+        descEdit_.setEnabled(false);
+        directionCheck_.setEnabled(false);
+        directionButton_.setEnabled(false);
+    }
+    else
+    {
+        descEdit_.setEnabled(true);
+        directionCheck_.setEnabled(true);
+        if (!directionCheck_.isChecked())
+        {
+            directionButton_.setEnabled(true);
+        }
+        else
+        {
+            directionButton_.setEnabled(false);
+        }
+    }
 }

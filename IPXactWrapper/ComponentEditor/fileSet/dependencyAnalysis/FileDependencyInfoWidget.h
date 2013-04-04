@@ -76,13 +76,11 @@ private:
     FileDependencyInfoWidget& operator=(FileDependencyInfoWidget const& rhs);
 
     void updateFileLabel();
+    void lockEverything(bool isLocked);
 
     //-----------------------------------------------------------------------------
     // Data.
     //-----------------------------------------------------------------------------
-
-    //! Label for storing used files
-    QLabel fileLabel_;
 
     //! Editor for description.
     QPlainTextEdit descEdit_;

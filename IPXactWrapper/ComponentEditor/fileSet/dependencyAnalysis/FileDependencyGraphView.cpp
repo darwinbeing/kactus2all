@@ -378,7 +378,8 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             else
             {
                 if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
-                    manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE)
+                    manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE &&
+                    manualDependencyStartItem_ != manualDependencyEndItem_)
                 {
                     // Adding newly created manual dependency to model if it does not exist yet.
                     if (model_->findDependency(manualDependencyStartItem_->getPath(),
@@ -437,10 +438,10 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 {
     // If creating manual dependencies
-    if( manualDependencyStartItem_ && drawingDependency_ )
+    if (manualDependencyStartItem_ && drawingDependency_)
     {
         QModelIndex currentPoint = sortFilter_->mapToSource(indexAt(event->pos()));
-        if( currentPoint.isValid() )
+        if (currentPoint.isValid())
         {
             FileDependencyItem* currentDependencyItem = static_cast<FileDependencyItem*>(currentPoint.internalPointer());
             manualDependencyEndItem_ = currentDependencyItem;
@@ -839,7 +840,7 @@ void FileDependencyGraphView::onAddLocation()
 {
     // Open a file dialog to define the location.
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
-    if( newDirectory.size() < 1 )
+    if (newDirectory.size() < 1)
     {
         return;
     }
