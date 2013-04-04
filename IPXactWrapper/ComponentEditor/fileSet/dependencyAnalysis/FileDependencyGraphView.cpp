@@ -317,11 +317,19 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     QMenu contextMenu;
                     QAction* addedAction;
 
-                    addedAction = contextMenu.addAction("Add location...");
-                    connect(addedAction, SIGNAL(triggered()), this, SLOT(onAddLocation()));
+                    if (item->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
+                    {
+                        addedAction = contextMenu.addAction("Define Location...");
+                        connect(addedAction, SIGNAL(triggered()), this, SLOT(onAddLocation()));
+                    }
+                    else
+                    {
+                        addedAction = contextMenu.addAction("Change Location...");
+                        connect(addedAction, SIGNAL(triggered()), this, SLOT(onAddLocation()));
 
-                    addedAction = contextMenu.addAction("Reset");
-                    connect(addedAction, SIGNAL(triggered()), this, SLOT(onLocationReset()));
+                        addedAction = contextMenu.addAction("Reset");
+                        connect(addedAction, SIGNAL(triggered()), this, SLOT(onLocationReset()));
+                    }
                     
                     // Open the context menu.
                     contextMenu.exec(event->globalPos());
@@ -672,20 +680,20 @@ void FileDependencyGraphView::drawDependencyGraph(QPainter& painter, QRect const
                     {
                         color = QColor(0, 158, 255);
                     }
+                    else if (dep.dependency->isManual())
+                    {
+                        color = Qt::magenta;
+                    }
                     else if (filters_ & FILTER_DIFFERENCE)
                     {
                         if (dep.dependency->getStatus() == FileDependency::STATUS_ADDED)
                         {
-                            color = Qt::green;
+                            color = QColor(0, 222, 0);
                         }
                         else if (dep.dependency->getStatus() == FileDependency::STATUS_REMOVED)
                         {
                             color = Qt::red;
                         }
-                    }
-                    else if (dep.dependency->isManual())
-                    {
-                        color = Qt::magenta;
                     }
 
                     drawArrow(painter, columnOffset + x, fromY, toY, color, dep.dependency->isBidirectional());
@@ -790,7 +798,7 @@ void FileDependencyGraphView::drawManualCreationArrow(QPainter& painter)
     int currentY = 0;
     getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(manualDependencyStartItem_, 0)), startY);
     getVisualRowY(sortFilter_->mapFromSource(model_->getItemIndex(manualDependencyEndItem_, 0)), currentY);
-    drawArrow(painter, x, startY, currentY, Qt::green, false);
+    drawArrow(painter, x, startY, currentY, Qt::blue, false);
 }
 
 //-----------------------------------------------------------------------------
