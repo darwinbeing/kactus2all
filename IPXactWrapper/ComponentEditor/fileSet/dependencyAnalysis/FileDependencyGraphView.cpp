@@ -328,6 +328,10 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                 }
             }
         }
+        else
+        {
+            QTreeView::mousePressEvent(event);
+        }
     }
     // Otherwise check if the user pressed over the manual creation column.
     else if (column == FILE_DEPENDENCY_COLUMN_CREATE)
@@ -413,21 +417,6 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             }
         }
     }
-    // TODO: Only for testing purposes. Remove when done!
-//     else if (column == FILE_DEPENDENCY_COLUMN_PATH)
-//     {
-//         QModelIndex index = sortFilter_->mapToSource(indexAt(event->pos()));
-//         FileDependencyItem* item = static_cast<FileDependencyItem*>(index.internalPointer());
-// 
-//         if (event->button() == Qt::LeftButton)
-//         {
-//             model_->defineLocation(item, "D:/user/maattaj");
-//         }
-//         else
-//         {
-//             model_->resetLocation(item);
-//         }
-//     }
     else
     {
         QTreeView::mousePressEvent(event);

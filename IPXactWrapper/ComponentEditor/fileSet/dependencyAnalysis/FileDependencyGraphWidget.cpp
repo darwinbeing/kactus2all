@@ -91,12 +91,12 @@ void FileDependencyGraphWidget::onDependencyColumnPositionChanged(int pos)
 //-----------------------------------------------------------------------------
 void FileDependencyGraphWidget::showWarningMessage(QString const& message)
 {
-    QString prefix = "";
-
-    if (message != "")
-    {
-        prefix += "<img src=\":/icons/graphics/exclamation.png\">";
-    }
+//     QString prefix = "";
+// 
+//     if (message != "")
+//     {
+//         prefix += "<img src=\":/icons/graphics/exclamation.png\">";
+//     }
     
-    infoLabel_.setText(message);
+    infoLabel_.setText("<font color=\"red\">" + message + "</font>");
 }
