@@ -366,6 +366,14 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     {
                         manualDependencyStartItem_ = 0;
                     }
+                    else if (manualDependencyStartItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
+                        manualDependencyStartItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
+                    {
+
+                        manualDependencyStartItem_ = 0;
+                        // Print information about creating manual dependencies to external files.
+                        emit warningMessage(tr("Cannot create manual dependency from external or unknown file location."));
+                    }
                     else
                     {
                         manualDependencyEndItem_ = manualDependencyStartItem_;
@@ -377,7 +385,13 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             // Ending manual dependency creation.
             else
             {
-                if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
+                if (manualDependencyEndItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
+                    manualDependencyEndItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
+                {
+                    // Print information about creating manual dependencies to external files.
+                    emit warningMessage(tr("Cannot create manual dependency to external or unknown file location."));
+                }
+                else if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
                     manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE &&
                     manualDependencyStartItem_ != manualDependencyEndItem_)
                 {
