@@ -1083,6 +1083,7 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
     QMenu contextMenu;
     QAction* addedAction;
 
+    // Add all the actions to the context menu object
     addedAction = contextMenu.addAction("Reverse");
     if (selectedDependency_->isLocked() || selectedDependency_->isBidirectional())
     {
@@ -1090,19 +1091,12 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
     }
     connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuReverse()));
 
-    if (selectedDependency_->isBidirectional())
-    {
-        addedAction = contextMenu.addAction("Make unidirectional");
-    }
-    else
-    {
-        addedAction = contextMenu.addAction("Make bidirectional");
-    }
+    addedAction = contextMenu.addAction("Bidirectional");
+    addedAction->setCheckable(true);
+    addedAction->setChecked(selectedDependency_->isBidirectional());
     if (selectedDependency_->isLocked())
     {
         addedAction->setEnabled(false);
-        addedAction->setCheckable(true);
-        addedAction->setChecked(selectedDependency_->isBidirectional());
     }
     connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuBidirectional()));
 
