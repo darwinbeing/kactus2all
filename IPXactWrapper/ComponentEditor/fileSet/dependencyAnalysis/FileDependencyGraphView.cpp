@@ -357,7 +357,9 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                     emit selectionChanged(selectedDependency_);
                     repaintDependency(oldDependency);
                 }
+                
                 QModelIndex startPoint = sortFilter_->mapToSource(indexAt(event->pos()));
+                
                 if (startPoint.isValid())
                 {
                     manualDependencyStartItem_ = static_cast<FileDependencyItem*>(startPoint.internalPointer());
@@ -367,7 +369,7 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         manualDependencyStartItem_ = 0;
                     }
                     else if (manualDependencyStartItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
-                        manualDependencyStartItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
+							 manualDependencyStartItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
                     {
 
                         manualDependencyStartItem_ = 0;
@@ -385,19 +387,23 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
             // Ending manual dependency creation.
             else
             {
-                if (manualDependencyEndItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
+				if (manualDependencyEndItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_EXTERNAL_LOCATION ||
                     manualDependencyEndItem_->getParent()->getType() == FileDependencyItem::ITEM_TYPE_UNKNOWN_LOCATION)
                 {
                     // Print information about creating manual dependencies to external files.
                     emit warningMessage(tr("Cannot create manual dependency to external or unknown file location."));
                 }
                 else if (manualDependencyEndItem_ && manualDependencyStartItem_ &&
-                    manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE &&
-                    manualDependencyStartItem_ != manualDependencyEndItem_)
+						 manualDependencyEndItem_->getType() == FileDependencyItem::ITEM_TYPE_FILE)
                 {
-                    // Adding newly created manual dependency to model if it does not exist yet.
-                    if (model_->findDependency(manualDependencyStartItem_->getPath(),
-                                               manualDependencyEndItem_->getPath()) == 0)
+                    // Adding newly created manual dependency to model if it does not exist yet
+                    // or cannot be combined with the existing dependency.
+                    FileDependency* found = model_->findDependency(manualDependencyStartItem_->getPath(),
+                                                                   manualDependencyEndItem_->getPath());
+                    if (found == 0 ||
+                        (!found->isManual() && !found->isBidirectional() &&
+                         found->getFile1() == manualDependencyStartItem_->getPath() &&
+                         found->getFile2() == manualDependencyEndItem_->getPath()))
                     {
                         FileDependency* createdDependency = new FileDependency();
                         createdDependency->setFile1(manualDependencyStartItem_->getPath());
@@ -415,6 +421,19 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
                         repaintDependency(selectedDependency_);
 
                         emit warningMessage("");
+                    }
+                    // Check if we can convert the dependency to a bidirectional one.
+                    else if (found->isManual() && found->getFile1() == manualDependencyEndItem_->getPath() &&
+                             found->getFile2() == manualDependencyStartItem_->getPath())
+                    {
+                        found->setBidirectional(true);
+
+                        selectedDependency_ = found;
+                        emit selectionChanged(selectedDependency_);
+
+                        repaintDependency(found);
+
+                        emit warningMessage(tr("An existing manual dependency was changed to bidirectional."));
                     }
                     else
                     {
@@ -452,10 +471,10 @@ void FileDependencyGraphView::mousePressEvent(QMouseEvent* event)
 void FileDependencyGraphView::mouseMoveEvent(QMouseEvent* event)
 {
     // If creating manual dependencies
-    if (manualDependencyStartItem_ && drawingDependency_)
+    if( manualDependencyStartItem_ && drawingDependency_ )
     {
         QModelIndex currentPoint = sortFilter_->mapToSource(indexAt(event->pos()));
-        if (currentPoint.isValid())
+        if( currentPoint.isValid() )
         {
             FileDependencyItem* currentDependencyItem = static_cast<FileDependencyItem*>(currentPoint.internalPointer());
             manualDependencyEndItem_ = currentDependencyItem;
@@ -854,7 +873,7 @@ void FileDependencyGraphView::onAddLocation()
 {
     // Open a file dialog to define the location.
     QString newDirectory = QFileDialog::getExistingDirectory(this, tr("Choose Source Directory"));
-    if (newDirectory.size() < 1)
+    if( newDirectory.size() < 1 )
     {
         return;
     }
@@ -1083,7 +1102,6 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
     QMenu contextMenu;
     QAction* addedAction;
 
-    // Add all the actions to the context menu object
     addedAction = contextMenu.addAction("Reverse");
     if (selectedDependency_->isLocked() || selectedDependency_->isBidirectional())
     {
@@ -1091,12 +1109,19 @@ void FileDependencyGraphView::createContextMenu(const QPoint& position)
     }
     connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuReverse()));
 
-    addedAction = contextMenu.addAction("Bidirectional");
-    addedAction->setCheckable(true);
-    addedAction->setChecked(selectedDependency_->isBidirectional());
+    if (selectedDependency_->isBidirectional())
+    {
+        addedAction = contextMenu.addAction("Make unidirectional");
+    }
+    else
+    {
+        addedAction = contextMenu.addAction("Make bidirectional");
+    }
     if (selectedDependency_->isLocked())
     {
         addedAction->setEnabled(false);
+        addedAction->setCheckable(true);
+        addedAction->setChecked(selectedDependency_->isBidirectional());
     }
     connect(addedAction, SIGNAL(triggered()), this, SLOT(onMenuBidirectional()));
 

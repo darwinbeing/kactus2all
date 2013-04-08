@@ -364,8 +364,11 @@ void FileDependencyModel::endReset()
         FileDependencyItem* fileItem1 = findFileItem(copy->getFile1());
         FileDependencyItem* fileItem2 = findFileItem(copy->getFile2());
 
-        // First item should always be valid.
-        Q_ASSERT(fileItem1 != 0);
+        // First item should always be valid. Otherwise the dependency should be discarded altogether.
+        if (fileItem1 == 0)
+        {
+            continue;
+        }
 
         // Check if the second one is an external (not found).
         if (fileItem2 == 0)
@@ -570,7 +573,7 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
     Q_ASSERT(fileItem != 0);
 
     // Retrieve the corresponding plugin based on the file type.
-    ISourceAnalyzerPlugin* plugin;
+    ISourceAnalyzerPlugin* plugin = 0;
     
     foreach (QString const& fileType, fileItem->getFileTypes())
     {
@@ -698,14 +701,23 @@ void FileDependencyModel::analyze(FileDependencyItem* fileItem)
     {
         // Calculate SHA-1 from the whole file.
         QFile file(absPath);
+        QCryptographicHash cryptoHash(QCryptographicHash::Md5);
+
+        int const bytesToRead = 1024 * 256;
+        char buffer[bytesToRead];
+        int bytesRead = 0;
 
         if (file.open(QIODevice::ReadOnly))
         {
-            QByteArray fileData = file.readAll();
-            QCryptographicHash cryptoHash(QCryptographicHash::Sha1);
-            cryptoHash.addData(fileData);
-            hash = cryptoHash.result().toHex();
+            do 
+            {
+                bytesRead = file.read(buffer, bytesToRead);
+                cryptoHash.addData(buffer, bytesRead);
+            }
+            while (bytesRead == bytesToRead);
         }
+
+        hash = cryptoHash.result().toHex();
     }
 
     if (!lastHash.isEmpty() && hash != lastHash)
@@ -856,7 +868,7 @@ FileDependency* FileDependencyModel::findDependency(QString const& file1, QStrin
 //-----------------------------------------------------------------------------
 void FileDependencyModel::addDependency(QSharedPointer<FileDependency> dependency)
 {
-    Q_ASSERT(findDependency(dependency->getFile1(), dependency->getFile2()) == 0);
+    //Q_ASSERT(findDependency(dependency->getFile1(), dependency->getFile2()) == 0);
     
     // Update the file item pointers if not yet up to date.
     if (dependency->getFileItem1() == 0 || dependency->getFileItem2() == 0)
